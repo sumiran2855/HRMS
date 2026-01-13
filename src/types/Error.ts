@@ -1,0 +1,30 @@
+export interface ErrorResponse {
+    message: string;
+    code: string;
+    status: number;
+    details?: any;
+    timestamp: string;
+}
+
+export enum ErrorCode {
+    // Auth
+    UNAUTHORIZED = 'UNAUTHORIZED',
+    FORBIDDEN = 'FORBIDDEN',
+    INVALID_TOKEN = 'INVALID_TOKEN',
+
+    // Network/System
+    NETWORK_ERROR = 'NETWORK_ERROR',
+    TIMEOUT = 'TIMEOUT',
+    API_UNAVAILABLE = 'API_UNAVAILABLE',
+    INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
+
+    // Data
+    VALIDATION_ERROR = 'VALIDATION_ERROR',
+    NOT_FOUND = 'NOT_FOUND',
+    DUPLICATE_RECORD = 'DUPLICATE_RECORD',
+
+    // Domain Specific (HRMS)
+    EMPLOYEE_NOT_FOUND = 'EMPLOYEE_NOT_FOUND',
+    INVALID_EMPLOYEE_ID = 'INVALID_EMPLOYEE_ID',
+    FILE_TOO_LARGE = 'FILE_TOO_LARGE',
+}

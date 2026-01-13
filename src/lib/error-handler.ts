@@ -1,81 +1,97 @@
-export interface ErrorResponse {
-  message: string;
-  code: string;
-  status: number;
-  details?: string;
-}
-
-export const ERROR_CODES = {
-  // Authentication Errors
-  UNAUTHORIZED: { message: 'User not authenticated', code: 'UNAUTHORIZED', status: 401 },
-  FORBIDDEN: { message: 'Insufficient permissions', code: 'FORBIDDEN', status: 403 },
-  INVALID_TOKEN: { message: 'Invalid or expired token', code: 'INVALID_TOKEN', status: 401 },
-  
-  // API/Network Errors
-  NETWORK_ERROR: { message: 'Network connection failed', code: 'NETWORK_ERROR', status: 503 },
-  TIMEOUT: { message: 'Request timeout', code: 'TIMEOUT', status: 408 },
-  API_UNAVAILABLE: { message: 'Backend API unavailable', code: 'API_UNAVAILABLE', status: 503 },
-  
-  // Data/Validation Errors
-  VALIDATION_ERROR: { message: 'Invalid input data', code: 'VALIDATION_ERROR', status: 400 },
-  NOT_FOUND: { message: 'Resource not found', code: 'NOT_FOUND', status: 404 },
-  DUPLICATE_RECORD: { message: 'Record already exists', code: 'DUPLICATE_RECORD', status: 409 },
-  
-  // HRMS Business Logic Errors
-  EMPLOYEE_NOT_FOUND: { message: 'Employee record not found', code: 'EMPLOYEE_NOT_FOUND', status: 404 },
-  INVALID_EMPLOYEE_ID: { message: 'Invalid employee ID format', code: 'INVALID_EMPLOYEE_ID', status: 400 },
-  DEPARTMENT_NOT_FOUND: { message: 'Department not found', code: 'DEPARTMENT_NOT_FOUND', status: 404 },
-  
-  // Development/Generic Errors
-  INTERNAL_SERVER_ERROR: { message: 'Internal server error', code: 'INTERNAL_SERVER_ERROR', status: 500 },
-  INVALID_JSON: { message: 'Invalid JSON format', code: 'INVALID_JSON', status: 400 },
-  DATABASE_ERROR: { message: 'Database operation failed', code: 'DATABASE_ERROR', status: 500 },
-  
-  // File Upload Errors (common in HRMS)
-  FILE_TOO_LARGE: { message: 'File size exceeds limit', code: 'FILE_TOO_LARGE', status: 413 },
-  INVALID_FILE_TYPE: { message: 'Unsupported file type', code: 'INVALID_FILE_TYPE', status: 400 },
-} as const;
+import { AppError } from '@/utils/AppError';
+import { ErrorCode, ErrorResponse } from '@/types/Error';
+import { ERROR_CONFIG } from '@/constants/Error';
 
 export class ErrorHandler {
-  static handle(error: unknown, context: string = ''): ErrorResponse {
-    const err = error as Error;
-    console.error(`[${context}] Error:`, err);
 
-    if (error && typeof error === 'object' && 'response' in error) {
-      const axiosError = error as any;
-      const status = axiosError.response?.status;
-      
-      if (status === 401) return ERROR_CODES.UNAUTHORIZED;
-      if (status === 403) return ERROR_CODES.FORBIDDEN;
-      if (status === 404) return ERROR_CODES.NOT_FOUND;
-      if (status === 413) return ERROR_CODES.FILE_TOO_LARGE;
+  /**
+   * Main entry point to normalize any error into a standard response
+   */
+  public static handle(err: unknown, context?: string): ErrorResponse {
+    this.logError(err, context);
+
+    // 1. If it's already our known AppError, return it
+    if (err instanceof AppError) {
+      return this.formatError(err.code, err.status, err.message, err.details);
     }
 
+    // 2. Handle Axios/HTTP Library Errors (Duck Typing)
+    if (this.isAxiosError(err)) {
+      return this.handleAxiosError(err);
+    }
+
+    // 3. Handle Standard JS Errors
     if (err instanceof SyntaxError) {
-      return ERROR_CODES.INVALID_JSON;
+      return this.formatFromCode(ErrorCode.VALIDATION_ERROR, 'Invalid JSON format');
     }
 
-    if (err.message.includes('ECONNABORTED')) {
-      return ERROR_CODES.TIMEOUT;
-    }
-
-    if (err.message.includes('ENOTFOUND') || err.message.includes('Network')) {
-      return ERROR_CODES.NETWORK_ERROR;
-    }
-
-    return ERROR_CODES.INTERNAL_SERVER_ERROR;
+    // 4. Fallback for unhandled/unknown errors
+    return this.formatFromCode(ErrorCode.INTERNAL_SERVER_ERROR);
   }
 
-  static create(code: keyof typeof ERROR_CODES, details?: string): ErrorResponse {
-    const error = ERROR_CODES[code];
-    return { ...error, details };
+  /**
+   * Factory method to create an error response object
+   */
+  private static formatError(code: string, status: number, message: string, details?: any): ErrorResponse {
+    return {
+      status,
+      code,
+      message,
+      details,
+      timestamp: new Date().toISOString(),
+    };
   }
 
-  static async safeAsync<T>(fn: () => Promise<T>, context: string): Promise<T | ErrorResponse> {
+  /**
+   * Helper to create error from just a code (looks up config)
+   */
+  private static formatFromCode(code: ErrorCode, overrideDetails?: string): ErrorResponse {
+    const config = ERROR_CONFIG[code];
+    return this.formatError(code, config.status, config.message, overrideDetails);
+  }
+
+  /**
+   * Axios specific handling logic
+   */
+  private static handleAxiosError(err: any): ErrorResponse {
+    if (err.code === 'ECONNABORTED') return this.formatFromCode(ErrorCode.TIMEOUT);
+    if (err.message.includes('Network')) return this.formatFromCode(ErrorCode.NETWORK_ERROR);
+
+    const status = err.response?.status;
+
+    // Map HTTP status codes to our internal ErrorCodes
+    switch (status) {
+      case 401: return this.formatFromCode(ErrorCode.UNAUTHORIZED);
+      case 403: return this.formatFromCode(ErrorCode.FORBIDDEN);
+      case 404: return this.formatFromCode(ErrorCode.NOT_FOUND);
+      case 413: return this.formatFromCode(ErrorCode.FILE_TOO_LARGE);
+      case 503: return this.formatFromCode(ErrorCode.API_UNAVAILABLE);
+      default: return this.formatFromCode(ErrorCode.INTERNAL_SERVER_ERROR, err.message);
+    }
+  }
+
+  // Type Guard for Axios-like errors
+  private static isAxiosError(err: any): boolean {
+    return (typeof err === 'object' && err !== null && ('isAxiosError' in err || 'response' in err));
+  }
+
+  private static logError(err: unknown, context: string = 'General'): void {
+    // In production, integrate with Sentry/Datadog here
+    console.error(`[${context}] Error:`, err);
+  }
+
+  /**
+   * Wrapper for Async functions (Controllers/Services)
+   */
+  static async tryCatch<T>(
+    fn: () => Promise<T>,
+    context: string = 'Operation'
+  ): Promise<[T | null, ErrorResponse | null]> {
     try {
-      return await fn();
+      const result = await fn();
+      return [result, null];
     } catch (error) {
-      return this.handle(error, context);
+      return [null, this.handle(error, context)];
     }
   }
 }

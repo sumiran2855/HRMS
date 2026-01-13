@@ -1,14 +1,17 @@
+import Hero from '@/components/landing/Hero';
+import Features from '@/components/landing/Features';
+import Stats from '@/components/landing/Stats';
+import CTASection from '@/components/landing/CTASection';
+import Footer from '@/components/landing/Footer';
+
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold text-zinc-900 dark:text-zinc-100">
-          Welcome to Our Next.js App!
-        </h1>
-        <p className="text-zinc-700 dark:text-zinc-300">
-          This is the home page of your Next.js application.
-        </p>
-      </div>
-    </div>
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <Hero />
+      <Features />
+      <Stats />
+      <CTASection />
+      <Footer />
+    </main>
   );
 }
