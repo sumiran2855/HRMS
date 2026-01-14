@@ -1,8 +1,10 @@
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 export const useLogin = () => {
     const [isLoading, setIsLoading] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
+    const router = useRouter()
     const [formData, setFormData] = useState({
         email: "",
         password: "",
@@ -13,6 +15,7 @@ export const useLogin = () => {
         e.preventDefault()
         setIsLoading(true)
         await new Promise((resolve) => setTimeout(resolve, 1500))
+        router.push("/dashboard")
         setIsLoading(false)
     }
 
