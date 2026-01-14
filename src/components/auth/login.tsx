@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Label } from "@/components/ui/Label"
 import { Checkbox } from "@/components/ui/Checkbox"
-import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react"
+import { Loader2, Mail, Lock, Eye, EyeOff, User } from "lucide-react"
 import { useLogin } from "@/hooks/auth/useLogin"
 
 export function LoginForm() {
@@ -15,9 +15,7 @@ export function LoginForm() {
         <div className="space-y-8">
             <div className="text-center space-y-2">
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/30 mb-4">
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
+                    <User className="w-8 h-8 text-white"/>
                 </div>
                 <h1 className="text-3xl font-bold text-slate-900">
                     Welcome Back
@@ -89,7 +87,7 @@ export function LoginForm() {
                             Remember me
                         </Label>
                     </div>
-                    <a href="/forget-password" className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer">
+                    <a href="/reset-password" className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer">
                         Forgot password?
                     </a>
                 </div>

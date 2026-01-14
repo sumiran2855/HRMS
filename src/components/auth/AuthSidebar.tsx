@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { slides } from "@/types/auth"
 
-export default function authLayout() {
+export default function AuthSidebar() {
     const [currentSlide, setCurrentSlide] = useState(0)
 
     const nextSlide = useCallback(() => {
@@ -14,6 +14,7 @@ export default function authLayout() {
         const timer = setInterval(nextSlide, 5000)
         return () => clearInterval(timer)
     }, [nextSlide])
+
     return (
         <div className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center p-16 relative overflow-hidden">
             <div className="absolute inset-0 overflow-hidden">
