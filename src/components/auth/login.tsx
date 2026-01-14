@@ -1,158 +1,174 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Label } from "@/components/ui/Label"
 import { Checkbox } from "@/components/ui/Checkbox"
-import { Loader2 } from "lucide-react"
+import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react"
+import { useLogin } from "@/hooks/auth/useLogin"
 
 export function LoginForm() {
-    const [isLoading, setIsLoading] = useState(false)
-    const [formData, setFormData] = useState({
-        email: "",
-        password: "",
-        rememberMe: false,
-    })
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setIsLoading(true)
-        await new Promise((resolve) => setTimeout(resolve, 1500))
-        setIsLoading(false)
-    }
+    const { isLoading, showPassword, formData, setFormData, handleSubmit, setShowPassword } = useLogin()
 
     return (
-        <div className="space-y-6">
-            <div className="text-center pb-6 border-b border-slate-200">
-                <h1 className="text-xl font-semibold text-slate-900 mb-2">
-                    Welcome to HRMS
+        <div className="space-y-8">
+            <div className="text-center space-y-2">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/30 mb-4">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                </div>
+                <h1 className="text-3xl font-bold text-slate-900">
+                    Welcome Back
                 </h1>
-                <p className="text-sm text-slate-600">
-                    Sign in to manage your team and operations
+                <p className="text-base text-slate-600">
+                    Sign in to continue to HRMS
                 </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-3">
-                    <Label htmlFor="email" className="text-sm font-bold text-slate-800 tracking-wide">
+            <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="space-y-2">
+                    <Label htmlFor="email" className="text-sm font-semibold text-slate-700">
                         Email Address
                     </Label>
-                    <div className="relative group">
+                    <div className="relative">
+                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                         <Input
                             id="email"
                             type="email"
-                            placeholder="Enter your email"
-                            className="h-14 border-2 border-slate-200 bg-white rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all duration-300 text-base group-hover:border-slate-300"
+                            placeholder="you@company.com"
+                            className="h-12 pl-12 pr-4 border-slate-300 bg-white rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm placeholder:text-slate-400"
                             value={formData.email}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, email: e.target.value })}
                             required
                             autoComplete="email"
                         />
-                        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-blue-500/5 to-indigo-500/5 rounded-xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
                     </div>
                 </div>
 
-                <div className="space-y-3">
-                    <Label htmlFor="password" className="text-sm font-bold text-slate-800 tracking-wide">
+                <div className="space-y-2">
+                    <Label htmlFor="password" className="text-sm font-semibold text-slate-700">
                         Password
                     </Label>
-                    <div className="relative group">
+                    <div className="relative">
+                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                         <Input
                             id="password"
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             placeholder="Enter your password"
-                            className="h-14 border-2 border-slate-200 bg-white rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all duration-300 text-base group-hover:border-slate-300"
+                            className="h-12 pl-12 pr-12 border-slate-300 bg-white rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm placeholder:text-slate-400"
                             value={formData.password}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, password: e.target.value })}
                             required
                             autoComplete="current-password"
                         />
-                        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-blue-500/5 to-indigo-500/5 rounded-xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                        >
+                            {showPassword ? (
+                                <EyeOff className="w-5 h-5" />
+                            ) : (
+                                <Eye className="w-5 h-5" />
+                            )}
+                        </button>
                     </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-2">
-                    <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
                         <Checkbox
                             id="remember"
                             checked={formData.rememberMe}
                             onCheckedChange={(checked: boolean) => setFormData({ ...formData, rememberMe: checked })}
-                            className="w-5 h-5 border-2 cursor-pointer"
+                            className="w-4 h-4 border-slate-300 cursor-pointer"
                         />
-                        <Label htmlFor="remember" className="text-sm font-semibold text-slate-700 cursor-pointer hover:text-slate-900 transition-colors">
+                        <Label htmlFor="remember" className="text-sm text-slate-600 cursor-pointer font-normal">
                             Remember me
                         </Label>
                     </div>
-                    <a href="#" className="text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 relative group/link">
-                        Forgot Password?
-                        <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 group-hover/link:w-full transition-all duration-300" />
+                    <a href="/forget-password" className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer">
+                        Forgot password?
                     </a>
                 </div>
 
                 <Button
                     type="submit"
-                    className="w-full h-14 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 shadow-xl hover:shadow-2xl shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300 rounded-xl font-bold text-base tracking-wide mt-4 relative overflow-hidden group/btn cursor-pointer"
+                    className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl shadow-blue-500/30 transition-all duration-200 rounded-lg font-semibold text-sm cursor-pointer"
                     disabled={isLoading}
                 >
-                    <div className="absolute inset-0 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-
                     {isLoading ? (
-                        <>
-                            <Loader2 className="h-5 w-5 animate-spin" strokeWidth={2.5} />
-                            <span className="font-bold">Signing in...</span>
-                        </>
+                        <div className="flex items-center gap-2">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>Signing in...</span>
+                        </div>
                     ) : (
-                        <>
-                            <span className="font-bold">Login</span>
-                            <span className="ml-2 transition-transform duration-300 group-hover/btn:translate-x-1"></span>
-                        </>
+                        "Sign In"
                     )}
                 </Button>
 
-                <div className="relative py-4">
+                <div className="relative my-6">
                     <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t-2 border-slate-200" />
+                        <div className="w-full border-t border-slate-300" />
                     </div>
-                    <div className="relative flex justify-center text-xs">
-                        <span className="bg-white px-4 text-slate-500 font-semibold tracking-wider">OR CONTINUE WITH</span>
+                    <div className="relative flex justify-center text-sm">
+                        <span className="bg-white px-3 text-slate-500 font-medium">Or continue with</span>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-3">
                     <button
                         type="button"
-                        className="h-12 border-2 border-slate-200 bg-white hover:bg-slate-50 rounded-xl transition-all duration-300 flex items-center justify-center gap-3 font-semibold text-slate-700 hover:border-slate-300 hover:shadow-lg group/social cursor-pointer"
+                        className="h-11 border border-slate-300 bg-white hover:bg-slate-50 rounded-lg transition-all flex items-center justify-center gap-2 font-medium text-slate-700 hover:border-slate-400 cursor-pointer"
                     >
                         <img
                             src="/google-icon.svg"
                             alt="Google"
-                            className="w-5 h-5 transition-transform duration-300 group-hover/social:scale-110"
+                            className="w-5 h-5"
                         />
-                        <span className="hidden sm:inline">Google</span>
+                        <span className="text-sm">Google</span>
                     </button>
                     <button
                         type="button"
-                        className="h-12 border-2 border-slate-200 bg-white hover:bg-slate-50 rounded-xl transition-all duration-300 flex items-center justify-center gap-3 font-semibold text-slate-700 hover:border-slate-300 hover:shadow-lg group/social cursor-pointer"
+                        className="h-11 border border-slate-300 bg-white hover:bg-slate-50 rounded-lg transition-all flex items-center justify-center gap-2 font-medium text-slate-700 hover:border-slate-400 cursor-pointer"
                     >
                         <img
-                            src="/github-icon.svg"
-                            alt="GitHub"
-                            className="w-5 h-5 transition-transform duration-300 group-hover/social:scale-110"
+                            src="/linkedin-icon.svg"
+                            alt="LinkedIn"
+                            className="w-5 h-5"
                         />
-                        <span className="hidden sm:inline">GitHub</span>
+                        <span className="text-sm">LinkedIn</span>
+                    </button>
+                    <button
+                        type="button"
+                        className="h-11 border border-slate-300 bg-white hover:bg-slate-50 rounded-lg transition-all flex items-center justify-center gap-2 font-medium text-slate-700 hover:border-slate-400 cursor-pointer"
+                    >
+                        <img
+                            src="/apple-icon.svg"
+                            alt="Apple"
+                            className="w-5 h-5"
+                        />
+                        <span className="text-sm">Apple</span>
                     </button>
                 </div>
 
-                <p className="text-xs text-center text-slate-500 leading-relaxed pt-3">
+                <p className="text-xs text-center text-slate-500 pt-4">
                     By signing in, you agree to our{" "}
-                    <a href="#" className="text-blue-600 hover:text-blue-700 font-semibold hover:underline underline-offset-2 transition-colors">
+                    <a href="#" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
                         Terms of Service
                     </a>{" "}
                     and{" "}
-                    <a href="#" className="text-blue-600 hover:text-blue-700 font-semibold hover:underline underline-offset-2 transition-colors">
+                    <a href="#" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
                         Privacy Policy
+                    </a>
+                </p>
+
+                <p className="text-xs text-center text-slate-500 pt-2">
+                    Didn't have an account?{" "}
+                    <a href="/register" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors cursor-pointer">
+                        Sign up
                     </a>
                 </p>
             </form>
