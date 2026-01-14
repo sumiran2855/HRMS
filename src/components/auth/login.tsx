@@ -126,7 +126,7 @@ export function LoginForm() {
                             alt="Google"
                             className="w-5 h-5"
                         />
-                        <span className="text-sm">Google</span>
+                        <span className="text-sm hidden md:block">Google</span>
                     </button>
                     <button
                         type="button"
@@ -137,7 +137,7 @@ export function LoginForm() {
                             alt="LinkedIn"
                             className="w-5 h-5"
                         />
-                        <span className="text-sm">LinkedIn</span>
+                        <span className="text-sm hidden md:block">LinkedIn</span>
                     </button>
                     <button
                         type="button"
@@ -148,7 +148,7 @@ export function LoginForm() {
                             alt="Apple"
                             className="w-5 h-5"
                         />
-                        <span className="text-sm">Apple</span>
+                        <span className="text-sm hidden md:block">Apple</span>
                     </button>
                 </div>
 

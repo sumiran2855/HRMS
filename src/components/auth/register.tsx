@@ -98,11 +98,11 @@ export function RegisterForm() {
                     />
                     <Label htmlFor="agreeToTerms" className="text-sm text-slate-600 cursor-pointer leading-relaxed font-normal">
                         I agree to the{" "}
-                        <a href="#" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors cursor-pointer">
+                        <a href="#" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors cursor-pointer inline-block">
                             Terms of Service
                         </a>{" "}
                         and{" "}
-                        <a href="#" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors">
+                        <a href="#" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors cursor-pointer inline-block">
                             Privacy Policy
                         </a>
                     </Label>
@@ -142,7 +142,7 @@ export function RegisterForm() {
                             alt="Google"
                             className="w-5 h-5"
                         />
-                        <span className="text-sm">Google</span>
+                        <span className="text-sm hidden md:block">Google</span>
                     </button>
                     <button
                         type="button"
@@ -153,7 +153,7 @@ export function RegisterForm() {
                             alt="LinkedIn"
                             className="w-5 h-5"
                         />
-                        <span className="text-sm">LinkedIn</span>
+                        <span className="text-sm hidden md:block">LinkedIn</span>
                     </button>
                     <button
                         type="button"
@@ -164,7 +164,7 @@ export function RegisterForm() {
                             alt="Apple"
                             className="w-5 h-5"
                         />
-                        <span className="text-sm">Apple</span>
+                        <span className="text-sm hidden md:block">Apple</span>
                     </button>
                 </div>
 
