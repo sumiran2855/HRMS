@@ -18,7 +18,7 @@ export function EmployeeLeave({ className }: { className?: string }) {
     <Card className={cn("bg-white border border-slate-200 shadow-lg overflow-hidden flex flex-col", className)}>
       <CardHeader className="flex flex-row items-center justify-between pb-4 px-4 md:px-6 pt-6 space-y-0 border-b border-slate-200">
         <CardTitle className="text-xl md:text-2xl font-bold text-slate-800">
-          Employee Leave
+          Absent Today
         </CardTitle>
         <Button
           variant="ghost"
