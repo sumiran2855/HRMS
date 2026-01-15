@@ -3,6 +3,7 @@ import { MeetingSchedule } from "@/components/dashboard/meeting-schedules"
 import { EmployeeLeave } from "@/components/dashboard/employee-leave"
 import { ActivitySection } from "@/components/dashboard/activity-section"
 import { FeedbackSection } from "@/components/dashboard/feedback-section"
+import { AnnouncementSection } from "@/components/dashboard/announcement-section"
 import { CalendarWidget } from "@/components/dashboard/calender-widegt"
 import { Users, UserCheck, FolderKanban, CheckCircle2, UsersRound, DollarSign, Briefcase, Ticket } from "lucide-react"
 
@@ -134,8 +135,12 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="lg:h-[540] min-h-0">
+      <div className="lg:h-[400] min-h-0">
         <FeedbackSection className="h-full" />
+      </div>
+
+      <div className="lg:h-[540] min-h-0">
+        <AnnouncementSection className="h-full" />
       </div>
     </div>
   )

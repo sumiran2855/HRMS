@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { MessageSquare, User, Calendar, ThumbsUp, ThumbsDown, Star, MoreVertical } from "lucide-react"
 import { cn } from "@/components/utils"
@@ -97,6 +97,70 @@ const getSentimentIcon = (sentiment: string) => {
 
 export function FeedbackSection({ className }: { className?: string }) {
     const [hoveredId, setHoveredId] = useState<number | null>(null)
+    const [scrollPosition, setScrollPosition] = useState(0)
+    const [isPlaying, setIsPlaying] = useState(true)
+    const [direction, setDirection] = useState<'left' | 'right'>('right')
+    const [isDragging, setIsDragging] = useState(false)
+    const [dragStartX, setDragStartX] = useState(0)
+    const [dragStartPosition, setDragStartPosition] = useState(0)
+
+    useEffect(() => {
+        if (!isPlaying || isDragging) return
+
+        const interval = setInterval(() => {
+            setScrollPosition(prev => {
+                if (direction === 'right') {
+                    if (prev >= feedbacks.length * 360) return 0
+                    return prev + 1
+                } else {
+                    if (prev <= 0) return feedbacks.length * 360
+                    return prev - 1
+                }
+            })
+        }, 30)
+
+        return () => clearInterval(interval)
+    }, [isPlaying, direction, isDragging])
+
+    const handleMouseEnter = () => {
+        setIsPlaying(false)
+    }
+
+    const handleMouseLeave = () => {
+        setIsPlaying(true)
+        setIsDragging(false)
+    }
+
+    const handleMouseDown = (e: React.MouseEvent) => {
+        setIsDragging(true)
+        setDragStartX(e.clientX)
+        setDragStartPosition(scrollPosition)
+        e.preventDefault()
+    }
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!isDragging) return
+        
+        const deltaX = e.clientX - dragStartX
+        const newPosition = dragStartPosition - deltaX
+        
+        // Constrain within bounds
+        const maxPosition = feedbacks.length * 360
+        const constrainedPosition = Math.max(0, Math.min(maxPosition, newPosition))
+        
+        setScrollPosition(constrainedPosition)
+        
+        // Update direction based on drag
+        if (deltaX > 0) {
+            setDirection('left')
+        } else if (deltaX < 0) {
+            setDirection('right')
+        }
+    }
+
+    const handleMouseUp = () => {
+        setIsDragging(false)
+    }
 
     return (
         <Card className={cn("bg-white border border-slate-200 shadow-lg overflow-hidden flex flex-col", className)}>
@@ -119,105 +183,75 @@ export function FeedbackSection({ className }: { className?: string }) {
                 </Button>
             </CardHeader>
 
-            <CardContent className="p-0 flex-1 min-h-0">
-                <div className="h-full overflow-auto">
-                    <div className="p-4 space-y-3">
-                        {feedbacks.map((feedback) => {
+            <CardContent className="p-0 flex-1 min-h-0 mt-4">
+                <div 
+                    className={cn(
+                        "h-full overflow-hidden relative",
+                        isDragging ? "cursor-grabbing" : "cursor-grab"
+                    )}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                    onMouseDown={handleMouseDown}
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                >
+                    <div 
+                        className="flex gap-4 p-4 transition-none"
+                        style={{ transform: `translateX(-${scrollPosition}px)` }}
+                    >
+                        {/* Duplicate the feedbacks array for seamless looping */}
+                        {[...feedbacks, ...feedbacks].map((feedback, index) => {
                             const SentimentIcon = getSentimentIcon(feedback.sentiment)
                             return (
                                 <div
-                                    key={feedback.id}
+                                    key={`${feedback.id}-${index}`}
                                     onMouseEnter={() => setHoveredId(feedback.id)}
                                     onMouseLeave={() => setHoveredId(null)}
-                                    className={`relative bg-white rounded-2xl border transition-all duration-300 cursor-pointer overflow-hidden ${hoveredId === feedback.id
-                                        ? 'shadow-lg shadow-slate-200/50 border-slate-300 scale-[1.01]'
+                                    className={`flex-shrink-0 w-96 bg-white rounded-2xl border transition-all duration-300 cursor-pointer overflow-hidden ${hoveredId === feedback.id
+                                        ? 'shadow-lg shadow-slate-200/50 border-slate-300 scale-[1.02]'
                                         : 'shadow-sm border-slate-200/60'
                                         } ${getSentimentStyles(feedback.sentiment)}`}
                                 >
-                                    <div className="p-4">
-                                        <div className="flex items-start justify-between mb-3">
-                                            <div className="flex items-center gap-2">
-                                                <div className="relative">
-                                                    <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-500 p-[2px] shadow-lg shadow-violet-500/30">
-                                                        <div className="h-full w-full rounded-[8px] bg-white flex items-center justify-center">
-                                                            <MessageSquare className="h-4 w-4 text-violet-600" />
-                                                        </div>
-                                                    </div>
-                                                    <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-white rounded-full flex items-center justify-center border-2 border-white shadow-sm">
-                                                        <Star className="h-2.5 w-2.5 text-amber-500 fill-amber-500" />
+                                    <div className="p-6">
+                                        {/* Top section with employee info and date */}
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-500 p-[2px]">
+                                                    <div className="h-full w-full rounded-full bg-white flex items-center justify-center">
+                                                        <User className="h-6 w-6 text-violet-600" />
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <h3 className="text-base font-bold text-slate-800 mb-0.5">
-                                                        {feedback.project}
-                                                    </h3>
-                                                    <div className="flex items-center gap-1">
-                                                        {[...Array(5)].map((_, i) => (
-                                                            <Star
-                                                                key={i}
-                                                                className={`h-3 w-3 ${i < feedback.rating
-                                                                    ? 'text-amber-400 fill-amber-400'
-                                                                    : 'text-slate-300 fill-slate-300'
-                                                                    }`}
-                                                            />
-                                                        ))}
-                                                        <span className="text-xs text-slate-600 ml-1 font-medium">
-                                                            {feedback.rating}.0
-                                                        </span>
-                                                    </div>
+                                                    <h4 className="font-semibold text-slate-800 text-sm">
+                                                        {feedback.employee}
+                                                    </h4>
+                                                    <p className="text-xs text-slate-500">
+                                                        {feedback.client}
+                                                    </p>
                                                 </div>
                                             </div>
-
-                                            <div className="flex items-center gap-2">
-                                                <div className="h-8 w-8 rounded-lg bg-white shadow-sm border border-slate-200/60 flex items-center justify-center">
-                                                    <SentimentIcon className={`h-4 w-4 ${feedback.sentiment === 'positive' ? 'text-emerald-600' :
-                                                        feedback.sentiment === 'negative' ? 'text-red-600' :
-                                                            'text-amber-600'
-                                                        }`} />
-                                                </div>
-                                                <div className={`px-2 py-1 rounded-lg text-xs font-semibold border capitalize ${getSentimentBadgeStyles(feedback.sentiment)}`}>
-                                                    {feedback.sentiment}
-                                                </div>
+                                            <div className="flex items-center gap-1 text-xs text-slate-500">
+                                                <Calendar className="h-3 w-3" />
+                                                <span>{feedback.date}</span>
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3">
-                                            <div className="flex items-center gap-2 text-sm bg-white/60 backdrop-blur-sm rounded-lg px-2 py-2 border border-slate-100">
-                                                <div className="h-6 w-6 rounded-md bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-sm">
-                                                    <User className="h-3 w-3 text-white" />
-                                                </div>
-                                                <div>
-                                                    <div className="text-xs text-slate-500 font-medium">Client</div>
-                                                    <div className="font-semibold text-slate-700 text-xs">{feedback.client}</div>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex items-center gap-2 text-sm bg-white/60 backdrop-blur-sm rounded-lg px-2 py-2 border border-slate-100">
-                                                <div className="h-6 w-6 rounded-md bg-gradient-to-br from-sky-500 to-blue-500 flex items-center justify-center shadow-sm">
-                                                    <User className="h-3 w-3 text-white" />
-                                                </div>
-                                                <div>
-                                                    <div className="text-xs text-slate-500 font-medium">Employee</div>
-                                                    <div className="font-semibold text-slate-700 text-xs">{feedback.employee}</div>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex items-center gap-2 text-sm bg-white/60 backdrop-blur-sm rounded-lg px-2 py-2 border border-slate-100">
-                                                <div className="h-6 w-6 rounded-md bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-sm">
-                                                    <Calendar className="h-3 w-3 text-white" />
-                                                </div>
-                                                <div>
-                                                    <div className="text-xs text-slate-500 font-medium">Date</div>
-                                                    <div className="font-semibold text-slate-700 text-xs">{feedback.date}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="relative bg-white/70 backdrop-blur-sm rounded-lg p-3 border border-slate-100">
-                                            <div className="absolute top-2 left-2 text-2xl text-slate-200/50 font-serif leading-none">"</div>
-                                            <p className="text-xs text-slate-700 leading-relaxed pl-4 relative z-10 line-clamp-2">
+                                        {/* Feedback text */}
+                                        <div className="mb-4">
+                                            <p className="text-slate-700 text-sm leading-relaxed line-clamp-3">
                                                 {feedback.feedback}
                                             </p>
+                                        </div>
+
+                                        {/* Bottom section with sentiment and project */}
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-1 text-xs text-slate-500">
+                                                <MessageSquare className="h-3 w-3" />
+                                                <span>{feedback.project}</span>
+                                            </div>
+                                            <div className={`px-3 py-1 rounded-full text-xs font-semibold border capitalize ${getSentimentBadgeStyles(feedback.sentiment)}`}>
+                                                {feedback.sentiment}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
