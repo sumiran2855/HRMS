@@ -17,10 +17,10 @@ export default function DashboardLayout({
     <div className="min-h-screen bg-background">
       <Sidebar />
 
-      <div className={cn("transition-all duration-300", isOpen ? "lg:ml-64" : "lg:ml-0")}>
+      <div className={cn("transition-all duration-300 flex flex-col h-screen", isOpen ? "lg:ml-64" : "lg:ml-0")}>
         <Navbar />
 
-        <main className="p-4 lg:p-6">{children}</main>
+        <main className="flex-1 p-4 lg:p-6 overflow-y-auto mt-0">{children}</main>
       </div>
     </div>
   )

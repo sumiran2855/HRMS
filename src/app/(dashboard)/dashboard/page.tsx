@@ -1,5 +1,6 @@
 import { StatCard } from "@/components/dashboard/state-cards"
 import { MeetingSchedule } from "@/components/dashboard/meeting-schedules"
+import { EmployeeLeave } from "@/components/dashboard/employee-leave"
 import { CalendarWidget } from "@/components/dashboard/calender-widegt"
 import { Users, UserCheck, FolderKanban, CheckCircle2, UsersRound, DollarSign, Briefcase, Ticket } from "lucide-react"
 
@@ -107,10 +108,24 @@ export default function DashboardPage() {
       </div>
 
       {/* Meeting Schedule & Calendar */}
-      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-        <MeetingSchedule />
-        <CalendarWidget />
+      <div
+        className="grid grid-cols-1 lg:grid-cols-12 gap-6"
+        style={{ ["--dashboard-panel-h" as any]: "clamp(680px, calc(100vh - 260px), 960px)" }}
+      >
+        <div className="lg:col-span-7 lg:h-[var(--dashboard-panel-h)] min-h-0 flex flex-col gap-6">
+          <div className="flex-1 min-h-0">
+            <MeetingSchedule className="h-full" />
+          </div>
+          
+        </div>
+
+        <div className="lg:col-span-5 lg:h-[var(--dashboard-panel-h)] min-h-0">
+          <CalendarWidget className="h-full" />
+        </div>
       </div>
+        <div className="flex-1 min-h-0">
+            <EmployeeLeave className="h-full" />
+          </div>
     </div>
   )
 }
