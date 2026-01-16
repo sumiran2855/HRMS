@@ -1,82 +1,10 @@
 "use client"
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
-import { Calendar, Gift, Cake, Users, MoreVertical, Bell, PartyPopper, TreePine } from "lucide-react"
+import { Calendar, MoreVertical } from "lucide-react"
 import { cn } from "@/components/utils"
 import { Button } from "../ui/Button"
-
-const announcements = [
-    {
-        id: 1,
-        type: "holiday",
-        title: "Independence Day Holiday",
-        message: "Office will remain closed on August 15th in celebration of Independence Day. Regular operations will resume on August 16th.",
-        date: "August 10, 2024",
-        icon: TreePine
-    },
-    {
-        id: 2,
-        type: "birthday",
-        title: "Team Birthday Celebration",
-        message: "Join us in celebrating Sarah Johnson's birthday this Friday! Cake and refreshments will be available in the break room at 3:00 PM.",
-        date: "August 12, 2024",
-        icon: Cake
-    },
-    {
-        id: 3,
-        type: "event",
-        title: "Team Building Event",
-        message: "Annual team building retreat scheduled for next month. Please confirm your attendance by the end of this week.",
-        date: "August 8, 2024",
-        icon: Users
-    },
-    {
-        id: 4,
-        type: "celebration",
-        title: "Project Milestone Achievement",
-        message: "Congratulations to the development team for successfully launching the new client portal! Great job everyone!",
-        date: "August 5, 2024",
-        icon: PartyPopper
-    },
-    {
-        id: 5,
-        type: "holiday",
-        title: "Labor Day Holiday",
-        message: "Office will be closed on September 2nd for Labor Day. Enjoy the long weekend!",
-        date: "August 1, 2024",
-        icon: Calendar
-    }
-]
-
-const getTypeStyles = (type: string) => {
-    switch (type) {
-        case "holiday":
-            return "bg-gradient-to-br from-blue-50 via-white to-indigo-50/30 border-l-4 border-l-blue-400/60 hover:border-l-blue-500/80"
-        case "birthday":
-            return "bg-gradient-to-br from-pink-50 via-white to-rose-50/30 border-l-4 border-l-pink-400/60 hover:border-l-pink-500/80"
-        case "event":
-            return "bg-gradient-to-br from-purple-50 via-white to-violet-50/30 border-l-4 border-l-purple-400/60 hover:border-l-purple-500/80"
-        case "celebration":
-            return "bg-gradient-to-br from-amber-50 via-white to-orange-50/30 border-l-4 border-l-amber-400/60 hover:border-l-amber-500/80"
-        default:
-            return "bg-gradient-to-br from-slate-50 via-white to-gray-50/30 border-l-4 border-l-slate-400/60 hover:border-l-slate-500/80"
-    }
-}
-
-const getTypeBadgeStyles = (type: string) => {
-    switch (type) {
-        case "holiday":
-            return "bg-blue-100 text-blue-800 border-blue-200"
-        case "birthday":
-            return "bg-pink-100 text-pink-800 border-pink-200"
-        case "event":
-            return "bg-purple-100 text-purple-800 border-purple-200"
-        case "celebration":
-            return "bg-amber-100 text-amber-800 border-amber-200"
-        default:
-            return "bg-slate-100 text-slate-800 border-slate-200"
-    }
-}
+import { getTypeStyles, getTypeBadgeStyles, announcements } from "@/types/dashboard"
 
 export function AnnouncementSection({ className }: { className?: string }) {
     const [hoveredId, setHoveredId] = useState<number | null>(null)
@@ -97,7 +25,7 @@ export function AnnouncementSection({ className }: { className?: string }) {
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="text-white/80 hover:text-white hover:bg-white/20 h-9 w-9 p-0 rounded-xl"
+                        className="text-black/80 hover:text-black hover:bg-black/20 h-9 w-9 p-0 rounded-xl cursor-pointer"
                     >
                         <MoreVertical className="h-5 w-5" />
                     </Button>

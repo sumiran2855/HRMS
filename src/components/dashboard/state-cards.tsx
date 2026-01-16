@@ -1,18 +1,7 @@
 import { Card, CardContent } from "@/components/ui/Card"
 import { cn } from "@/components/utils"
-import type { LucideIcon } from "lucide-react"
-import { TrendingUp, TrendingDown, Sparkles } from "lucide-react"
-
-interface StatCardProps {
-  title: string
-  value: string
-  change: string
-  changeLabel: string
-  icon: LucideIcon
-  iconBgColor: string
-  iconColor: string
-  isPositive?: boolean
-}
+import { TrendingUp, TrendingDown } from "lucide-react"
+import { StatCardProps } from "@/types/dashboard"
 
 export function StatCard({
   title,

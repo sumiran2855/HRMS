@@ -14,6 +14,8 @@ import {
   Clock,
   Calendar as CalendarIcon
 } from "lucide-react"
+import { CalendarEvent, CalendarEventForm, CalendarViewMode, EventType, RecurringMode } from "@/types/dashboard"
+import { CalendarEventModal } from "./models/CalendarEventModal"
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const
 const DAYS_SHORT = ["S", "M", "T", "W", "T", "F", "S"] as const
@@ -21,31 +23,6 @@ const MONTHS = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"
 ] as const
-
-type CalendarViewMode = "month" | "week" | "day"
-type EventType = "reminder" | "event" | "recurring"
-type RecurringMode = "none" | "daily" | "weekly" | "monthly"
-
-type CalendarEvent = {
-  id: string
-  title: string
-  type: EventType
-  date: string
-  time: string
-  endTime?: string
-  description: string
-  recurring: RecurringMode
-}
-
-type CalendarEventForm = {
-  title: string
-  type: EventType
-  date: string
-  time: string
-  endTime: string
-  description: string
-  recurring: RecurringMode
-}
 
 function pad2(value: number) {
   return String(value).padStart(2, "0")
@@ -713,150 +690,14 @@ export function CalendarWidget({ className }: { className?: string }) {
       )}
 
       {/* Event Modal */}
-      {showEventModal && (
-        <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onClick={() => setShowEventModal(false)}
-        >
-          <div
-            className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-slate-800">
-                  {editingEvent ? 'Edit Event' : 'New Event'}
-                </h3>
-                <button
-                  onClick={() => setShowEventModal(false)}
-                  className="p-1 hover:bg-slate-100 rounded"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Title *
-                  </label>
-                  <input
-                    type="text"
-                    value={eventForm.title}
-                    onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    placeholder="Event title"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Type
-                  </label>
-                  <select
-                    value={eventForm.type}
-                    onChange={(e) => setEventForm({ ...eventForm, type: e.target.value as EventType })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  >
-                    <option value="event">Event</option>
-                    <option value="reminder">Reminder</option>
-                    <option value="recurring">Recurring</option>
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                      Date
-                    </label>
-                    <input
-                      type="date"
-                      value={eventForm.date}
-                      onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                      Start
-                    </label>
-                    <input
-                      type="time"
-                      value={eventForm.time}
-                      onChange={(e) => {
-                        const nextTime = e.target.value
-                        const nextEndTime = timeToMinutes(eventForm.endTime) <= timeToMinutes(nextTime)
-                          ? addMinutesToTime(nextTime, 30)
-                          : eventForm.endTime
-                        setEventForm({ ...eventForm, time: nextTime, endTime: nextEndTime })
-                      }}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                      End
-                    </label>
-                    <input
-                      type="time"
-                      value={eventForm.endTime}
-                      onChange={(e) => setEventForm({ ...eventForm, endTime: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Recurring
-                  </label>
-                  <select
-                    value={eventForm.recurring}
-                    onChange={(e) => setEventForm({ ...eventForm, recurring: e.target.value as RecurringMode })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  >
-                    <option value="none">None</option>
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Description
-                  </label>
-                  <textarea
-                    value={eventForm.description}
-                    onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
-                    placeholder="Add details..."
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-6">
-                <Button
-                  onClick={() => setShowEventModal(false)}
-                  className="flex-1 bg-slate-200 text-slate-700 hover:bg-slate-300"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleSaveEvent}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700"
-                  disabled={!eventForm.title.trim()}
-                >
-                  {editingEvent ? 'Update' : 'Create'}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <CalendarEventModal
+        showEventModal={showEventModal}
+        setShowEventModal={setShowEventModal}
+        eventForm={eventForm}
+        setEventForm={setEventForm}
+        editingEvent={editingEvent}
+        handleSaveEvent={handleSaveEvent}
+      />
     </div>
   )
 }

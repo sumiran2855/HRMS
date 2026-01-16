@@ -3,18 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { cn } from "@/components/utils"
 import { MoreVertical, Calendar, Clock, ChevronRight } from "lucide-react"
-
-const meetings = [
-  { title: "Project Kickoff", date: "June 1, 2024", time: "10:00 AM" },
-  { title: "Weekly Team Sync", date: "June 5, 2024", time: "02:00 PM" },
-  { title: "Client Presentation", date: "June 10, 2024", time: "11:00 AM" },
-  { title: "Monthly Review", date: "June 15, 2024", time: "03:00 PM" },
-  { title: "Weekly Review", date: "June 20, 2024", time: "11:00 AM" },
-  { title: "Yearly Meeting", date: "June 22, 2024", time: "09:00 AM" },
-  { title: "Strategy Planning", date: "June 28, 2024", time: "02:00 PM" },
-  { title: "Project Review", date: "July 5, 2024", time: "10:00 AM" },
-  { title: "Team Building", date: "July 10, 2024", time: "02:00 PM" },
-]
+import { meetings } from "@/types/dashboard"
 
 export function MeetingSchedule({ className }: { className?: string }) {
   return (
@@ -26,7 +15,7 @@ export function MeetingSchedule({ className }: { className?: string }) {
         <Button
           variant="ghost"
           size="sm"
-          className="text-slate-500 hover:text-slate-700 hover:bg-slate-100 h-8 w-8 p-0 rounded-full"
+          className="text-black/80 hover:text-black hover:bg-black/20 h-9 w-9 p-0 rounded-xl cursor-pointer"
         >
           <MoreVertical className="h-5 w-5" />
         </Button>

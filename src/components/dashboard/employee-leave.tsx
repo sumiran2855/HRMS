@@ -2,16 +2,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { cn } from "@/components/utils"
-import { MoreVertical, Calendar, Clock, User, ChevronRight } from "lucide-react"
-
-const leaves = [
-  { employee: "Sarah Johnson", type: "Sick Leave", startDate: "June 3, 2024", endDate: "June 4, 2024", days: 2 },
-  { employee: "Michael Chen", type: "Personal Leave", startDate: "June 10, 2024", endDate: "June 10, 2024", days: 1 },
-  { employee: "Emily Davis", type: "Annual Leave", startDate: "June 15, 2024", endDate: "June 25, 2024", days: 8 },
-  { employee: "Robert Wilson", type: "Maternity Leave", startDate: "June 20, 2024", endDate: "August 20, 2024", days: 60 },
-  { employee: "Lisa Anderson", type: "Annual Leave", startDate: "June 28, 2024", endDate: "June 30, 2024", days: 3 },
-  { employee: "David Brown", type: "Sick Leave", startDate: "July 5, 2024", endDate: "July 6, 2024", days: 2 },
-]
+import { MoreVertical, User, ChevronRight } from "lucide-react"
+import { leaves } from "@/types/dashboard"
 
 export function EmployeeLeave({ className }: { className?: string }) {
   return (
@@ -23,7 +15,7 @@ export function EmployeeLeave({ className }: { className?: string }) {
         <Button
           variant="ghost"
           size="sm"
-          className="text-slate-500 hover:text-slate-700 hover:bg-slate-100 h-8 w-8 p-0 rounded-full"
+          className="text-black/80 hover:text-black hover:bg-black/20 h-9 w-9 p-0 rounded-xl cursor-pointer"
         >
           <MoreVertical className="h-5 w-5" />
         </Button>

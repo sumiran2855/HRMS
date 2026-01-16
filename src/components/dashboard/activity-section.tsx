@@ -2,94 +2,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { cn } from "@/components/utils"
-import { MoreVertical, Activity, Clock, TrendingUp, AlertCircle, CheckCircle, User, ShoppingBag, Globe, Star, CreditCard, UserPlus, Package } from "lucide-react"
-
-const activities = [
-  { 
-    title: "New Sale",
-    description: "Premium Package purchased by Sarah Johnson from New York, USA",
-    time: "6 Minutes Ago",
-    type: "success",
-    icon: ShoppingBag,
-    flag: "🇺🇸",
-    statusColor: "bg-emerald-500"
-  },
-  { 
-    title: "New Account Activity",
-    description: "Michael Chen from Beijing, China updated profile information",
-    time: "1 Hour Ago",
-    type: "info",
-    icon: UserPlus,
-    flag: "🇨🇳",
-    statusColor: "bg-blue-500"
-  },
-  { 
-    title: "New Activity",
-    description: "Emma Wilson from London, UK completed training module",
-    time: "2 Hours Ago",
-    type: "info",
-    icon: Activity,
-    flag: "🇬🇧",
-    statusColor: "bg-blue-500"
-  },
-  { 
-    title: "Sale",
-    description: "Basic Package purchased by Alex Johnson from Toronto, Canada",
-    time: "3 Hours Ago",
-    type: "success",
-    icon: CreditCard,
-    flag: "🇨🇦",
-    statusColor: "bg-emerald-500"
-  },
-  { 
-    title: "Activity",
-    description: "Maria Garcia from Madrid, Spain raised support ticket",
-    time: "Yesterday",
-    type: "warning",
-    icon: AlertCircle,
-    flag: "🇪🇸",
-    statusColor: "bg-amber-500"
-  },
-  { 
-    title: "Account Activity",
-    description: "James Brown from Sydney, Australia achieved sales target",
-    time: "Yesterday",
-    type: "success",
-    icon: Star,
-    flag: "🇦🇺",
-    statusColor: "bg-emerald-500"
-  },
-]
-
-const getTypeStyles = (type: string) => {
-  switch (type) {
-    case "success":
-      return "bg-emerald-50 border-emerald-200 text-emerald-700"
-    case "warning":
-      return "bg-amber-50 border-amber-200 text-amber-700"
-    case "info":
-      return "bg-blue-50 border-blue-200 text-blue-700"
-    default:
-      return "bg-slate-50 border-slate-200 text-slate-700"
-  }
-}
-
-const getIconBackground = (type: string) => {
-  switch (type) {
-    case "success":
-      return "bg-emerald-500"
-    case "warning":
-      return "bg-amber-500"
-    case "info":
-      return "bg-blue-500"
-    default:
-      return "bg-slate-500"
-  }
-}
+import { MoreVertical } from "lucide-react"
+import { activities, getIconBackground } from "@/types/dashboard"
 
 export function ActivitySection({ className }: { className?: string }) {
   return (
-   <Card className={cn("bg-white border border-slate-200 shadow-lg overflow-hidden flex flex-col", className)}>
+    <Card className={cn("bg-white border border-slate-200 shadow-lg overflow-hidden flex flex-col", className)}>
       <CardHeader className="flex flex-row items-center justify-between pb-4 px-4 md:px-6 pt-6 space-y-0 border-b border-slate-200">
         <CardTitle className="text-xl md:text-2xl font-bold text-slate-800">
           Recent Activity
@@ -97,7 +15,7 @@ export function ActivitySection({ className }: { className?: string }) {
         <Button
           variant="ghost"
           size="sm"
-          className="text-slate-500 hover:text-slate-700 hover:bg-slate-100 h-8 w-8 p-0 rounded-full"
+          className="text-black/80 hover:text-black hover:bg-black/20 h-9 w-9 p-0 rounded-xl cursor-pointer"
         >
           <MoreVertical className="h-5 w-5" />
         </Button>

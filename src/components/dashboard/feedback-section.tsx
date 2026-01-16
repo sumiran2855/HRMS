@@ -4,114 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { User, Calendar, MoreVertical } from "lucide-react"
 import { cn } from "@/components/utils"
 import { Button } from "../ui/Button"
-
-const feedbacks = [
-    {
-        id: 1,
-        client: "TechCorp Solutions",
-        employee: "Sarah Johnson",
-        feedback: "Excellent work on the project delivery! Sarah was professional, responsive, and delivered high-quality results ahead of schedule. Would definitely work with her again.",
-        date: "June 10, 2024",
-        project: "Website Redesign",
-        sentiment: "positive",
-        rating: 5
-    },
-    {
-        id: 2,
-        client: "Global Marketing Inc",
-        employee: "Michael Chen",
-        feedback: "Good overall performance. Michael showed great technical skills and communication. Minor delays in initial milestones but recovered well.",
-        date: "June 8, 2024",
-        project: "Mobile App Development",
-        sentiment: "positive",
-        rating: 4
-    },
-    {
-        id: 3,
-        client: "StartUp Ventures",
-        employee: "Emily Davis",
-        feedback: "Outstanding contribution to our startup! Emily went above and beyond, providing valuable insights and creative solutions that exceeded our expectations.",
-        date: "June 5, 2024",
-        project: "Brand Strategy",
-        sentiment: "positive",
-        rating: 5
-    },
-    {
-        id: 4,
-        client: "Enterprise Systems Ltd",
-        employee: "Robert Wilson",
-        feedback: "Robert completed the work as required but there were some communication challenges. Project was delivered on time though.",
-        date: "June 3, 2024",
-        project: "Database Migration",
-        sentiment: "neutral",
-        rating: 3
-    },
-    {
-        id: 5,
-        client: "Digital Agency Pro",
-        employee: "Lisa Anderson",
-        feedback: "Absolutely fantastic! Lisa brought fresh ideas and exceptional execution to our campaign. Results exceeded all KPIs.",
-        date: "June 1, 2024",
-        project: "Digital Marketing Campaign",
-        sentiment: "positive",
-        rating: 5
-    }
-]
-
-const getSentimentStyles = (sentiment: string) => {
-    switch (sentiment) {
-        case "positive":
-            return "bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200/60"
-        case "negative":
-            return "bg-gradient-to-br from-red-50 to-rose-50 border-red-200/60"
-        case "neutral":
-            return "bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200/60"
-        default:
-            return "bg-gradient-to-br from-slate-50 to-gray-50 border-slate-200/60"
-    }
-}
-
-const getSentimentBadgeStyles = (sentiment: string) => {
-    switch (sentiment) {
-        case "positive":
-            return "bg-emerald-500/10 text-emerald-700 border-emerald-200/50"
-        case "negative":
-            return "bg-red-500/10 text-red-700 border-red-200/50"
-        case "neutral":
-            return "bg-amber-500/10 text-amber-700 border-amber-200/50"
-        default:
-            return "bg-slate-500/10 text-slate-700 border-slate-200/50"
-    }
-}
-
-const getColorsBysentiment = (sentiment: string) => {
-    switch (sentiment) {
-        case "positive":
-            return {
-                border: "border-orange-400",
-                bg: "bg-orange-400",
-                avatar: "bg-orange-400"
-            }
-        case "negative":
-            return {
-                border: "border-red-400",
-                bg: "bg-red-400",
-                avatar: "bg-red-400"
-            }
-        case "neutral":
-            return {
-                border: "border-amber-400",
-                bg: "bg-amber-400",
-                avatar: "bg-amber-400"
-            }
-        default:
-            return {
-                border: "border-slate-400",
-                bg: "bg-slate-400",
-                avatar: "bg-slate-400"
-            }
-    }
-}
+import { feedbacks, getSentimentStyles, getSentimentBadgeStyles, getColorsBysentiment } from "@/types/dashboard"
 
 export function FeedbackSection({ className }: { className?: string }) {
     const [hoveredId, setHoveredId] = useState<number | null>(null)
@@ -158,15 +51,15 @@ export function FeedbackSection({ className }: { className?: string }) {
 
     const handleMouseMove = (e: React.MouseEvent) => {
         if (!isDragging) return
-        
+
         const deltaX = e.clientX - dragStartX
         const newPosition = dragStartPosition - deltaX
-        
+
         const maxPosition = feedbacks.length * 360
         const constrainedPosition = Math.max(0, Math.min(maxPosition, newPosition))
-        
+
         setScrollPosition(constrainedPosition)
-        
+
         if (deltaX > 0) {
             setDirection('left')
         } else if (deltaX < 0) {
@@ -191,7 +84,9 @@ export function FeedbackSection({ className }: { className?: string }) {
                 </div>
 
                 <Button
-                    className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 h-9 w-9 p-0 rounded-xl transition-colors"
+                    variant="ghost"
+                    size="sm"
+                    className="text-black/80 hover:text-black hover:bg-black/20 h-9 w-9 p-0 rounded-xl cursor-pointer"
                 >
                     <MoreVertical className="h-5 w-5" />
                 </Button>
