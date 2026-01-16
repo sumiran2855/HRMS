@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
-import { MessageSquare, User, Calendar, ThumbsUp, ThumbsDown, Star, MoreVertical } from "lucide-react"
+import { User, Calendar, MoreVertical } from "lucide-react"
 import { cn } from "@/components/utils"
 import { Button } from "../ui/Button"
 
@@ -84,14 +84,32 @@ const getSentimentBadgeStyles = (sentiment: string) => {
     }
 }
 
-const getSentimentIcon = (sentiment: string) => {
+const getColorsBysentiment = (sentiment: string) => {
     switch (sentiment) {
         case "positive":
-            return ThumbsUp
+            return {
+                border: "border-orange-400",
+                bg: "bg-orange-400",
+                avatar: "bg-orange-400"
+            }
         case "negative":
-            return ThumbsDown
+            return {
+                border: "border-red-400",
+                bg: "bg-red-400",
+                avatar: "bg-red-400"
+            }
+        case "neutral":
+            return {
+                border: "border-amber-400",
+                bg: "bg-amber-400",
+                avatar: "bg-amber-400"
+            }
         default:
-            return MessageSquare
+            return {
+                border: "border-slate-400",
+                bg: "bg-slate-400",
+                avatar: "bg-slate-400"
+            }
     }
 }
 
@@ -144,13 +162,11 @@ export function FeedbackSection({ className }: { className?: string }) {
         const deltaX = e.clientX - dragStartX
         const newPosition = dragStartPosition - deltaX
         
-        // Constrain within bounds
         const maxPosition = feedbacks.length * 360
         const constrainedPosition = Math.max(0, Math.min(maxPosition, newPosition))
         
         setScrollPosition(constrainedPosition)
         
-        // Update direction based on drag
         if (deltaX > 0) {
             setDirection('left')
         } else if (deltaX < 0) {
@@ -175,16 +191,14 @@ export function FeedbackSection({ className }: { className?: string }) {
                 </div>
 
                 <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 h-9 w-9 p-0 rounded-xl"
+                    className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 h-9 w-9 p-0 rounded-xl transition-colors"
                 >
                     <MoreVertical className="h-5 w-5" />
                 </Button>
             </CardHeader>
 
-            <CardContent className="p-0 flex-1 min-h-0 mt-4">
-                <div 
+            <CardContent className="p-0 flex-1 min-h-0 mt-2">
+                <div
                     className={cn(
                         "h-full overflow-hidden relative",
                         isDragging ? "cursor-grabbing" : "cursor-grab"
@@ -195,63 +209,56 @@ export function FeedbackSection({ className }: { className?: string }) {
                     onMouseMove={handleMouseMove}
                     onMouseUp={handleMouseUp}
                 >
-                    <div 
-                        className="flex gap-4 p-4 transition-none"
+                    <div
+                        className="flex gap-6 p-4 transition-none"
                         style={{ transform: `translateX(-${scrollPosition}px)` }}
                     >
-                        {/* Duplicate the feedbacks array for seamless looping */}
                         {[...feedbacks, ...feedbacks].map((feedback, index) => {
-                            const SentimentIcon = getSentimentIcon(feedback.sentiment)
+                            const colors = getColorsBysentiment(feedback.sentiment)
                             return (
                                 <div
                                     key={`${feedback.id}-${index}`}
                                     onMouseEnter={() => setHoveredId(feedback.id)}
                                     onMouseLeave={() => setHoveredId(null)}
-                                    className={`flex-shrink-0 w-96 bg-white rounded-2xl border transition-all duration-300 cursor-pointer overflow-hidden ${hoveredId === feedback.id
-                                        ? 'shadow-lg shadow-slate-200/50 border-slate-300 scale-[1.02]'
-                                        : 'shadow-sm border-slate-200/60'
-                                        } ${getSentimentStyles(feedback.sentiment)}`}
+                                    className={`flex-shrink-0 w-[380px] sm:w-[420px] h-[240px] ${getSentimentStyles(feedback.sentiment)} rounded-3xl border-[3px] transition-all duration-300 cursor-pointer overflow-hidden relative ${hoveredId === feedback.id
+                                        ? 'shadow-2xl scale-[1.03]'
+                                        : 'shadow-lg'
+                                        }`}
                                 >
-                                    <div className="p-6">
-                                        {/* Top section with employee info and date */}
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-500 p-[2px]">
-                                                    <div className="h-full w-full rounded-full bg-white flex items-center justify-center">
-                                                        <User className="h-6 w-6 text-violet-600" />
-                                                    </div>
+
+                                    <div className={`absolute -bottom-[2px] -right-[2px] w-12 h-12 ${colors.bg} rounded-tl-[20px] rounded-r-[20px] flex items-center justify-center z-10 rotate-180`}>
+                                        <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z" />
+                                        </svg>
+                                    </div>
+
+                                    <div className="p-6 h-full flex flex-col">
+                                        <div className="flex items-start justify-between mb-4">
+                                            <div className="flex items-start gap-4">
+                                                <div className={`flex-shrink-0 w-16 h-16 rounded-full ${colors.avatar} flex items-center justify-center border-4 border-white shadow-md`}>
+                                                    <User className="w-8 h-8 text-white" strokeWidth={2.5} />
                                                 </div>
-                                                <div>
-                                                    <h4 className="font-semibold text-slate-800 text-sm">
+
+                                                <div className="flex-1 min-w-0">
+                                                    <h4 className="font-bold text-slate-900 text-base mb-1 truncate">
                                                         {feedback.employee}
                                                     </h4>
-                                                    <p className="text-xs text-slate-500">
+                                                    <p className="text-xs text-slate-500 truncate">
                                                         {feedback.client}
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-1 text-xs text-slate-500">
+
+                                            <div className={`flex items-center gap-1 text-xs ${getSentimentBadgeStyles(feedback.sentiment)} px-3 py-1 rounded-full border capitalize mt-2`}>
                                                 <Calendar className="h-3 w-3" />
                                                 <span>{feedback.date}</span>
                                             </div>
                                         </div>
 
-                                        {/* Feedback text */}
-                                        <div className="mb-4">
-                                            <p className="text-slate-700 text-sm leading-relaxed line-clamp-3">
+                                        <div className="flex-1 overflow-hidden">
+                                            <p className="text-slate-700 text-sm leading-relaxed line-clamp-4">
                                                 {feedback.feedback}
                                             </p>
-                                        </div>
-
-                                        {/* Bottom section with sentiment and project */}
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-1 text-xs text-slate-500">
-                                                <MessageSquare className="h-3 w-3" />
-                                                <span>{feedback.project}</span>
-                                            </div>
-                                            <div className={`px-3 py-1 rounded-full text-xs font-semibold border capitalize ${getSentimentBadgeStyles(feedback.sentiment)}`}>
-                                                {feedback.sentiment}
-                                            </div>
                                         </div>
                                     </div>
                                 </div>

@@ -39,13 +39,13 @@ export function MeetingSchedule({ className }: { className?: string }) {
               <thead className="sticky top-0 z-10 bg-slate-100 border-b border-slate-200">
                 <tr>
                   <th className="text-left py-4 px-6 text-xs font-bold text-slate-600 uppercase tracking-wider">
-                    Meeting Title
+                    Time
                   </th>
                   <th className="text-left py-4 px-6 text-xs font-bold text-slate-600 uppercase tracking-wider">
                     Date
                   </th>
                   <th className="text-left py-4 px-6 text-xs font-bold text-slate-600 uppercase tracking-wider">
-                    Time
+                    Meeting Title
                   </th>
                 </tr>
               </thead>

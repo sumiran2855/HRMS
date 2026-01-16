@@ -139,7 +139,7 @@ export default function DashboardPage() {
         <FeedbackSection className="h-full" />
       </div>
 
-      <div className="lg:h-[540] min-h-0">
+      <div className="lg:h-[680] min-h-0">
         <AnnouncementSection className="h-full" />
       </div>
     </div>
