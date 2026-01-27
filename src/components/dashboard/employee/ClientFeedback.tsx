@@ -1,76 +1,10 @@
 'use client'
 
-import { useState } from 'react'
 import { MessageSquare, MoreVertical } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/Card'
-
-interface ClientFeedback {
-    id: string
-    clientName: string
-    clientAvatar: string
-    projectName: string
-    rating: number
-    feedback: string
-    date: string
-    category: 'quality' | 'communication' | 'timeliness' | 'overall'
-    sentiment: 'positive' | 'neutral' | 'negative'
-}
+import { getAvatarGradient, feedbacks } from '@/types/employee'
 
 export default function ClientFeedback() {
-    const [feedbacks] = useState<ClientFeedback[]>([
-        {
-            id: '1',
-            clientName: 'Sarah Johnson',
-            clientAvatar: 'SJ',
-            projectName: 'E-commerce Platform Redesign',
-            rating: 5,
-            feedback: 'Excellent work! The team delivered exactly what we wanted and the communication throughout the project was outstanding. Highly recommend their services.',
-            date: '2024-01-18',
-            category: 'overall',
-            sentiment: 'positive',
-        },
-        {
-            id: '2',
-            clientName: 'Michael Chen',
-            clientAvatar: 'MC',
-            projectName: 'Mobile App Development',
-            rating: 4,
-            feedback: 'Great quality of work and timely delivery. The app performs well and meets our requirements. Minor delays in initial phases but overall satisfied.',
-            date: '2024-01-15',
-            category: 'quality',
-            sentiment: 'positive'
-        },
-        {
-            id: '3',
-            clientName: 'Emily Rodriguez',
-            clientAvatar: 'ER',
-            projectName: 'API Integration Project',
-            rating: 3,
-            feedback: 'The technical implementation is solid, but communication could be improved. Would appreciate more regular updates on progress.',
-            date: '2024-01-12',
-            category: 'communication',
-            sentiment: 'neutral',
-        },
-        {
-            id: '4',
-            clientName: 'David Thompson',
-            clientAvatar: 'DT',
-            projectName: 'Website Optimization',
-            rating: 5,
-            feedback: 'Outstanding performance improvements! Page load times reduced by 60%. Very professional team and excellent technical expertise.',
-            date: '2024-01-10',
-            category: 'quality',
-            sentiment: 'positive'
-        }
-    ])
-
-    const getAvatarGradient = (sentiment: string) => {
-        switch (sentiment) {
-            case 'positive': return 'from-emerald-400 to-teal-500'
-            case 'negative': return 'from-red-400 to-rose-500'
-            default: return 'from-amber-400 to-orange-500'
-        }
-    }
 
     return (
         <Card className="w-full max-w-6xl mx-auto bg-gradient-to-br from-slate-50 via-white to-blue-50 border-2 border-slate-200 shadow-xl relative overflow-hidden md:h-[720px]">

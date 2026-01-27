@@ -10,67 +10,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { cn } from "@/components/utils";
-
-type RangeKey = "week" | "month" | "year";
-
-type DayRecord = {
-    label: string;
-    shortLabel: string;
-    hours: number;
-    breakHours: number;
-};
-
-type RangeData = {
-    caption: string;
-    target: string;
-    badge: string;
-    days: DayRecord[];
-};
-
-const periodData: Record<RangeKey, RangeData> = {
-    week: {
-        caption: "This week overview",
-        target: "40h target",
-        badge: "5 working days",
-        days: [
-            { label: "Mon 6 Jan", shortLabel: "Mon", hours: 7.5, breakHours: 0.75 },
-            { label: "Tue 7 Jan", shortLabel: "Tue", hours: 8, breakHours: 0.65 },
-            { label: "Wed 8 Jan", shortLabel: "Wed", hours: 7, breakHours: 0.8 },
-            { label: "Thu 9 Jan", shortLabel: "Thu", hours: 8.5, breakHours: 0.7 },
-            { label: "Fri 10 Jan", shortLabel: "Fri", hours: 7.5, breakHours: 0.6 },
-        ],
-    },
-    month: {
-        caption: "January trend by week",
-        target: "160h target",
-        badge: "4 weeks",
-        days: [
-            { label: "Week 1", shortLabel: "W1", hours: 38, breakHours: 4.1 },
-            { label: "Week 2", shortLabel: "W2", hours: 40, breakHours: 4.3 },
-            { label: "Week 3", shortLabel: "W3", hours: 36.5, breakHours: 3.8 },
-            { label: "Week 4", shortLabel: "W4", hours: 42, breakHours: 4.5 },
-        ],
-    },
-    year: {
-        caption: "Year-to-date monthly load",
-        target: "1920h target",
-        badge: "12 months",
-        days: [
-            { label: "Jan", shortLabel: "Jan", hours: 158, breakHours: 17 },
-            { label: "Feb", shortLabel: "Feb", hours: 149, breakHours: 15 },
-            { label: "Mar", shortLabel: "Mar", hours: 165, breakHours: 16 },
-            { label: "Apr", shortLabel: "Apr", hours: 172, breakHours: 18 },
-            { label: "May", shortLabel: "May", hours: 168, breakHours: 17 },
-            { label: "Jun", shortLabel: "Jun", hours: 160, breakHours: 16 },
-            { label: "Jul", shortLabel: "Jul", hours: 170, breakHours: 18 },
-            { label: "Aug", shortLabel: "Aug", hours: 175, breakHours: 18.5 },
-            { label: "Sep", shortLabel: "Sep", hours: 162, breakHours: 16 },
-            { label: "Oct", shortLabel: "Oct", hours: 166, breakHours: 16.5 },
-            { label: "Nov", shortLabel: "Nov", hours: 158, breakHours: 15.5 },
-            { label: "Dec", shortLabel: "Dec", hours: 150, breakHours: 14.8 },
-        ],
-    },
-};
+import { RangeKey, periodData, StatTone } from "@/types/employee";
 
 export default function WorkingHours({ className }: { className?: string }) {
     const [range, setRange] = useState<RangeKey>("week");
@@ -290,8 +230,6 @@ export default function WorkingHours({ className }: { className?: string }) {
         </Card>
     );
 }
-
-type StatTone = "primary" | "green" | "amber" | "rose";
 
 function StatCard({
     icon: Icon,

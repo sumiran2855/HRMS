@@ -3,82 +3,9 @@
 import { CalendarClock, MapPin, Users, Clock, MoreVertical } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { cn } from "@/components/utils";
-
-type Meeting = {
-    id: number;
-    title: string;
-    time: string;
-    location: string;
-    attendees: string;
-    status?: "upcoming" | "in-progress" | "completed";
-};
-
-const meetings: Meeting[] = [
-    {
-        id: 1,
-        title: "Sprint Planning",
-        time: "Today · 11:00 AM - 12:00 PM",
-        location: "Room 3B · HQ",
-        attendees: "8 attendees",
-        status: "in-progress"
-    },
-    {
-        id: 2,
-        title: "Design Review",
-        time: "Today · 02:30 PM - 03:15 PM",
-        location: "Zoom · UX",
-        attendees: "5 attendees",
-        status: "upcoming"
-    },
-    {
-        id: 3,
-        title: "Client Sync",
-        time: "Tomorrow · 10:00 AM - 10:45 AM",
-        location: "Room 5A · HQ",
-        attendees: "3 attendees",
-        status: "upcoming"
-    },
-    {
-        id: 4,
-        title: "Frontend Architecture",
-        time: "Tomorrow · 02:00 PM - 03:30 PM",
-        location: "Teams · Dev",
-        attendees: "6 attendees",
-        status: "upcoming"
-    },
-    {
-        id: 5,
-        title: "Q3 Planning",
-        time: "Friday · 09:00 AM - 10:30 AM",
-        location: "Conference Hall A",
-        attendees: "12 attendees",
-        status: "upcoming"
-    }
-];
+import { meetings, getStatusBadge } from "@/types/employee";
 
 export default function MeetingSchedule({ className }: { className?: string }) {
-    const getStatusColor = (status?: string) => {
-        switch (status) {
-            case "in-progress":
-                return "bg-emerald-500";
-            case "completed":
-                return "bg-gray-400";
-            default:
-                return "bg-blue-500";
-        }
-    };
-
-    const getStatusBadge = (status?: string) => {
-        switch (status) {
-            case "in-progress":
-                return { text: "Live Now", class: "bg-emerald-100 text-emerald-700 border-emerald-200" };
-            case "completed":
-                return { text: "Completed", class: "bg-gray-100 text-gray-700 border-gray-200" };
-            default:
-                return { text: "Upcoming", class: "bg-blue-100 text-blue-700 border-blue-200" };
-        }
-    };
-
     return (
         <Card className={cn(
             "group relative bg-white border-0 hover:shadow-2xl transition-all duration-500 overflow-hidden h-full flex flex-col",

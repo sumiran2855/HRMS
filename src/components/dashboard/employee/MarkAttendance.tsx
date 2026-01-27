@@ -4,8 +4,7 @@ import { useMemo, useState } from "react";
 import { CalendarDays, CheckCircle2, Clock, LogOut, MapPin } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { cn } from "@/components/utils";
-
-type AttendanceStatus = "not-marked" | "checked-in" | "checked-out";
+import { AttendanceStatus } from "@/types/employee";
 
 export default function MarkAttendance({ className }: { className?: string }) {
     const [status, setStatus] = useState<AttendanceStatus>("not-marked");

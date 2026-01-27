@@ -4,84 +4,10 @@ import { useState, useMemo } from 'react'
 import { Calendar, Clock, TrendingUp, Users, FileText, CheckCircle, MoreVertical, Circle } from 'lucide-react'
 import { parse, isYesterday, isToday, format } from 'date-fns'
 import { Card, CardContent } from '@/components/ui/Card'
-
-interface Activity {
-    id: string
-    type: 'meeting' | 'task' | 'report' | 'email'
-    title: string
-    description: string
-    date: string
-    time: string
-}
+import { activities } from '@/types/employee'
+import type { Activity } from '@/types/employee'
 
 export default function Activity({ className }: { className?: string }) {
-    const [activities] = useState<Activity[]>([
-        {
-            id: '1',
-            type: 'meeting',
-            title: 'Team Standup Meeting',
-            description: 'Daily sync with the development team',
-            date: '2026-01-19',
-            time: '09:00 AM'
-        },
-        {
-            id: '2',
-            type: 'task',
-            title: 'Complete Project Documentation',
-            description: 'Update technical documentation for the new API endpoints',
-            date: '2026-01-19',
-            time: '10:30 AM'
-        },
-        {
-            id: '3',
-            type: 'report',
-            title: 'Weekly Performance Report',
-            description: 'Generate and submit weekly performance metrics',
-            date: '2026-01-19',
-            time: '02:00 PM'
-        },
-        {
-            id: '4',
-            type: 'email',
-            title: 'Client Follow-up',
-            description: 'Send project update to client stakeholders',
-            date: '2026-01-19',
-            time: '03:30 PM'
-        },
-        {
-            id: '5',
-            type: 'meeting',
-            title: 'Team Standup Meeting',
-            description: 'Daily sync with the development team',
-            date: '2026-01-18',
-            time: '09:00 AM'
-        },
-        {
-            id: '5.5',
-            type: 'email',
-            title: 'Client Follow-up',
-            description: 'Send project update to client stakeholders',
-            date: '2026-01-18',
-            time: '11:00 AM'
-        },
-        {
-            id: '6',
-            type: 'task',
-            title: 'Complete Project Documentation',
-            description: 'Update technical documentation for the new API endpoints',
-            date: '2026-01-18',
-            time: '10:30 AM'
-        },
-        {
-            id: '7',
-            type: 'report',
-            title: 'Monthly Performance Report',
-            description: 'Generate and submit monthly performance metrics',
-            date: '2026-01-17',
-            time: '02:00 PM'
-        }
-    ])
-
     const groupedActivities = useMemo(() => {
         const groups: Record<string, Activity[]> = {}
 

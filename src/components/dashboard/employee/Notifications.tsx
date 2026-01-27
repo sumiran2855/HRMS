@@ -1,37 +1,7 @@
-import { ChevronRight, Bell, User , MoreVertical } from "lucide-react";
+import { ChevronRight, Bell, MoreVertical } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { cn } from "@/components/utils";
-
-const notifications = [
-    {
-        id: 1,
-        author: "Jane D. Smith",
-        date: "Jul 13, 2024",
-        content: "Our latest HRM update focuses on enhancing employee engagement through new interactive platforms and personalized feedback systems.",
-        avatar: "JD"
-    },
-    {
-        id: 2,
-        author: "Jane D. Smith",
-        date: "Jul 13, 2024",
-        content: "Discover how our HRM solutions are driving productivity with innovative time management and collaboration tools.",
-        avatar: "JD"
-    },
-    {
-        id: 3,
-        author: "Michael B. Jordan",
-        date: "Jul 13, 2024",
-        content: "Our CRM system now includes advanced analytics to better understand customer behavior and improve service delivery.",
-        avatar: "MJ"
-    },
-    {
-        id: 4,
-        author: "Michael B. Jordan",
-        date: "Jul 13, 2024",
-        content: "Our CRM system now includes advanced analytics to better understand customer behavior and improve service delivery.",
-        avatar: "MJ"
-    }
-];
+import { notifications } from "@/types/employee";
 
 export default function Notification({ className }: { className?: string }) {
     return (

@@ -3,50 +3,11 @@ import { useState } from "react";
 import { Calendar, ChevronDown, FileText, Clock, CheckCircle, Briefcase } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { cn } from "@/components/utils";
+import { years, stats } from "@/types/employee";
 
 export default function AttendanceLeaves({ className }: { className?: string }) {
     const [selectedYear, setSelectedYear] = useState("2025");
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-    const years = ["2023", "2024", "2025"];
-
-    const leaveData = {
-        totalLeaves: 24,
-        leavesTaken: 12,
-        pendingApproval: 2,
-        workingDays: 248
-    };
-
-    const stats = [
-        {
-            label: "Total Leaves",
-            value: leaveData.totalLeaves,
-            icon: FileText,
-            color: "text-blue-600",
-            bgColor: "bg-blue-50"
-        },
-        {
-            label: "Leaves Taken",
-            value: leaveData.leavesTaken,
-            icon: Calendar,
-            color: "text-rose-600",
-            bgColor: "bg-rose-50"
-        },
-        {
-            label: "Pending Approval",
-            value: leaveData.pendingApproval,
-            icon: Clock,
-            color: "text-amber-600",
-            bgColor: "bg-amber-50"
-        },
-        {
-            label: "Working Days",
-            value: leaveData.workingDays,
-            icon: Briefcase,
-            color: "text-green-600",
-            bgColor: "bg-green-50"
-        }
-    ];
 
     return (
         <Card className={cn(
