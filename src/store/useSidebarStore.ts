@@ -26,7 +26,7 @@ export const sidebarConfig: SidebarItem[] = [
       {
         id: "employee-dashboard",
         label: "Employee Dashboard",
-        href: "/dashboard/employee",
+        href: "/employee",
         icon: "user-circle",
       },
     ],

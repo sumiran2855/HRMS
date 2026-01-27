@@ -63,6 +63,9 @@ export default function Sidebar() {
     const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
     const isExpanded = expandedItems.includes(item.id)
     const hasChildren = item.children && item.children.length > 0
+    const hasActiveChild = hasChildren && item.children!.some(child => 
+      pathname === child.href || pathname.startsWith(child.href + "/")
+    )
 
     if (!hasChildren) {
       return (
@@ -101,7 +104,7 @@ export default function Sidebar() {
           onClick={() => isOpen && toggleExpanded(item.id)}
           className={cn(
             "flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl transition-all duration-200 group relative",
-            isActive
+            isActive || hasActiveChild
               ? "text-primary bg-primary/5"
               : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
             !isOpen && "lg:justify-center lg:px-2",
@@ -111,7 +114,7 @@ export default function Sidebar() {
             <span
               className={cn(
                 "flex-shrink-0 transition-transform duration-200",
-                isActive ? "text-primary scale-110" : "text-muted-foreground group-hover:text-foreground group-hover:scale-105",
+                isActive || hasActiveChild ? "text-primary scale-110" : "text-muted-foreground group-hover:text-foreground group-hover:scale-105",
               )}
             >
               {iconMap[item.icon] || <FileText className="h-5 w-5" />}
@@ -125,6 +128,9 @@ export default function Sidebar() {
           )}
         </button>
         {isExpanded && isOpen && (
+          <div className="space-y-1 animate-in slide-in-from-top-2 duration-200">{item.children?.map((child) => renderSidebarItem(child, level + 1))}</div>
+        )}
+        {hasActiveChild && !isExpanded && isOpen && (
           <div className="space-y-1 animate-in slide-in-from-top-2 duration-200">{item.children?.map((child) => renderSidebarItem(child, level + 1))}</div>
         )}
       </div>

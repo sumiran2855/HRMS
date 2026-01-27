@@ -33,7 +33,6 @@ export default function DashboardPage() {
           <div className="flex-1 min-h-0">
             <MeetingSchedule className="h-full" />
           </div>
-
         </div>
 
         <div className="lg:col-span-6 lg:h-[var(--dashboard-panel-h)] min-h-0">
