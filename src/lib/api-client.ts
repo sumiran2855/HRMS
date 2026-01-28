@@ -1,8 +1,7 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
-import { ErrorHandler } from './error-handler';
 
 const apiClient: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/',
   timeout: 10000,
   headers: { 'Content-Type': 'application/json' }
 });
@@ -16,8 +15,7 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   response => response,
   (error: AxiosError) => {
-    const handled = ErrorHandler.handle(error, 'API_CALL');
-    return Promise.reject(handled);
+   return Promise.reject(error);
   }
 );
 

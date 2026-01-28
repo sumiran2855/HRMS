@@ -9,6 +9,11 @@ export const ERROR_CONFIG: Record<ErrorCode, ErrorConfig> = {
   [ErrorCode.UNAUTHORIZED]: { message: 'User not authenticated', status: 401 },
   [ErrorCode.FORBIDDEN]: { message: 'Insufficient permissions', status: 403 },
   [ErrorCode.INVALID_TOKEN]: { message: 'Invalid or expired token', status: 401 },
+  [ErrorCode.INVALID_CREDENTIALS]: { message: 'Invalid email or password', status: 401 },
+  [ErrorCode.USER_NOT_FOUND]: { message: 'User account not found', status: 404 },
+  [ErrorCode.EMAIL_ALREADY_EXISTS]: { message: 'Email address already registered', status: 409 },
+  [ErrorCode.LOGIN_FAILED]: { message: 'Login failed. Please check your credentials', status: 401 },
+  [ErrorCode.REGISTER_FAILED]: { message: 'Registration failed. Please try again', status: 400 },
 
   [ErrorCode.NETWORK_ERROR]: { message: 'Network connection failed', status: 503 },
   [ErrorCode.TIMEOUT]: { message: 'Request timeout', status: 408 },
