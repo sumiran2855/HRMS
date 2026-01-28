@@ -53,7 +53,6 @@ export class AuthService {
     async logout(): Promise<void> {
         try {
             await apiClient.post('/auth/logout');
-            document.cookie = 'auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         } catch (error: any) {
             throw handleError(error);
         }
@@ -68,18 +67,17 @@ export class AuthService {
         }
     }
 
-    setToken(token: string, rememberMe: boolean = false): void {
-        const expires = rememberMe ? 'expires=Fri, 31 Dec 9999 23:59:59 GMT' : '';
-        document.cookie = `auth-token=${token}; path=/; ${expires}; SameSite=Strict; Secure`;
+    getToken(): string | null {
+        return localStorage.getItem('auth-access-token')
     }
 
-    getToken(): string | null {
-        const cookie = document.cookie.split('; ').find(row => row.startsWith('auth-token='));
-        return cookie ? cookie.split('=')[1] : null;
+    getRefreshToken(): string | null {
+        return localStorage.getItem('auth-refresh-token')
     }
 
     removeToken(): void {
-        document.cookie = 'auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        localStorage.removeItem('auth-access-token')
+        localStorage.removeItem('auth-refresh-token')
     }
 
 }

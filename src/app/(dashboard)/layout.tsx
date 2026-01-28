@@ -5,6 +5,7 @@ import { Navbar } from "@/components/layout/navbar/Navbar"
 import Sidebar from "@/components/layout/sidebar/Sidebar"
 import { useSidebarStore } from "@/store/useSidebarStore"
 import { cn } from "@/components/utils"
+import { ProtectedRoute } from "@/providers/auth.provider"
 
 export default function DashboardLayout({
   children,
@@ -14,14 +15,16 @@ export default function DashboardLayout({
   const { isOpen } = useSidebarStore()
 
   return (
-    <div className="min-h-screen bg-background">
-      <Sidebar />
+    <ProtectedRoute>
+      <div className="min-h-screen bg-background">
+        <Sidebar />
 
-      <div className={cn("transition-all duration-300 flex flex-col h-screen", isOpen ? "lg:ml-64" : "lg:ml-0")}>
-        <Navbar />
+        <div className={cn("transition-all duration-300 flex flex-col h-screen", isOpen ? "lg:ml-64" : "lg:ml-0")}>
+          <Navbar />
 
-        <main className="flex-1 p-4 lg:p-6 overflow-y-auto mt-0">{children}</main>
+          <main className="flex-1 p-4 lg:p-6 overflow-y-auto mt-0">{children}</main>
+        </div>
       </div>
-    </div>
+    </ProtectedRoute>
   )
 }

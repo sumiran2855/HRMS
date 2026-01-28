@@ -24,8 +24,10 @@ export interface LoginResponse {
     message: string;
     statusCode: number;
     data: {
-        token: string;
+        message: string;
         user: User;
+        accessToken: string;
+        refreshToken: string;
     };
     timestamp: string;
 }

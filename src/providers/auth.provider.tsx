@@ -1,38 +1,176 @@
 "use client"
 
-import { useEffect, ReactNode } from 'react'
+import { createContext, useContext, useEffect, ReactNode, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuthStore } from '@/store/auth.store'
-import { authService } from '@/services/auth.service'
+import { User } from '@/types/auth.types'
+import { encryptData, decryptData } from '@/utils/encryption'
+import Loader from '@/components/ui/Loader'
+
+const STORAGE_KEYS = {
+    USER: 'auth-user',
+    ACCESS_TOKEN: 'auth-access-token',
+    REFRESH_TOKEN: 'auth-refresh-token',
+    IS_AUTHENTICATED: 'auth-is-authenticated'
+} as const
+
+interface AuthContextType {
+    user: User | null
+    accessToken: string | null
+    refreshToken: string | null
+    isAuthenticated: boolean
+    isLoading: boolean
+    setAuth: (user: User, accessToken: string, refreshToken: string) => void
+    logout: () => void
+    setLoading: (loading: boolean) => void
+    clearAuth: () => void
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
+
+export function useAuth() {
+    const context = useContext(AuthContext)
+    if (context === undefined) {
+        throw new Error('useAuth must be used within an AuthProvider')
+    }
+    return context
+}
 
 interface AuthProviderProps {
     children: ReactNode
 }
 
+const clearAuthStorage = () => {
+    Object.values(STORAGE_KEYS).forEach(key => {
+        localStorage.removeItem(key)
+    })
+}
+
+const getStoredAuthData = () => {
+    return {
+        user: localStorage.getItem(STORAGE_KEYS.USER),
+        accessToken: localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN),
+        refreshToken: localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN),
+        isAuthenticated: localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED)
+    }
+}
+
+const isTokenExpired = (token: string): boolean => {
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]))
+        return Date.now() >= payload.exp * 1000
+    } catch {
+        return true
+    }
+}
+
 export function AuthProvider({ children }: AuthProviderProps) {
-    const { isAuthenticated, user, setAuth, logout } = useAuthStore()
+    const [user, setUser] = useState<User | null>(null)
+    const [accessToken, setAccessToken] = useState<string | null>(null)
+    const [refreshToken, setRefreshToken] = useState<string | null>(null)
+    const [isAuthenticated, setIsAuthenticated] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
     const router = useRouter()
 
     useEffect(() => {
-        const token = authService.getToken()
-        const storedUser = localStorage.getItem('user')
-
-        if (token && storedUser && !isAuthenticated) {
+        const initializeAuth = () => {
             try {
-                const userData = JSON.parse(storedUser)
-                setAuth(userData, token)
-            } catch (error) {
-                console.info('Error parsing stored user data:', error)
+                const storedData = getStoredAuthData()
+
+                if (storedData.user && storedData.accessToken && storedData.refreshToken && storedData.isAuthenticated === 'true') {
+                    const userData = decryptData<User>(storedData.user)
+                    if (userData && !isTokenExpired(storedData.accessToken)) {
+                        setUser(userData)
+                        setAccessToken(storedData.accessToken)
+                        setRefreshToken(storedData.refreshToken)
+                        setIsAuthenticated(true)
+                        return
+                    }
+                }
+
                 logout()
+            } catch (error) {
+                console.error('Auth initialization error:', error)
+                logout()
+            } finally {
+                setIsLoading(false)
             }
         }
-    }, [isAuthenticated, setAuth, logout])
 
-    return <>{children}</>
+        initializeAuth()
+    }, [])
+
+
+    const setAuth = (userData: User, accessToken: string, refreshToken: string) => {
+        if (!userData?.email || !accessToken) {
+            console.error('Invalid auth data provided')
+            logout()
+            return
+        }
+
+        try {
+            const encryptedUser = encryptData(userData)
+
+            localStorage.setItem(STORAGE_KEYS.USER, encryptedUser)
+            localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken)
+            if (refreshToken) {
+                localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
+            }
+            localStorage.setItem(STORAGE_KEYS.IS_AUTHENTICATED, 'true')
+
+            setUser(userData)
+            setAccessToken(accessToken)
+            setRefreshToken(refreshToken)
+            setIsAuthenticated(true)
+            setIsLoading(false)
+        } catch (error) {
+            console.error('Error setting auth data:', error)
+            logout()
+        }
+    }
+
+    const logout = () => {
+        clearAuthStorage()
+
+        setUser(null)
+        setAccessToken(null)
+        setRefreshToken(null)
+        setIsAuthenticated(false)
+        setIsLoading(false)
+
+        router.push('/login')
+    }
+
+    const setLoading = (loading: boolean) => {
+        setIsLoading(loading)
+    }
+
+    const clearAuth = () => {
+        clearAuthStorage()
+
+        setUser(null)
+        setAccessToken(null)
+        setRefreshToken(null)
+        setIsAuthenticated(false)
+        setIsLoading(false)
+    }
+
+    const value: AuthContextType = {
+        user,
+        accessToken,
+        refreshToken,
+        isAuthenticated,
+        isLoading,
+        setAuth,
+        logout,
+        setLoading,
+        clearAuth,
+    }
+
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
-    const { isAuthenticated, isLoading } = useAuthStore()
+    const { isAuthenticated, isLoading } = useAuth()
     const router = useRouter()
 
     useEffect(() => {
@@ -42,11 +180,7 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
     }, [isAuthenticated, isLoading, router])
 
     if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-            </div>
-        )
+        return <Loader fullScreen />;
     }
 
     if (!isAuthenticated) {

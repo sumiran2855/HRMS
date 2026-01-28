@@ -2,7 +2,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { authService } from "@/services/auth.service"
 import { AuthFormData } from "@/types/auth.types"
-import { useAuthStore } from "@/store/auth.store"
+import { useAuth } from "@/providers/auth.provider"
 import { AppError } from "@/utils/AppError"
 import { useErrorAlert } from "@/contexts/AlertContext"
 
@@ -10,7 +10,7 @@ export const useLogin = () => {
     const [isLoading, setIsLoading] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
     const router = useRouter()
-    const { setAuth } = useAuthStore()
+    const { setAuth, logout: authLogout, user } = useAuth()
     const showErrorAlert = useErrorAlert()
     const [formData, setFormData] = useState<AuthFormData>({
         email: "",
@@ -23,41 +23,46 @@ export const useLogin = () => {
         setIsLoading(true)
 
         try {
-            const response = await authService.login({
-                email: formData.email,
-                password: formData.password
-            })
+            const { email, password } = formData
+            const response = await authService.login({ email, password })
 
             if (response.success) {
-                authService.setToken(response.data.token, formData.rememberMe)
-                setAuth(response.data.user, response.data.token)
+                const { user, accessToken, refreshToken } = response.data
+                setAuth(user, accessToken, refreshToken)
                 router.push("/dashboard")
             } else {
-                showErrorAlert(response.message || "Login failed");
+                showErrorAlert(response.message || "Login failed")
             }
-        } catch (err: any) {
-            let errorMessage = "Login failed. Please try again.";
+        } catch (err) {
+            const errorMessage = err instanceof AppError
+                ? err.message
+                : (err as any)?.message || (err as any)?.details || "Login failed. Please try again."
 
-            if (err instanceof AppError) {
-                errorMessage = err.message;
-                showErrorAlert(err.message);
-            } else {
-                errorMessage = err?.message || err?.details || "Login failed. Please try again.";
-                showErrorAlert(errorMessage);
-            }
-
-            console.info('Login error caught:', err);
+            showErrorAlert(errorMessage)
+            console.info('Login error caught:', err)
         } finally {
             setIsLoading(false)
         }
     }
 
+    const handleLogout = async () => {
+        try {
+            await authService.logout()
+        } catch (err) {
+            console.info('Logout error caught:', err)
+        } finally {
+            authLogout()
+        }
+    }
+
     return {
+        user,
         isLoading,
         showPassword,
         formData,
         setFormData,
         handleSubmit,
+        handleLogout,
         setShowPassword,
     }
 }
