@@ -80,7 +80,6 @@ export function Navbar() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center gap-3 px-3 h-12 rounded-lg transition-all duration-200">
                 <Avatar className="h-9 w-9 ring-2 ring-primary/20 ring-offset-2 ring-offset-background transition-all duration-200 hover:ring-primary/40">
-                  <AvatarImage src="/professional-man-avatar.png" alt="User" />
                   <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground font-semibold text-sm">JS</AvatarFallback>
                 </Avatar>
                 <div className="hidden md:flex flex-col items-start">

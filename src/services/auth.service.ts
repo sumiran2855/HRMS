@@ -1,6 +1,7 @@
 import apiClient from '@/lib/api-client';
 import { LoginRequest, RegisterRequest, LoginResponse } from '@/types/auth.types';
 import { handleError } from '@/utils/errorHandler';
+import { AUTH_ENDPOINTS } from '@/constants/endpoints/auth.endpoints';
 
 export class AuthService {
     private static instance: AuthService;
@@ -14,7 +15,7 @@ export class AuthService {
 
     async login(credentials: LoginRequest): Promise<LoginResponse> {
         try {
-            const response = await apiClient.post<LoginResponse>('/auth/login', credentials);
+            const response = await apiClient.post<LoginResponse>(AUTH_ENDPOINTS.LOGIN, credentials);
             return response.data;
         } catch (error: any) {
             throw handleError(error);
@@ -23,7 +24,7 @@ export class AuthService {
 
     async register(userData: RegisterRequest): Promise<LoginResponse> {
         try {
-            const response = await apiClient.post<LoginResponse>('/auth/register', userData);
+            const response = await apiClient.post<LoginResponse>(AUTH_ENDPOINTS.REGISTER, userData);
             return response.data;
         } catch (error: any) {
             throw handleError(error);
@@ -32,7 +33,7 @@ export class AuthService {
 
     async validateToken(token: string): Promise<{ valid: boolean; payload: any }> {
         try {
-            const response = await apiClient.post('/auth/validate-token', {}, {
+            const response = await apiClient.post(AUTH_ENDPOINTS.VALIDATE_TOKEN, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             return response.data;
@@ -43,7 +44,7 @@ export class AuthService {
 
     async getCurrentUser(): Promise<any> {
         try {
-            const response = await apiClient.post('/auth/current-user');
+            const response = await apiClient.post(AUTH_ENDPOINTS.CURRENT_USER);
             return response.data;
         } catch (error: any) {
             throw handleError(error);
@@ -52,15 +53,17 @@ export class AuthService {
 
     async logout(): Promise<void> {
         try {
-            await apiClient.post('/auth/logout');
+            await apiClient.post(AUTH_ENDPOINTS.LOGOUT);
         } catch (error: any) {
-            throw handleError(error);
+            console.log('Logout API call failed:', error);
+        } finally {
+            this.removeToken();
         }
     }
 
     async refreshToken(refreshToken: string): Promise<LoginResponse> {
         try {
-            const response = await apiClient.post<LoginResponse>('/auth/refresh-token', { refreshToken });
+            const response = await apiClient.post<LoginResponse>(AUTH_ENDPOINTS.REFRESH_TOKEN, { refreshToken });
             return response.data;
         } catch (error: any) {
             throw handleError(error);

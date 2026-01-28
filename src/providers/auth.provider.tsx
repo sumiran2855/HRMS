@@ -87,10 +87,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
                     }
                 }
 
-                logout()
+                const pathname = typeof window !== 'undefined' ? window.location.pathname : ''
+                const isAuthPage = pathname === '/login' || pathname === '/register' || pathname === '/reset-password'
+                
+                logout(!isAuthPage)
             } catch (error) {
                 console.error('Auth initialization error:', error)
-                logout()
+                const pathname = typeof window !== 'undefined' ? window.location.pathname : ''
+                const isAuthPage = pathname === '/login' || pathname === '/register' || pathname === '/reset-password'
+                logout(!isAuthPage)
             } finally {
                 setIsLoading(false)
             }
@@ -128,7 +133,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
     }
 
-    const logout = () => {
+    const logout = (redirectToLogin = true) => {
         clearAuthStorage()
 
         setUser(null)
@@ -137,7 +142,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setIsAuthenticated(false)
         setIsLoading(false)
 
-        router.push('/login')
+        if (redirectToLogin) {
+            router.push('/login')
+        }
     }
 
     const setLoading = (loading: boolean) => {
