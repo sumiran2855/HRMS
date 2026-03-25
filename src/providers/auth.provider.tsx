@@ -89,13 +89,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
                 const pathname = typeof window !== 'undefined' ? window.location.pathname : ''
                 const isAuthPage = pathname === '/login' || pathname === '/register' || pathname === '/reset-password'
+                const isPublicPage = pathname === '/' || isAuthPage
                 
-                logout(!isAuthPage)
+                logout(!isPublicPage)
             } catch (error) {
                 console.error('Auth initialization error:', error)
                 const pathname = typeof window !== 'undefined' ? window.location.pathname : ''
                 const isAuthPage = pathname === '/login' || pathname === '/register' || pathname === '/reset-password'
-                logout(!isAuthPage)
+                const isPublicPage = pathname === '/' || isAuthPage
+                logout(!isPublicPage)
             } finally {
                 setIsLoading(false)
             }

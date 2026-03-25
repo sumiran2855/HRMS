@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import jwt from 'jsonwebtoken';
 
-const PUBLIC_PATHS = ['/login', '/register', '/api/public', '/'];
+const PUBLIC_PATHS = ['/', '/login', '/register', '/api/public'];
 const JWT_SECRET = process.env.JWT_SECRET!; 
 
 async function verifyToken(token: string): Promise<any> {

@@ -106,53 +106,7 @@ export function LoginForm() {
                         "Sign In"
                     )}
                 </Button>
-
-                <div className="relative my-6">
-                    <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-slate-300" />
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                        <span className="bg-white px-3 text-slate-500 font-medium">Or continue with</span>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-3">
-                    <button
-                        type="button"
-                        className="h-11 border border-slate-300 bg-white hover:bg-slate-50 rounded-lg transition-all flex items-center justify-center gap-2 font-medium text-slate-700 hover:border-slate-400 cursor-pointer"
-                    >
-                        <img
-                            src="/google-icon.svg"
-                            alt="Google"
-                            className="w-5 h-5"
-                        />
-                        <span className="text-sm hidden md:block">Google</span>
-                    </button>
-                    <button
-                        type="button"
-                        className="h-11 border border-slate-300 bg-white hover:bg-slate-50 rounded-lg transition-all flex items-center justify-center gap-2 font-medium text-slate-700 hover:border-slate-400 cursor-pointer"
-                    >
-                        <img
-                            src="/linkedin-icon.svg"
-                            alt="LinkedIn"
-                            className="w-5 h-5"
-                        />
-                        <span className="text-sm hidden md:block">LinkedIn</span>
-                    </button>
-                    <button
-                        type="button"
-                        className="h-11 border border-slate-300 bg-white hover:bg-slate-50 rounded-lg transition-all flex items-center justify-center gap-2 font-medium text-slate-700 hover:border-slate-400 cursor-pointer"
-                    >
-                        <img
-                            src="/apple-icon.svg"
-                            alt="Apple"
-                            className="w-5 h-5"
-                        />
-                        <span className="text-sm hidden md:block">Apple</span>
-                    </button>
-                </div>
-
-                <p className="text-xs text-center text-slate-500 pt-4">
+                <p className="text-xs text-center text-slate-500 pt-2">
                     By signing in, you agree to our{" "}
                     <a href="#" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
                         Terms of Service
@@ -160,13 +114,6 @@ export function LoginForm() {
                     and{" "}
                     <a href="#" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
                         Privacy Policy
-                    </a>
-                </p>
-
-                <p className="text-xs text-center text-slate-500 pt-2">
-                    Didn't have an account?{" "}
-                    <a href="/register" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors cursor-pointer">
-                        Sign up
                     </a>
                 </p>
             </form>
