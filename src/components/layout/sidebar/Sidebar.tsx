@@ -22,6 +22,7 @@ import {
   TrendingUp,
   Award,
   Calendar,
+  CalendarCheck,
   Ticket,
   Shuffle,
   XCircle,
@@ -29,6 +30,11 @@ import {
   ChevronDown,
   ChevronRight,
   BadgeCheck,
+  Handshake,
+  Target,
+  Briefcase,
+  Gift,
+  Fingerprint,
 } from "lucide-react"
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -48,11 +54,17 @@ const iconMap: Record<string, React.ReactNode> = {
   "trending-up": <TrendingUp className="h-5 w-5" />,
   award: <Award className="h-5 w-5" />,
   calendar: <Calendar className="h-5 w-5" />,
+  "calendar-check": <CalendarCheck className="h-5 w-5" />,
   ticket: <Ticket className="h-5 w-5" />,
   shuffle: <Shuffle className="h-5 w-5" />,
   "x-circle": <XCircle className="h-5 w-5" />,
   "file-text": <FileText className="h-5 w-5" />,
   "badge-check": <BadgeCheck className="h-5 w-5" />,
+  handshake: <Handshake className="h-5 w-5" />,
+  target: <Target className="h-5 w-5" />,
+  briefcase: <Briefcase className="h-5 w-5" />,
+  gift: <Gift className="h-5 w-5" />,
+  fingerprint: <Fingerprint className="h-5 w-5" />,
 }
 
 export default function Sidebar() {
@@ -158,7 +170,7 @@ export default function Sidebar() {
             <span className="text-white font-bold text-xl">H</span>
           </div>
           <div className={cn("transition-opacity", !isOpen && "lg:hidden")}>
-            <span className="text-xl font-bold text-foreground tracking-tight">HRMS</span>
+            <span className="text-xl font-bold text-foreground tracking-tight">CIS HRMS</span>
             <p className="text-xs text-muted-foreground font-medium">Management System</p>
           </div>
         </div>

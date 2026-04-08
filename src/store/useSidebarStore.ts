@@ -26,7 +26,7 @@ export const sidebarConfig: SidebarItem[] = [
       {
         id: "employee-dashboard",
         label: "Employee Dashboard",
-        href: "/employee",
+        href: "/employee-dashboard",
         icon: "user-circle",
       },
     ],
@@ -34,28 +34,135 @@ export const sidebarConfig: SidebarItem[] = [
   {
     id: "hrm",
     label: "HRM",
-    href: "/dashboard/hrm",
+    href: "/hrm",
     icon: "users",
     children: [
       {
         id: "employees",
         label: "Employees",
-        href: "/dashboard/employees",
+        href: "/employees",
         icon: "user-group",
+      },
+
+      {
+        id: "admin-attendance",
+        label: "Admin Attendance",
+        href: "/admin-attendance",
+        icon: "calendar-check",
+      },
+      {
+        id: "my-attendance",
+        label: "My Attendance",
+        href: "/my-attendance",
+        icon: "calendar",
+      },
+      {
+        id: "biometric-attendance",
+        label: "Biometric Attendance",
+        href: "/biometric-attendance",
+        icon: "fingerprint",
       },
       {
         id: "designations",
         label: "Designations",
-        href: "/dashboard/designations",
-        icon: "badge-check",
+        href: "/designations",
+        icon: "briefcase",
+      },
+      {
+        id: "departments",
+        label: "Departments",
+        href: "/departments",
+        icon: "building",
+      },
+      {
+        id: "holidays",
+        label: "Holidays",
+        href: "/holidays",
+        icon: "gift",
       },
     ],
   },
   {
     id: "crm",
     label: "CRM",
-    href: "/dashboard/crm",
-    icon: "building",
+    href: "/crm",
+    icon: "handshake",
+    children: [
+      {
+        id: "crm-dashboard",
+        label: "CRM Dashboard",
+        href: "/crm-dashboard",
+        icon: "target",
+      },
+      {
+        id: "leads",
+        label: "Leads",
+        href: "/leads",
+        icon: "users",
+      },
+      {
+        id: "deals",
+        label: "Deals",
+        href: "/deals",
+        icon: "handshake",
+      },
+    ],
+  },
+  {
+    id: "erp",
+    label: "ERP",
+    href: "/erp",
+    icon: "package",
+    children: [
+      {
+        id: "erp-dashboard",
+        label: "ERP Dashboard",
+        href: "/erp",
+        icon: "chart-bar",
+      },
+      {
+        id: "inventory",
+        label: "Inventory Management",
+        href: "/inventory",
+        icon: "package",
+      },
+      {
+        id: "finance",
+        label: "Finance & Accounting",
+        href: "/finance",
+        icon: "dollar-sign",
+      },
+      {
+        id: "hr",
+        label: "Human Resources",
+        href: "/hr",
+        icon: "users",
+      },
+      {
+        id: "sales",
+        label: "Sales & Distribution",
+        href: "/sales",
+        icon: "shopping-cart",
+      },
+      {
+        id: "procurement",
+        label: "Procurement",
+        href: "/procurement",
+        icon: "truck",
+      },
+      {
+        id: "manufacturing",
+        label: "Manufacturing",
+        href: "/manufacturing",
+        icon: "settings",
+      },
+      {
+        id: "reporting",
+        label: "Reporting & Analytics",
+        href: "/reporting",
+        icon: "bar-chart",
+      },
+    ],
   },
   {
     id: "apps",
@@ -167,7 +274,7 @@ export const useSidebarStore = create<SidebarState>()(
   persist(
     (set, get) => ({
       isOpen: true,
-      expandedItems: ["dashboard"],
+      expandedItems: ["dashboard", "crm", "erp"],
       toggleSidebar: () => set({ isOpen: !get().isOpen }),
       setOpen: (open: boolean) => set({ isOpen: open }),
       toggleExpanded: (id: string) => {
