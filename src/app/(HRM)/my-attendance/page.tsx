@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Input } from "@/components/ui/Input"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
-import { Search, Calendar, Clock, CheckCircle, XCircle, AlertCircle, TrendingUp, User, Filter, Download, ChevronLeft, ChevronRight } from "lucide-react"
+import { Search, Calendar, Clock, CheckCircle, XCircle, AlertCircle, TrendingUp, User, Filter, Download, ChevronLeft, ChevronRight, Sun, Moon, CalendarDays, ArrowUpRight, ArrowDownRight, Activity } from "lucide-react"
 import { AttendanceCalendar } from "@/components/dashboard/attendance/AttendanceCalendar"
 
 // Mock current user data (in real app, this would come from auth context)
@@ -89,29 +89,30 @@ export default function MyAttendancePage() {
   }
 
   const attendancePercentage = stats.total > 0 ? Math.round((stats.present / stats.total) * 100) : 0
+  const avgWorkingHours = stats.present > 0 ? 8 : 0 // Assuming 8 hours per day
 
   const tabs = [
     { id: "overview", label: "Overview", icon: User },
-    { id: "detailed", label: "Detailed Records", icon: Clock },
+    { id: "detailed", label: "Detailed Records", icon: CalendarDays },
     { id: "reports", label: "My Reports", icon: Download }
   ]
 
   const getStatusConfig = (status: string) => {
     switch (status) {
       case 'present':
-        return { icon: CheckCircle, color: 'text-green-600', bgColor: 'bg-green-50', label: 'Present' }
+        return { icon: CheckCircle, color: '#10b981', bg: '#dcfce7', border: '#86efac', label: 'Present' }
       case 'absent':
-        return { icon: XCircle, color: 'text-red-600', bgColor: 'bg-red-50', label: 'Absent' }
+        return { icon: XCircle, color: '#ef4444', bg: '#fee2e2', border: '#fca5a5', label: 'Absent' }
       case 'late':
-        return { icon: Clock, color: 'text-yellow-600', bgColor: 'bg-yellow-50', label: 'Late' }
+        return { icon: Clock, color: '#f59e0b', bg: '#fef3c7', border: '#fcd34d', label: 'Late' }
       case 'halfday':
-        return { icon: AlertCircle, color: 'text-orange-600', bgColor: 'bg-orange-50', label: 'Half Day' }
+        return { icon: AlertCircle, color: '#f97316', bg: '#ffedd5', border: '#fdba74', label: 'Half Day' }
       case 'leave':
-        return { icon: AlertCircle, color: 'text-blue-600', bgColor: 'bg-blue-50', label: 'On Leave' }
+        return { icon: AlertCircle, color: '#3b82f6', bg: '#dbeafe', border: '#93c5fd', label: 'On Leave' }
       case 'holiday':
-        return { icon: Calendar, color: 'text-purple-600', bgColor: 'bg-purple-50', label: 'Holiday' }
+        return { icon: Calendar, color: '#8b5cf6', bg: '#ede9fe', border: '#c4b5fd', label: 'Holiday' }
       default:
-        return { icon: CheckCircle, color: 'text-green-600', bgColor: 'bg-green-50', label: 'Present' }
+        return { icon: CheckCircle, color: '#10b981', bg: '#dcfce7', border: '#86efac', label: 'Present' }
     }
   }
 
@@ -126,126 +127,171 @@ export default function MyAttendancePage() {
   const monthYear = selectedMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 
   return (
-    <div className="space-y-6">
+    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "24px 16px" }}>
+      <style jsx>{`
+        .ma-card { transition: all 0.2s ease; }
+        .ma-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -10px rgba(0,0,0,0.1); }
+        .ma-tab { transition: all 0.15s ease; }
+        .ma-tab:hover { background: #f8fafc; }
+        .ma-tab.active { background: #eff6ff; color: #2563eb; border-color: #3b82f6; }
+        .ma-row { transition: background 0.15s ease; }
+        .ma-row:hover { background: #f8fafc; }
+        @media (max-width: 768px) {
+          .ma-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+        @media (max-width: 480px) {
+          .ma-stats-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div style={{ display: "flex", flexDirection: "column", gap: 20, marginBottom: 24 }}>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">
-            {currentUser.role === 'admin' ? 'Employee Attendance' : 'My Attendance'}
+          <h1 style={{ fontSize: 28, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.02em", marginBottom: 6 }}>
+            My Attendance
           </h1>
-          <p className="text-slate-500 mt-1">
-            {currentUser.role === 'admin' 
-              ? 'View and manage all employee attendance records'
-              : `Track your monthly attendance and work patterns`
-            }
+          <p style={{ fontSize: 14, color: "#64748b" }}>
+            Track your monthly attendance patterns and work hours
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              const newDate = new Date(selectedMonth)
-              newDate.setMonth(selectedMonth.getMonth() - 1)
-              setSelectedMonth(newDate)
-            }}
-            className="cursor-pointer"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
-          <span className="font-medium text-slate-700 min-w-[150px] text-center">
-            {monthYear}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              const newDate = new Date(selectedMonth)
-              newDate.setMonth(selectedMonth.getMonth() + 1)
-              setSelectedMonth(newDate)
-            }}
-            className="cursor-pointer"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </Button>
+
+        {/* Month Selector */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fff", borderRadius: 12, padding: "12px 20px", border: "1px solid #e2e8f0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: "linear-gradient(135deg, #3b82f6, #8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <CalendarDays style={{ width: 20, height: 20, color: "#fff" }} />
+            </div>
+            <div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: "#0f172a" }}>{monthYear}</div>
+              <div style={{ fontSize: 12, color: "#64748b" }}>Select period to view attendance</div>
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button
+              onClick={() => {
+                const newDate = new Date(selectedMonth)
+                newDate.setMonth(selectedMonth.getMonth() - 1)
+                setSelectedMonth(newDate)
+              }}
+              style={{
+                width: 40, height: 40, borderRadius: 8, border: "1.5px solid #e2e8f0", background: "#fff",
+                display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+                transition: "all 0.15s"
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.borderColor = "#cbd5e1"}
+              onMouseLeave={(e) => e.currentTarget.style.borderColor = "#e2e8f0"}
+            >
+              <ChevronLeft style={{ width: 18, height: 18, color: "#64748b" }} />
+            </button>
+            <button
+              onClick={() => {
+                const newDate = new Date(selectedMonth)
+                newDate.setMonth(selectedMonth.getMonth() + 1)
+                setSelectedMonth(newDate)
+              }}
+              style={{
+                width: 40, height: 40, borderRadius: 8, border: "1.5px solid #e2e8f0", background: "#fff",
+                display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+                transition: "all 0.15s"
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.borderColor = "#cbd5e1"}
+              onMouseLeave={(e) => e.currentTarget.style.borderColor = "#e2e8f0"}
+            >
+              <ChevronRight style={{ width: 18, height: 18, color: "#64748b" }} />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* User Info Card (for admin view) */}
-      {currentUser.role === 'admin' && (
-        <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
-                <span className="text-xl font-bold text-blue-600">
-                  {currentUser.name.split(' ').map(n => n[0]).join('')}
-                </span>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-slate-900">{currentUser.name}</h3>
-                <p className="text-slate-600">{currentUser.employeeId} • {currentUser.position}</p>
-                <p className="text-sm text-slate-500">{currentUser.department}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-2xl font-bold text-blue-600">{attendancePercentage}%</p>
-                <p className="text-sm text-blue-600">Attendance Rate</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-sm font-medium text-green-600">Present</p>
-              <p className="text-xl font-bold text-green-900">{stats.present}</p>
+      <div className="ma-stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
+        <div className="ma-card" style={{ background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", borderRadius: 16, padding: 20, color: "#fff" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <CheckCircle style={{ width: 24, height: 24, opacity: 0.9 }} />
+            <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.9, background: "rgba(255,255,255,0.2)", padding: "4px 10px", borderRadius: 20 }}>
+              {attendancePercentage}%
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div style={{ fontSize: 32, fontWeight: 800, marginBottom: 4 }}>{stats.present}</div>
+          <div style={{ fontSize: 13, opacity: 0.9 }}>Days Present</div>
+        </div>
 
-        <Card className="bg-gradient-to-br from-red-50 to-rose-50 border-red-200">
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-sm font-medium text-red-600">Absent</p>
-              <p className="text-xl font-bold text-red-900">{stats.absent}</p>
+        <div className="ma-card" style={{ background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)", borderRadius: 16, padding: 20, color: "#fff" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <XCircle style={{ width: 24, height: 24, opacity: 0.9 }} />
+            <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.9, background: "rgba(255,255,255,0.2)", padding: "4px 10px", borderRadius: 20 }}>
+              {stats.total > 0 ? Math.round((stats.absent / stats.total) * 100) : 0}%
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div style={{ fontSize: 32, fontWeight: 800, marginBottom: 4 }}>{stats.absent}</div>
+          <div style={{ fontSize: 13, opacity: 0.9 }}>Days Absent</div>
+        </div>
 
-        <Card className="bg-gradient-to-br from-yellow-50 to-amber-50 border-yellow-200">
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-sm font-medium text-yellow-600">Late</p>
-              <p className="text-xl font-bold text-yellow-900">{stats.late}</p>
+        <div className="ma-card" style={{ background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)", borderRadius: 16, padding: 20, color: "#fff" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <Clock style={{ width: 24, height: 24, opacity: 0.9 }} />
+            <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.9, background: "rgba(255,255,255,0.2)", padding: "4px 10px", borderRadius: 20 }}>
+              {stats.late}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div style={{ fontSize: 32, fontWeight: 800, marginBottom: 4 }}>{stats.late}</div>
+          <div style={{ fontSize: 13, opacity: 0.9 }}>Late Arrivals</div>
+        </div>
 
-        <Card className="bg-gradient-to-br from-orange-50 to-orange-50 border-orange-200">
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-sm font-medium text-orange-600">Half Day</p>
-              <p className="text-xl font-bold text-orange-900">{stats.halfDay}</p>
+        <div className="ma-card" style={{ background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)", borderRadius: 16, padding: 20, color: "#fff" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <TrendingUp style={{ width: 24, height: 24, opacity: 0.9 }} />
+            <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.9, background: "rgba(255,255,255,0.2)", padding: "4px 10px", borderRadius: 20 }}>
+              OT
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div style={{ fontSize: 32, fontWeight: 800, marginBottom: 4 }}>{formatOvertime(stats.totalOvertime)}</div>
+          <div style={{ fontSize: 13, opacity: 0.9 }}>Total Overtime</div>
+        </div>
+      </div>
 
-        <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-sm font-medium text-blue-600">On Leave</p>
-              <p className="text-xl font-bold text-blue-900">{stats.leave}</p>
+      {/* Secondary Stats */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 24 }}>
+        <div className="ma-card" style={{ background: "#fff", borderRadius: 14, padding: 18, border: "1px solid #e2e8f0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: "#dbeafe", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Sun style={{ width: 22, height: 22, color: "#3b82f6" }} />
             </div>
-          </CardContent>
-        </Card>
+            <div>
+              <div style={{ fontSize: 13, color: "#64748b", marginBottom: 2 }}>Average Work Hours</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: "#0f172a" }}>{avgWorkingHours}h</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="ma-card" style={{ background: "#fff", borderRadius: 14, padding: 18, border: "1px solid #e2e8f0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: "#ffedd5", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <AlertCircle style={{ width: 22, height: 22, color: "#f97316" }} />
+            </div>
+            <div>
+              <div style={{ fontSize: 13, color: "#64748b", marginBottom: 2 }}>Half Days</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: "#0f172a" }}>{stats.halfDay}</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="ma-card" style={{ background: "#fff", borderRadius: 14, padding: 18, border: "1px solid #e2e8f0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: "#ede9fe", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Moon style={{ width: 22, height: 22, color: "#8b5cf6" }} />
+            </div>
+            <div>
+              <div style={{ fontSize: 13, color: "#64748b", marginBottom: 2 }}>Leave Taken</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: "#0f172a" }}>{stats.leave}</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-slate-200 bg-white rounded-t-xl overflow-hidden">
-        <nav className="flex space-x-8 px-6" aria-label="Tabs">
+      <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #e2e8f0", marginBottom: 20, overflow: "hidden" }}>
+        <div style={{ display: "flex", borderBottom: "1px solid #f1f5f9" }}>
           {tabs.map((tab) => {
             const Icon = tab.icon
             const isActive = activeTab === tab.id
@@ -254,47 +300,60 @@ export default function MyAttendancePage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 whitespace-nowrap ${
-                  isActive
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
-                }`}
+                className={`ma-tab ${isActive ? 'active' : ''}`}
+                style={{
+                  flex: 1,
+                  padding: "16px 20px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  border: "none",
+                  background: "transparent",
+                  cursor: "pointer",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: isActive ? "#2563eb" : "#64748b",
+                  borderBottom: isActive ? "2px solid #3b82f6" : "2px solid transparent",
+                  fontFamily: "inherit",
+                }}
               >
-                <Icon className="w-4 h-4" />
+                <Icon style={{ width: 18, height: 18 }} />
                 {tab.label}
-                {isActive && (
-                  <span className="ml-2 w-1 h-1 rounded-full bg-blue-500" />
-                )}
               </button>
             )
           })}
-        </nav>
-      </div>
+        </div>
 
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold flex items-center gap-2">
-            <Filter className="w-5 h-5 text-slate-400" />
-            Filters
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-              <Input
+        {/* Filters */}
+        <div style={{ padding: 20, borderBottom: "1px solid #f1f5f9" }}>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <div style={{ flex: 1, minWidth: 200, position: "relative" }}>
+              <Search style={{ position: "absolute", left: 14, top: 13, width: 18, height: 18, color: "#94a3b8", pointerEvents: "none" }} />
+              <input
                 placeholder="Search by notes..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                style={{
+                  width: "100%", height: 44, borderRadius: 10, border: "1.5px solid #e2e8f0",
+                  paddingLeft: 44, paddingRight: 12, fontSize: 14, color: "#0f172a", outline: "none",
+                  fontFamily: "inherit", background: "#fff", transition: "border-color 0.15s"
+                }}
+                onFocus={(e) => e.target.style.borderColor = "#3b82f6"}
+                onBlur={(e) => e.target.style.borderColor = "#e2e8f0"}
               />
             </div>
-            <div className="relative">
+            <div style={{ minWidth: 160 }}>
               <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
-                className="h-12 w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 pr-10 text-sm text-slate-900 shadow-sm transition-all outline-none hover:border-slate-300 focus-visible:border-blue-500 focus-visible:ring-4 focus-visible:ring-blue-500/10 appearance-none"
+                style={{
+                  width: "100%", height: 44, borderRadius: 10, border: "1.5px solid #e2e8f0",
+                  padding: "0 12px", fontSize: 14, color: "#0f172a", outline: "none",
+                  fontFamily: "inherit", background: "#fff", cursor: "pointer",
+                  appearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+                  backgroundRepeat: "no-repeat", backgroundPosition: "right 12px center", backgroundSize: 16
+                }}
               >
                 <option value="All Status">All Status</option>
                 <option value="Present">Present</option>
@@ -306,43 +365,39 @@ export default function MyAttendancePage() {
               </select>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Tab Content */}
-      <div className="min-h-[400px]">
+      <div style={{ minHeight: 400 }}>
         {activeTab === "overview" && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
             {/* Recent Attendance */}
-            <div className="bg-card border border-border rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-foreground mb-4">Recent Attendance (Last 7 Days)</h3>
-              <div className="space-y-3 max-h-96 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+            <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #e2e8f0", overflow: "hidden" }}>
+              <div style={{ padding: 20, borderBottom: "1px solid #f1f5f9" }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0f172a" }}>Recent Attendance (Last 7 Days)</h3>
+              </div>
+              <div style={{ maxHeight: 400, overflowY: "auto" }}>
                 {filteredAttendance.slice(0, 7).map((record, index) => {
                   const config = getStatusConfig(record.status)
                   const StatusIcon = config.icon
                   
                   return (
-                    <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                          <Calendar className="h-5 w-5 text-primary" />
+                    <div key={index} className="ma-row" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: index < 6 ? "1px solid #f1f5f9" : "none" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                        <div style={{ width: 44, height: 44, borderRadius: 12, background: config.bg, border: `1px solid ${config.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <StatusIcon style={{ width: 20, height: 20, color: config.color }} />
                         </div>
                         <div>
-                          <p className="font-medium text-foreground">{record.date}</p>
-                          <p className="text-sm text-muted-foreground">{record.notes}</p>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: "#0f172a" }}>{record.date}</div>
+                          <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>{record.notes}</div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="flex items-center gap-2 justify-end mb-1">
-                          <Clock className="h-3 w-3 text-muted-foreground" />
-                          <p className="font-medium text-foreground">{record.checkIn}</p>
-                        </div>
-                        <div className="flex items-center gap-2 justify-end mb-1">
-                          <Clock className="h-3 w-3 text-muted-foreground" />
-                          <p className="text-sm text-muted-foreground">{record.checkOut}</p>
-                        </div>
+                      <div style={{ textAlign: "right" }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: "#0f172a" }}>{record.checkIn}</div>
+                        <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>{record.checkOut}</div>
                         {record.overtime !== "0h" && (
-                          <p className="text-xs text-blue-600 font-medium">+{record.overtime}</p>
+                          <div style={{ fontSize: 11, color: "#3b82f6", fontWeight: 600, marginTop: 2 }}>+{record.overtime}</div>
                         )}
                       </div>
                     </div>
@@ -352,57 +407,32 @@ export default function MyAttendancePage() {
             </div>
 
             {/* Attendance Summary */}
-            <div className="bg-card border border-border rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-foreground mb-4">Monthly Summary</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-green-100 dark:bg-green-800/30 rounded-lg flex items-center justify-center">
-                      <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-                    </div>
-                    <span className="font-medium text-green-900 dark:text-green-100">Present Days</span>
-                  </div>
-                  <span className="font-bold text-green-900 dark:text-green-100">{stats.present} days</span>
-                </div>
-                
-                <div className="flex items-center justify-between p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-red-100 dark:bg-red-800/30 rounded-lg flex items-center justify-center">
-                      <XCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
-                    </div>
-                    <span className="font-medium text-red-900 dark:text-red-100">Absent Days</span>
-                  </div>
-                  <span className="font-bold text-red-900 dark:text-red-100">{stats.absent} days</span>
-                </div>
-                
-                <div className="flex items-center justify-between p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-yellow-100 dark:bg-yellow-800/30 rounded-lg flex items-center justify-center">
-                      <Clock className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
-                    </div>
-                    <span className="font-medium text-yellow-900 dark:text-yellow-100">Late Arrivals</span>
-                  </div>
-                  <span className="font-bold text-yellow-900 dark:text-yellow-100">{stats.late} times</span>
-                </div>
-                
-                <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-blue-100 dark:bg-blue-800/30 rounded-lg flex items-center justify-center">
-                      <AlertCircle className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <span className="font-medium text-blue-900 dark:text-blue-100">Leave Taken</span>
-                  </div>
-                  <span className="font-bold text-blue-900 dark:text-blue-100">{stats.leave} days</span>
-                </div>
-                
-                <div className="flex items-center justify-between p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-purple-100 dark:bg-purple-800/30 rounded-lg flex items-center justify-center">
-                      <TrendingUp className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <span className="font-medium text-purple-900 dark:text-purple-100">Total Overtime</span>
-                  </div>
-                  <span className="font-bold text-purple-900 dark:text-purple-100">{formatOvertime(stats.totalOvertime)}</span>
+            <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #e2e8f0", overflow: "hidden" }}>
+              <div style={{ padding: 20, borderBottom: "1px solid #f1f5f9" }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0f172a" }}>Monthly Summary</h3>
+              </div>
+              <div style={{ padding: 20 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {[
+                    { label: "Present Days", value: stats.present, color: "#10b981", bg: "#dcfce7", icon: CheckCircle },
+                    { label: "Absent Days", value: stats.absent, color: "#ef4444", bg: "#fee2e2", icon: XCircle },
+                    { label: "Late Arrivals", value: stats.late, color: "#f59e0b", bg: "#fef3c7", icon: Clock },
+                    { label: "Leave Taken", value: stats.leave, color: "#3b82f6", bg: "#dbeafe", icon: AlertCircle },
+                    { label: "Total Overtime", value: formatOvertime(stats.totalOvertime), color: "#8b5cf6", bg: "#ede9fe", icon: TrendingUp },
+                  ].map((item, index) => {
+                    const Icon = item.icon
+                    return (
+                      <div key={index} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderRadius: 10, background: item.bg }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                          <div style={{ width: 36, height: 36, borderRadius: 8, background: "rgba(255,255,255,0.6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <Icon style={{ width: 18, height: 18, color: item.color }} />
+                          </div>
+                          <span style={{ fontSize: 14, fontWeight: 600, color: item.color }}>{item.label}</span>
+                        </div>
+                        <span style={{ fontSize: 18, fontWeight: 700, color: item.color }}>{item.value}</span>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             </div>
@@ -410,93 +440,68 @@ export default function MyAttendancePage() {
         )}
         
         {activeTab === "detailed" && (
-          <div className="bg-card border border-border rounded-xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-muted/50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #e2e8f0", overflow: "hidden" }}>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
+                    <th style={{ padding: "16px 20px", textAlign: "left", fontSize: 12, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.07em" }}>
                       Date
                     </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    <th style={{ padding: "16px 20px", textAlign: "center", fontSize: 12, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.07em" }}>
                       Check In
                     </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    <th style={{ padding: "16px 20px", textAlign: "center", fontSize: 12, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.07em" }}>
                       Check Out
                     </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    <th style={{ padding: "16px 20px", textAlign: "center", fontSize: 12, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.07em" }}>
                       Status
                     </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    <th style={{ padding: "16px 20px", textAlign: "center", fontSize: 12, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.07em" }}>
                       Overtime
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    <th style={{ padding: "16px 20px", textAlign: "left", fontSize: 12, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.07em" }}>
                       Notes
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border">
+                <tbody>
                   {filteredAttendance.map((record, index) => {
                     const config = getStatusConfig(record.status)
                     const StatusIcon = config.icon
                     
                     return (
-                      <tr key={index} className="hover:bg-muted/30 transition-colors">
-                        <td className="px-6 py-2">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                              <Calendar className="h-5 w-5 text-primary" />
+                      <tr key={index} className="ma-row" style={{ borderBottom: index < filteredAttendance.length - 1 ? "1px solid #f1f5f9" : "none" }}>
+                        <td style={{ padding: "16px 20px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                            <div style={{ width: 40, height: 40, borderRadius: 10, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <Calendar style={{ width: 18, height: 18, color: "#64748b" }} />
                             </div>
-                            <div className="font-medium text-foreground">{record.date}</div>
+                            <span style={{ fontSize: 14, fontWeight: 600, color: "#0f172a" }}>{record.date}</span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <Clock className="h-4 w-4 text-muted-foreground" />
-                            <span className="font-medium text-foreground">{record.checkIn}</span>
-                          </div>
+                        <td style={{ padding: "16px 20px", textAlign: "center" }}>
+                          <span style={{ fontSize: 14, fontWeight: 500, color: "#0f172a" }}>{record.checkIn}</span>
                         </td>
-                        <td className="px-6 py-4 text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <Clock className="h-4 w-4 text-muted-foreground" />
-                            <span className="font-medium text-foreground">{record.checkOut}</span>
-                          </div>
+                        <td style={{ padding: "16px 20px", textAlign: "center" }}>
+                          <span style={{ fontSize: 14, fontWeight: 500, color: "#0f172a" }}>{record.checkOut}</span>
                         </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium ${
-                            record.status === 'present' 
-                              ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
-                              : record.status === 'absent'
-                              ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
-                              : record.status === 'late'
-                              ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
-                              : record.status === 'halfday'
-                              ? "bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400"
-                              : record.status === 'leave'
-                              ? "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
-                              : "bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400"
-                          }`}>
-                            <span className={`w-2 h-2 rounded-full ${
-                              record.status === 'present' ? "bg-green-500" 
-                              : record.status === 'absent' ? "bg-red-500"
-                              : record.status === 'late' ? "bg-yellow-500"
-                              : record.status === 'halfday' ? "bg-orange-500"
-                              : record.status === 'leave' ? "bg-blue-500"
-                              : "bg-purple-500"
-                            }`} />
-                            <StatusIcon className="w-3 h-3" />
+                        <td style={{ padding: "16px 20px", textAlign: "center" }}>
+                          <span style={{
+                            display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px",
+                            borderRadius: 20, fontSize: 12, fontWeight: 600, color: config.color, background: config.bg, border: `1px solid ${config.border}`
+                          }}>
+                            <StatusIcon style={{ width: 14, height: 14 }} />
                             {config.label}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className={`font-medium ${
-                            record.overtime !== "0h" ? "text-blue-600" : "text-muted-foreground"
-                          }`}>
+                        <td style={{ padding: "16px 20px", textAlign: "center" }}>
+                          <span style={{ fontSize: 14, fontWeight: 600, color: record.overtime !== "0h" ? "#3b82f6" : "#94a3b8" }}>
                             {record.overtime}
                           </span>
                         </td>
-                        <td className="px-6 py-4">
-                          <span className="text-sm text-foreground">{record.notes}</span>
+                        <td style={{ padding: "16px 20px" }}>
+                          <span style={{ fontSize: 13, color: "#64748b" }}>{record.notes}</span>
                         </td>
                       </tr>
                     )
@@ -506,10 +511,10 @@ export default function MyAttendancePage() {
             </div>
 
             {filteredAttendance.length === 0 && (
-              <div className="text-center py-12">
-                <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">No attendance records found</h3>
-                <p className="text-muted-foreground">
+              <div style={{ textAlign: "center", padding: 60 }}>
+                <Calendar style={{ width: 48, height: 48, color: "#cbd5e1", margin: "0 auto 16px" }} />
+                <h3 style={{ fontSize: 18, fontWeight: 700, color: "#0f172a", marginBottom: 8 }}>No attendance records found</h3>
+                <p style={{ fontSize: 14, color: "#64748b" }}>
                   {searchTerm || selectedStatus !== "All Status" 
                     ? "Try adjusting your search or filter criteria" 
                     : "No attendance data available for the selected period"}
@@ -520,26 +525,45 @@ export default function MyAttendancePage() {
         )}
         
         {activeTab === "reports" && (
-          <Card>
-            <CardContent className="text-center py-12">
-              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Download className="w-8 h-8 text-slate-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">My Attendance Reports</h3>
-              <p className="text-slate-500 mb-4">Download your attendance reports for different time periods.</p>
-              <div className="flex gap-2 justify-center">
-                <Button variant="outline" className="cursor-pointer">
-                  Monthly Report
-                </Button>
-                <Button variant="outline" className="cursor-pointer">
-                  Quarterly Report
-                </Button>
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white cursor-pointer">
-                  Annual Report
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #e2e8f0", padding: 60, textAlign: "center" }}>
+            <div style={{ width: 64, height: 64, borderRadius: 16, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+              <Download style={{ width: 32, height: 32, color: "#64748b" }} />
+            </div>
+            <h3 style={{ fontSize: 20, fontWeight: 700, color: "#0f172a", marginBottom: 8 }}>My Attendance Reports</h3>
+            <p style={{ fontSize: 14, color: "#64748b", marginBottom: 24 }}>Download your attendance reports for different time periods.</p>
+            <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+              <button style={{
+                padding: "12px 24px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#fff",
+                fontSize: 14, fontWeight: 600, color: "#0f172a", cursor: "pointer", fontFamily: "inherit",
+                transition: "all 0.15s"
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#cbd5e1"; e.currentTarget.style.background = "#f8fafc" }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.background = "#fff" }}
+              >
+                Monthly Report
+              </button>
+              <button style={{
+                padding: "12px 24px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#fff",
+                fontSize: 14, fontWeight: 600, color: "#0f172a", cursor: "pointer", fontFamily: "inherit",
+                transition: "all 0.15s"
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#cbd5e1"; e.currentTarget.style.background = "#f8fafc" }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.background = "#fff" }}
+              >
+                Quarterly Report
+              </button>
+              <button style={{
+                padding: "12px 24px", borderRadius: 10, border: "1.5px solid #3b82f6", background: "#3b82f6",
+                fontSize: 14, fontWeight: 600, color: "#fff", cursor: "pointer", fontFamily: "inherit",
+                transition: "all 0.15s"
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = "#2563eb"}
+              onMouseLeave={(e) => e.currentTarget.style.background = "#3b82f6"}
+              >
+                Annual Report
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>

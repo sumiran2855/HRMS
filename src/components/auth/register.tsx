@@ -38,8 +38,8 @@ export function RegisterForm() {
                             type="text"
                             placeholder="John Doe"
                             className="h-12 pl-12 pr-4 border-slate-300 bg-white rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm placeholder:text-slate-400"
-                            value={formData.name}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, name: e.target.value })}
+                            value={formData.fullName}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, fullName: e.target.value })}
                             required
                             autoComplete="name"
                         />
@@ -111,7 +111,7 @@ export function RegisterForm() {
                 <Button
                     type="submit"
                     className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl shadow-blue-500/30 transition-all duration-200 rounded-lg font-semibold text-sm cursor-pointer"
-                    disabled={isLoading || !formData.agreeToTerms}
+                    disabled={isLoading}
                 >
                     {isLoading ? (
                         <div className="flex items-center gap-2">

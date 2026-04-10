@@ -1,22 +1,79 @@
 import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { authService } from "@/services/auth.service"
+import { RegisterFormData } from "@/types/auth.types"
+import { useAuth } from "@/providers/auth.provider"
+import { AppError } from "@/utils/AppError"
+import { useErrorAlert } from "@/contexts/AlertContext"
 
 export const useRegister = () => {
     const [isLoading, setIsLoading] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-    const [formData, setFormData] = useState({
-        name: "",
+    const router = useRouter()
+    const { setAuth } = useAuth()
+    const showErrorAlert = useErrorAlert()
+    const [formData, setFormData] = useState<RegisterFormData>({
         email: "",
+        username: "",
         password: "",
         confirmPassword: "",
+        fullName: "",
+        role: "employee",
         agreeToTerms: false,
     })
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        
+        // Validate terms agreement
+        if (!formData.agreeToTerms) {
+            showErrorAlert("You must agree to the Terms of Service and Privacy Policy")
+            return
+        }
+        
+        // Validate passwords match
+        if (formData.password !== formData.confirmPassword) {
+            showErrorAlert("Passwords do not match")
+            return
+        }
+
+        // Validate password strength
+        const strength = passwordStrength()
+        if (strength.strength < 60) {
+            showErrorAlert("Password is too weak. Please use a stronger password.")
+            return
+        }
+
         setIsLoading(true)
-        await new Promise((resolve) => setTimeout(resolve, 1500))
-        setIsLoading(false)
+
+        try {
+            const { email, username, password, fullName, role } = formData
+            const response = await authService.register({ 
+                email, 
+                username, 
+                password, 
+                fullName, 
+                role 
+            })
+
+            if (response.success) {
+                const { user, accessToken, refreshToken } = response.data
+                setAuth(user, accessToken, refreshToken)
+                router.push("/dashboard")
+            } else {
+                showErrorAlert(response.message || "Registration failed")
+            }
+        } catch (err) {
+            const errorMessage = err instanceof AppError
+                ? err.message
+                : (err as any)?.message || (err as any)?.details || "Registration failed. Please try again."
+
+            showErrorAlert(errorMessage)
+            console.info('Registration error caught:', err)
+        } finally {
+            setIsLoading(false)
+        }
     }
 
     const passwordStrength = () => {

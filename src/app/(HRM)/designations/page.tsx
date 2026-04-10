@@ -1,14 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Input } from "@/components/ui/Input"
-import { Button } from "@/components/ui/Button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
-import { Search, Plus, Edit2, Trash2, Users, Briefcase, TrendingUp, Shield, ChevronDown } from "lucide-react"
-import { AddDesignationModal } from "@/components/dashboard/designations/AddDesignationModal"
-import { EditDesignationModal } from "@/components/dashboard/designations/EditDesignationModal"
-import { ConfirmModal } from "@/components/ui/ConfirmModal"
-import { ToastContainer, useToast } from "@/components/ui/Toast"
+import { Search, Plus, Edit2, Trash2, Users, Briefcase, TrendingUp, Shield, X, Filter, Sparkles } from "lucide-react"
+import DesignationModal from "@/components/dashboard/designations/DesignationModal"
 
 interface Designation {
   id: number
@@ -20,12 +14,18 @@ interface Designation {
   skills: string[]
   minSalary: number
   maxSalary: number
-  status: string
+  status: "active" | "inactive"
   createdAt: string
 }
 
-// Hardcoded designation data
-const designationsData = [
+export default function DesignationsPage() {
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedDepartment, setSelectedDepartment] = useState("All Departments")
+  const [selectedLevel, setSelectedLevel] = useState("All Levels")
+  const [selectedStatus, setSelectedStatus] = useState("All Status")
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [editingDesignation, setEditingDesignation] = useState<Designation | null>(null)
+  const [designations, setDesignations] = useState<Designation[]>([
   {
     id: 1,
     title: "Senior Developer",
@@ -130,355 +130,285 @@ const designationsData = [
     status: "active",
     createdAt: "2024-03-10"
   }
-]
+  ])
 
-const departments = ["All Departments", "Engineering", "Product", "Design", "Human Resources", "Marketing", "Sales", "Finance"]
-const levels = ["All Levels", "Junior", "Mid", "Senior"]
-const statuses = ["All Status", "Active", "Inactive"]
+  const departments = ["All Departments", "Engineering", "Product", "Design", "Human Resources", "Marketing", "Sales", "Finance"]
+  const levels = ["All Levels", "Junior", "Mid", "Senior", "Lead", "Principal"]
 
-export default function DesignationsPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedDepartment, setSelectedDepartment] = useState("All Departments")
-  const [selectedLevel, setSelectedLevel] = useState("All Levels")
-  const [selectedStatus, setSelectedStatus] = useState("All Status")
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [selectedDesignation, setSelectedDesignation] = useState<Designation | null>(null)
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [designationToDelete, setDesignationToDelete] = useState<Designation | null>(null)
-  const [isDeleting, setIsDeleting] = useState(false)
-  
-  const { toasts, removeToast, success, error } = useToast()
-
-  const filteredDesignations = designationsData.filter(designation => {
-    const matchesSearch = designation.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         designation.description.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredDesignations = designations.filter((designation) => {
+    const searchLower = searchTerm.toLowerCase()
+    const titleLower = designation.title?.toLowerCase() || ""
+    const descLower = designation.description?.toLowerCase() || ""
+    const matchesSearch = titleLower.includes(searchLower) || descLower.includes(searchLower)
     const matchesDepartment = selectedDepartment === "All Departments" || designation.department === selectedDepartment
     const matchesLevel = selectedLevel === "All Levels" || designation.level === selectedLevel
-    const matchesStatus = selectedStatus === "All Status" || designation.status === selectedStatus.toLowerCase()
-    
-    return matchesSearch && matchesDepartment && matchesLevel && matchesStatus
+    return matchesSearch && matchesDepartment && matchesLevel
   })
 
-  const handleEdit = (designation: Designation) => {
-    setSelectedDesignation(designation)
-    setIsEditModalOpen(true)
-  }
-
-  const handleDelete = (designation: Designation) => {
-    setDesignationToDelete(designation)
-    setIsDeleteModalOpen(true)
-  }
-
-  const confirmDelete = async () => {
-    if (!designationToDelete) return
-    
-    setIsDeleting(true)
-    
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      // Remove from local data (in real app, this would be an API call)
-      const index = designationsData.findIndex(d => d.id === designationToDelete.id)
-      if (index > -1) {
-        designationsData.splice(index, 1)
-      }
-      
-      success(
-        "Designation Deleted Successfully",
-        `${designationToDelete.title} has been removed from the system.`
-      )
-      
-      // Close modal
-      setIsDeleteModalOpen(false)
-      setDesignationToDelete(null)
-    } catch (err) {
-      error(
-        "Delete Failed",
-        "Failed to delete designation. Please try again."
-      )
-    } finally {
-      setIsDeleting(false)
+  const handleAddDesignation = (designationData: Omit<Designation, "id" | "createdAt">) => {
+    const newDesignation: Designation = {
+      id: Date.now(),
+      ...designationData,
+      createdAt: new Date().toISOString().split('T')[0]
     }
+    setDesignations([...designations, newDesignation])
+    setShowAddModal(false)
   }
 
-  const totalDesignations = designationsData.length
-  const activeDesignations = designationsData.filter(d => d.status === "active").length
-  const totalEmployees = designationsData.reduce((sum, d) => sum + d.employeeCount, 0)
+  const handleEditDesignation = (designationData: Omit<Designation, "id" | "createdAt">) => {
+    if (!editingDesignation) return
+    setDesignations(designations.map(d =>
+      d.id === editingDesignation.id ? { ...designationData, id: d.id, createdAt: d.createdAt } : d
+    ))
+    setEditingDesignation(null)
+    setShowAddModal(false)
+  }
+
+  const handleDeleteDesignation = (id: number) => {
+    setDesignations(designations.filter(d => d.id !== id))
+  }
+
+  const openEditModal = (designation: Designation) => {
+    setEditingDesignation(designation)
+    setShowAddModal(true)
+  }
+
+  const closeModal = () => {
+    setShowAddModal(false)
+    setEditingDesignation(null)
+  }
+
+  const totalDesignations = designations.length
+  const activeDesignations = designations.filter(d => d.status === "active").length
+  const totalEmployees = designations.reduce((sum, d) => sum + d.employeeCount, 0)
 
   return (
-    <div className="space-y-6">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-blue-600">Total Designations</p>
-                <p className="text-2xl font-bold text-blue-900">{totalDesignations}</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      <div className="space-y-8 p-6 lg:p-8">
+        {/* Header Section */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-br from-primary to-primary/80 rounded-xl shadow-lg shadow-primary/20">
+                <Briefcase className="h-6 w-6 text-white" />
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <Briefcase className="w-6 h-6 text-blue-600" />
-              </div>
+              <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                Designation Management
+              </h1>
             </div>
-          </CardContent>
-        </Card>
+            <p className="text-muted-foreground ml-11">Organize and manage job titles and roles across departments</p>
+          </div>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white rounded-xl shadow-lg shadow-primary/25 hover:shadow-primary/35 transition-all duration-200 font-medium"
+          >
+            <Plus className="h-5 w-5" />
+            Add Designation
+          </button>
+        </div>
 
-        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-green-600">Active Designations</p>
-                <p className="text-2xl font-bold text-green-900">{activeDesignations}</p>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white dark:bg-slate-900/50 backdrop-blur-xl rounded-2xl p-6 border border-slate-200/50 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-2xl hover:shadow-slate-200/60 dark:hover:shadow-none transition-all duration-300">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg shadow-blue-500/25">
+                <Briefcase className="h-6 w-6 text-white" />
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-green-600" />
-              </div>
+              <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded-lg">Total</span>
             </div>
-          </CardContent>
-        </Card>
+            <div className="text-3xl font-bold text-foreground mb-1">{totalDesignations}</div>
+            <div className="text-sm text-muted-foreground">Total Designations</div>
+          </div>
 
-        <Card className="bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-purple-600">Total Employees</p>
-                <p className="text-2xl font-bold text-purple-900">{totalEmployees}</p>
+          <div className="bg-white dark:bg-slate-900/50 backdrop-blur-xl rounded-2xl p-6 border border-slate-200/50 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-2xl hover:shadow-slate-200/60 dark:hover:shadow-none transition-all duration-300">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow-lg shadow-emerald-500/25">
+                <Sparkles className="h-6 w-6 text-white" />
               </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                <Users className="w-6 h-6 text-purple-600" />
-              </div>
+              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-lg">Active</span>
             </div>
-          </CardContent>
-        </Card>
+            <div className="text-3xl font-bold text-foreground mb-1">{activeDesignations}</div>
+            <div className="text-sm text-muted-foreground">Active Designations</div>
+          </div>
 
-        <Card className="bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-orange-600">Avg. Team Size</p>
-                <p className="text-2xl font-bold text-orange-900">{Math.round(totalEmployees / totalDesignations)}</p>
+          <div className="bg-white dark:bg-slate-900/50 backdrop-blur-xl rounded-2xl p-6 border border-slate-200/50 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-2xl hover:shadow-slate-200/60 dark:hover:shadow-none transition-all duration-300">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl shadow-lg shadow-violet-500/25">
+                <Users className="h-6 w-6 text-white" />
               </div>
-              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                <Shield className="w-6 h-6 text-orange-600" />
-              </div>
+              <span className="text-xs font-semibold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 px-2 py-1 rounded-lg">Employees</span>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            <div className="text-3xl font-bold text-foreground mb-1">{totalEmployees}</div>
+            <div className="text-sm text-muted-foreground">Total Employees</div>
+          </div>
 
-      {/* Search and Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">Designations Management</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-6">
-            <div className="relative lg:col-span-2">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-              <Input
-                placeholder="Search designations..."
+          <div className="bg-white dark:bg-slate-900/50 backdrop-blur-xl rounded-2xl p-6 border border-slate-200/50 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-2xl hover:shadow-slate-200/60 dark:hover:shadow-none transition-all duration-300">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl shadow-lg shadow-amber-500/25">
+                <Shield className="h-6 w-6 text-white" />
+              </div>
+              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 px-2 py-1 rounded-lg">Avg Size</span>
+            </div>
+            <div className="text-3xl font-bold text-foreground mb-1">{totalDesignations > 0 ? Math.round(totalEmployees / totalDesignations) : 0}</div>
+            <div className="text-sm text-muted-foreground">Avg Employees/Role</div>
+          </div>
+        </div>
+
+        {/* Search and Filter Bar */}
+        <div className="bg-white dark:bg-slate-900/50 backdrop-blur-xl rounded-2xl p-4 border border-slate-200/50 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search designations by title or description..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 w-full"
+                className="w-full pl-12 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200 text-foreground placeholder:text-muted-foreground/60"
               />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                >
+                  <X className="h-4 w-4 text-muted-foreground" />
+                </button>
+              )}
             </div>
-
-            <div className="relative">
+            <div className="flex items-center gap-2">
+              <Filter className="h-5 w-5 text-muted-foreground" />
               <select
                 value={selectedDepartment}
                 onChange={(e) => setSelectedDepartment(e.target.value)}
-                className="h-12 w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 pr-10 text-sm text-slate-900 shadow-sm transition-all outline-none hover:border-slate-300 focus-visible:border-blue-500 focus-visible:ring-4 focus-visible:ring-blue-500/10 appearance-none"
+                className="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200 text-foreground cursor-pointer"
               >
-                {departments.map(dept => (
-                  <option key={dept} value={dept}>{dept}</option>
-                ))}
+                {departments.map(dept => <option key={dept} value={dept}>{dept}</option>)}
               </select>
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                <ChevronDown className="w-4 h-4 text-slate-400" />
-              </div>
-            </div>
-
-            <div className="relative">
               <select
                 value={selectedLevel}
                 onChange={(e) => setSelectedLevel(e.target.value)}
-                className="h-12 w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 pr-10 text-sm text-slate-900 shadow-sm transition-all outline-none hover:border-slate-300 focus-visible:border-blue-500 focus-visible:ring-4 focus-visible:ring-blue-500/10 appearance-none"
+                className="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200 text-foreground cursor-pointer"
               >
-                {levels.map(level => (
-                  <option key={level} value={level}>{level}</option>
-                ))}
+                {levels.map(level => <option key={level} value={level}>{level}</option>)}
               </select>
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                <ChevronDown className="w-4 h-4 text-slate-400" />
+            </div>
+          </div>
+        </div>
+
+        {/* Designations Grid */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {filteredDesignations.map((designation) => (
+            <div
+              key={designation.id}
+              className="bg-white dark:bg-slate-900/50 backdrop-blur-xl rounded-2xl p-6 border border-slate-200/50 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-2xl hover:shadow-slate-200/60 dark:hover:shadow-none transition-all duration-300 group"
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className={`p-3 rounded-xl bg-gradient-to-br ${
+                    designation.status === "active" ? "from-emerald-500 to-emerald-600" : "from-slate-500 to-slate-600"
+                  } shadow-lg`}>
+                    <Briefcase className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground text-base">{designation.title}</h3>
+                    <div className="flex gap-2 mt-1">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700">
+                        {designation.department}
+                      </span>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-violet-50 text-violet-700">
+                        {designation.level}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => openEditModal(designation)}
+                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors group/btn"
+                  >
+                    <Edit2 className="h-4 w-4 text-muted-foreground group-hover/btn:text-primary transition-colors" />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteDesignation(designation.id)}
+                    className="p-2 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors group/btn"
+                  >
+                    <Trash2 className="h-4 w-4 text-muted-foreground group-hover/btn:text-destructive transition-colors" />
+                  </button>
+                </div>
+              </div>
+
+              <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{designation.description}</p>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-foreground font-medium">{designation.employeeCount}</span>
+                  <span className="text-muted-foreground">Employees</span>
+                </div>
+
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1.5">Key skills</p>
+                  <div className="flex flex-wrap gap-1">
+                    {designation.skills.slice(0, 3).map((skill, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center px-2 py-0.5 rounded-md text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                    {designation.skills.length > 3 && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400">
+                        +{designation.skills.length - 3} more
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-0.5">Salary range</p>
+                    <p className="text-sm font-medium text-foreground">
+                      ${designation.minSalary.toLocaleString()} – ${designation.maxSalary.toLocaleString()}
+                    </p>
+                  </div>
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${
+                    designation.status === 'active'
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800"
+                      : "bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-950/30 dark:text-slate-400 dark:border-slate-800"
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${
+                      designation.status === 'active' ? 'bg-emerald-500' : 'bg-slate-500'
+                    }`} />
+                    {designation.status === 'active' ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
               </div>
             </div>
+          ))}
+        </div>
 
-            <Button 
-              className="bg-blue-600 hover:bg-blue-700 text-white w-full cursor-pointer"
-              onClick={() => setIsAddModalOpen(true)}
-            >
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Add Designation</span>
-              <span className="sm:hidden">Add</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Designations Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-  {filteredDesignations.map((designation) => (
-    <div
-      key={designation.id}
-      className="bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition-colors duration-200 flex flex-col overflow-hidden"
-    >
-      {/* Header */}
-      <div className="px-4 py-3.5 border-b border-slate-100">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <p className="text-[15px] font-medium text-slate-900 truncate mb-2">
-              {designation.title}
+        {filteredDesignations.length === 0 && (
+          <div className="text-center py-16 bg-white dark:bg-slate-900/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-800 shadow-xl">
+            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Briefcase className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground mb-2">No designations found</h3>
+            <p className="text-muted-foreground max-w-sm mx-auto">
+              {searchTerm || selectedDepartment !== "All Departments" || selectedLevel !== "All Levels"
+                ? "Try adjusting your search or filters"
+                : "Get started by adding your first designation"}
             </p>
-            <div className="flex flex-wrap gap-1.5">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-800">
-                {designation.department}
-              </span>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-green-50 text-green-800">
-                {designation.level}
-              </span>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-violet-50 text-violet-800">
-                {designation.employeeCount} employees
-              </span>
-            </div>
           </div>
-          <div className="flex gap-1 shrink-0">
-            <button
-              onClick={() => handleEdit(designation)}
-              className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
-            >
-              <Edit2 className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => handleDelete(designation)}
-              className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      </div>
+        )}
 
-      {/* Body */}
-      <div className="px-4 py-3.5 flex-1 flex flex-col gap-3">
-        <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
-          {designation.description}
-        </p>
-
-        <div>
-          <p className="text-[11px] font-medium text-slate-400 mb-1.5">Key skills</p>
-          <div className="flex flex-wrap gap-1">
-            {designation.skills.slice(0, 3).map((skill, index) => (
-              <span
-                key={index}
-                className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-slate-100 text-slate-600"
-              >
-                {skill}
-              </span>
-            ))}
-            {designation.skills.length > 3 && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-blue-50 text-blue-600">
-                +{designation.skills.length - 3} more
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="px-4 py-3 border-t border-slate-100 flex items-center justify-between">
-        <div>
-          <p className="text-[11px] text-slate-400 mb-0.5">Salary range</p>
-          <p className="text-[13px] font-medium text-slate-900">
-            ${designation.minSalary.toLocaleString()} – ${designation.maxSalary.toLocaleString()}
-          </p>
-        </div>
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium ${
-          designation.status === 'active'
-            ? 'bg-green-50 text-green-800'
-            : 'bg-red-50 text-red-800'
-        }`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${
-            designation.status === 'active' ? 'bg-green-600' : 'bg-red-500'
-          }`} />
-          {designation.status === 'active' ? 'Active' : 'Inactive'}
-        </span>
-      </div>
-    </div>
-  ))}
-</div>
-
-      {/* No Results Message */}
-      {filteredDesignations.length === 0 && (
-        <Card>
-          <CardContent className="text-center py-12">
-            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Briefcase className="w-8 h-8 text-slate-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-slate-900 mb-2">No designations found</h3>
-            <p className="text-slate-500 mb-4">Try adjusting your search or filters to find what you're looking for.</p>
-            <Button 
-              onClick={() => {
-                setSearchTerm("")
-                setSelectedDepartment("All Departments")
-                setSelectedLevel("All Levels")
-                setSelectedStatus("All Status")
-              }}
-              variant="outline"
-            >
-              Clear Filters
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Add Designation Modal */}
-      <AddDesignationModal 
-        isOpen={isAddModalOpen} 
-        onClose={() => setIsAddModalOpen(false)} 
-      />
-
-      {/* Edit Designation Modal */}
-      {selectedDesignation && (
-        <EditDesignationModal 
-          isOpen={isEditModalOpen} 
-          onClose={() => {
-            setIsEditModalOpen(false)
-            setSelectedDesignation(null)
-          }}
-          designation={selectedDesignation}
+        <DesignationModal
+          isOpen={showAddModal || !!editingDesignation}
+          onClose={closeModal}
+          onSave={editingDesignation ? handleEditDesignation : handleAddDesignation}
+          editingDesignation={editingDesignation}
         />
-      )}
-
-      {/* Delete Confirmation Modal */}
-      {designationToDelete && (
-        <ConfirmModal
-          isOpen={isDeleteModalOpen}
-          onClose={() => {
-            setIsDeleteModalOpen(false)
-            setDesignationToDelete(null)
-          }}
-          onConfirm={confirmDelete}
-          title="Delete Designation"
-          message={`Are you sure you want to delete "${designationToDelete.title}"? This action cannot be undone and will remove all associated data.`}
-          type="delete"
-          confirmText="Delete"
-          isLoading={isDeleting}
-        />
-      )}
-
-      <ToastContainer toasts={toasts} onRemove={removeToast} />
+      </div>
     </div>
   )
 }

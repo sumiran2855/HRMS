@@ -45,4 +45,5 @@ export interface RegisterFormData {
     confirmPassword: string;
     fullName: string;
     role?: string;
+    agreeToTerms: boolean;
 }

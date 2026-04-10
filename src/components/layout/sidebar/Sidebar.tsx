@@ -142,9 +142,6 @@ export default function Sidebar() {
         {isExpanded && isOpen && (
           <div className="space-y-1 animate-in slide-in-from-top-2 duration-200">{item.children?.map((child) => renderSidebarItem(child, level + 1))}</div>
         )}
-        {hasActiveChild && !isExpanded && isOpen && (
-          <div className="space-y-1 animate-in slide-in-from-top-2 duration-200">{item.children?.map((child) => renderSidebarItem(child, level + 1))}</div>
-        )}
       </div>
     )
   }

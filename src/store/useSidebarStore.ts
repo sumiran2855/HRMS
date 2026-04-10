@@ -79,7 +79,7 @@ export const sidebarConfig: SidebarItem[] = [
         label: "Holidays",
         href: "/holidays",
         icon: "gift",
-      },
+      }
     ],
   },
   {
@@ -165,45 +165,33 @@ export const sidebarConfig: SidebarItem[] = [
     ],
   },
   {
-    id: "apps",
-    label: "Apps",
-    href: "/dashboard/apps",
-    icon: "grid",
-  },
-  {
     id: "payroll",
     label: "Payroll",
-    href: "/dashboard/payroll",
+    href: "/payroll",
     icon: "credit-card",
-  },
-  {
-    id: "expense",
-    label: "Expense",
-    href: "/dashboard/expense",
-    icon: "wallet",
   },
   {
     id: "company",
     label: "Company",
-    href: "/dashboard/company",
+    href: "/company",
     icon: "building",
   },
   {
     id: "clients",
     label: "Clients",
-    href: "/dashboard/clients",
+    href: "/client",
     icon: "users",
   },
   {
     id: "projects",
     label: "Projects",
-    href: "/dashboard/projects",
+    href: "/project",
     icon: "folder",
   },
   {
     id: "activities",
     label: "Activities",
-    href: "/dashboard/activities",
+    href: "/activity",
     icon: "activity",
   },
   {

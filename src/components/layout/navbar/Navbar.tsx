@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { useSidebarStore } from "@/store/useSidebarStore"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
@@ -100,13 +101,17 @@ export function Navbar() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-border/50" />
-              <DropdownMenuItem className="cursor-pointer py-2.5 rounded-lg mx-1 transition-colors">
-                <User className="mr-3 h-4 w-4" />
-                <span className="font-medium">Profile</span>
+              <DropdownMenuItem className="cursor-pointer py-2.5 rounded-lg mx-1 transition-colors" asChild>
+                <Link href="/profile">
+                  <User className="mr-3 h-4 w-4" />
+                  <span className="font-medium">Profile</span>
+                </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer py-2.5 rounded-lg mx-1 transition-colors">
-                <Settings className="mr-3 h-4 w-4" />
-                <span className="font-medium">Settings</span>
+              <DropdownMenuItem className="cursor-pointer py-2.5 rounded-lg mx-1 transition-colors" asChild>
+                <Link href="/settings">
+                  <Settings className="mr-3 h-4 w-4" />
+                  <span className="font-medium">Settings</span>
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-border/50" />
               <DropdownMenuItem

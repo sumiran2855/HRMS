@@ -1,6 +1,6 @@
 export const AUTH_ENDPOINTS = {
-  LOGIN: '/auth/login',
-  REGISTER: '/auth/register',
+  LOGIN: 'api/auth/login',
+  REGISTER: 'api/auth/register',
   VALIDATE_TOKEN: '/auth/validate-token',
   CURRENT_USER: '/auth/current-user',
   LOGOUT: '/auth/logout',
