@@ -1,8 +1,9 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 
 const SERVICE_URLS = {
-  AUTH: process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:3001/',
+  AUTH: process.env.NEXT_PUBLIC_AUTH_API_URL || 'https://auth-service-4cwu.onrender.com',
   EMPLOYEE: process.env.NEXT_PUBLIC_EMPLOYEE_API_URL || 'http://localhost:3002/',
+  ATTENDANCE: process.env.NEXT_PUBLIC_ATTENDANCE_API_URL || 'http://localhost:3003/',
 } as const;
 
 type ServiceType = keyof typeof SERVICE_URLS;
@@ -37,6 +38,7 @@ function createApiClient(service: ServiceType): AxiosInstance {
 
 export const authClient = createApiClient('AUTH');
 export const employeeClient = createApiClient('EMPLOYEE');
+export const attendanceClient = createApiClient('ATTENDANCE');
 
 const apiClient: AxiosInstance = employeeClient;
 
