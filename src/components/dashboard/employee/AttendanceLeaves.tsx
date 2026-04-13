@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Calendar, ChevronDown, FileText, Clock, CheckCircle, Briefcase } from "lucide-react";
+import { Calendar, ChevronDown, CheckCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { cn } from "@/components/utils";
 import { years, stats } from "@/types/employee";

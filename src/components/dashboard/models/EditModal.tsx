@@ -1,17 +1,7 @@
 "use client"
 
 import { X, UserCircle2 } from "lucide-react"
-import { Button } from "@/components/ui/Button"
-
-interface EditModalProps {
-  isOpen: boolean
-  onClose: () => void
-  title: string
-  children: React.ReactNode
-  onSave?: () => void
-  description?: string
-  lastUpdated?: string
-}
+import { EditModalProps } from "./types"
 
 export function EditModal({
   isOpen,

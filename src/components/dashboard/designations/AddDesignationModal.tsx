@@ -29,7 +29,6 @@ export function AddDesignationModal({ isOpen, onClose }: AddDesignationModalProp
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission here
     console.log("Adding designation:", formData)
     onClose()
     setFormData({

@@ -1,107 +1,166 @@
 "use client"
 
-import { FileText, Upload, X } from "lucide-react"
+import { X } from "lucide-react"
 import { EditModal } from "./EditModal"
-import { Button } from "@/components/ui/Button"
 import { useState } from "react"
-
-interface EmployeeData {
-  id: string
-  name: string
-  jobTitle: string
-  position: string
-  dateOfJoin: string
-  phone: string
-  email: string
-  birthday: string
-  address: string
-  gender: string
-  socialProfiles: {
-    linkedin: string
-    twitter: string
-    facebook: string
-    instagram: string
-    whatsapp: string
-  }
-  emergencyContact: {
-    primary: {
-      name: string
-      relationship: string
-      phone: string
-      email: string
-      address: string
-    }
-    secondary: {
-      name: string
-      relationship: string
-      phone: string
-      email: string
-      address: string
-    }
-  }
-  experience: Array<{
-    company: string
-    role: string
-    year: string
-  }>
-  bankAccount: {
-    accountHolderName: string
-    accountNumber: string
-    bankName: string
-    branchName: string
-    swiftCode: string
-  }
-  passport: {
-    passportNumber: string
-    nationality: string
-    issueDate: string
-    expiryDate: string
-    scanCopy: string
-  }
-}
-
-interface EmployeeModalsProps {
-  activeModal: string | null
-  closeModal: () => void
-  employeeData: EmployeeData
-  uploadedFile: File | null
-  handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
-  removeFile: () => void
-}
-
-interface ExperienceEntry {
-  id: string
-  company: string
-  role: string
-  startDate: string
-  endDate: string
-  isCurrentlyWorking: boolean
-}
+import { useEmployee } from "@/hooks/employee/useEmployee"
+import { EmployeeModalsProps, ExperienceEntry } from "./types"
 
 export function EmployeeModals({
   activeModal,
   closeModal,
   employeeData,
+  employeeId,
   uploadedFile,
   handleFileUpload,
-  removeFile
+  removeFile,
+  onSave
 }: EmployeeModalsProps) {
+  const { updateEmployee, loading } = useEmployee()
   const [experienceEntries, setExperienceEntries] = useState<ExperienceEntry[]>(
     employeeData.experience.map((exp, index) => ({
       id: `exp-${index}`,
       company: exp.company,
-      role: exp.role,
-      startDate: '',
-      endDate: '',
+      position: exp.position,
+      startDate: exp.startDate || '',
+      endDate: exp.endDate || '',
       isCurrentlyWorking: false
     }))
   )
+
+  // Social profile state
+  const [socialProfile, setSocialProfile] = useState({
+    linkedin: employeeData.socialProfiles.linkedin || '',
+    twitter: employeeData.socialProfiles.twitter || '',
+    facebook: employeeData.socialProfiles.facebook || '',
+    instagram: employeeData.socialProfiles.instagram || '',
+    whatsapp: employeeData.socialProfiles.whatsapp || ''
+  })
+
+  const handleSocialProfileChange = (field: string, value: string) => {
+    setSocialProfile(prev => ({ ...prev, [field]: value }))
+  }
+
+  // Personal info state
+  const [personalInfo, setPersonalInfo] = useState({
+    firstName: employeeData.name.split(' ')[0] || '',
+    lastName: employeeData.name.split(' ').slice(1).join(' ') || '',
+    email: employeeData.email || '',
+    phone: employeeData.phone || '',
+    address: employeeData.address || '',
+    gender: employeeData.gender || '',
+    birthday: employeeData.birthday || '',
+    position: employeeData.position || '',
+    jobTitle: employeeData.jobTitle || '',
+    dateOfJoin: employeeData.dateOfJoin || '',
+    departmentId: employeeData.departmentId || '',
+    hireDate: employeeData.hireDate || ''
+  })
+
+  const handlePersonalInfoChange = (field: string, value: string) => {
+    setPersonalInfo(prev => ({ ...prev, [field]: value }))
+  }
+
+  // Emergency contact state
+  const [emergencyContact, setEmergencyContact] = useState({
+    primary: {
+      name: employeeData.emergencyContact.primary.name || '',
+      relationship: employeeData.emergencyContact.primary.relationship || '',
+      phone: employeeData.emergencyContact.primary.phone || '',
+      email: employeeData.emergencyContact.primary.email || '',
+      address: employeeData.emergencyContact.primary.address || ''
+    },
+    secondary: {
+      name: employeeData.emergencyContact.secondary.name || '',
+      relationship: employeeData.emergencyContact.secondary.relationship || '',
+      phone: employeeData.emergencyContact.secondary.phone || '',
+      email: employeeData.emergencyContact.secondary.email || '',
+      address: employeeData.emergencyContact.secondary.address || ''
+    }
+  })
+
+  const handleEmergencyContactChange = (type: 'primary' | 'secondary', field: string, value: string) => {
+    setEmergencyContact(prev => ({
+      ...prev,
+      [type]: { ...prev[type], [field]: value }
+    }))
+  }
+
+  // Education state
+  const [educationEntries, setEducationEntries] = useState<Array<{
+    id: string
+    degree: string
+    institution: string
+    fieldOfStudy: string
+    cgpa: string
+    startDate: string
+    endDate: string
+  }>>(
+    (() => {
+      const entries = employeeData.education?.map((edu, index) => ({
+        id: `edu-${index}`,
+        degree: edu.degree || '',
+        institution: edu.institution || '',
+        fieldOfStudy: edu.fieldOfStudy || '',
+        cgpa: edu.cgpa || '',
+        startDate: edu.startDate || '',
+        endDate: edu.endDate || ''
+      })) || []
+
+      while (entries.length < 3) {
+        entries.push({
+          id: `edu-${entries.length}`,
+          degree: '',
+          institution: '',
+          fieldOfStudy: '',
+          cgpa: '',
+          startDate: '',
+          endDate: ''
+        })
+      }
+
+      return entries
+    })()
+  )
+
+  const handleEducationChange = (id: string, field: string, value: string) => {
+    setEducationEntries(educationEntries.map(entry =>
+      entry.id === id ? { ...entry, [field]: value } : entry
+    ))
+  }
+
+  // Bank account state
+  const [bankAccount, setBankAccount] = useState({
+    accountHolderName: employeeData.bankAccount.accountHolderName || '',
+    accountNumber: employeeData.bankAccount.accountNumber || '',
+    bankName: employeeData.bankAccount.bankName || '',
+    branchName: employeeData.bankAccount.branchName || '',
+    bicCode: employeeData.bankAccount.bicCode || '',
+    salary: employeeData.bankAccount.salary?.toString() || ''
+  })
+
+  const handleBankAccountChange = (field: string, value: string) => {
+    setBankAccount(prev => ({ ...prev, [field]: value }))
+  }
+
+  // Passport state
+  const [passport, setPassport] = useState({
+    passportNumber: employeeData.passport.passportNumber || '',
+    nationality: employeeData.passport.nationality || '',
+    issueDate: employeeData.passport.issueDate || '',
+    expiryDate: employeeData.passport.expiryDate || '',
+    scanCopy: employeeData.passport.scanCopy || ''
+  })
+
+  const handlePassportChange = (field: string, value: string) => {
+    setPassport(prev => ({ ...prev, [field]: value }))
+  }
 
   const addExperienceEntry = () => {
     const newEntry: ExperienceEntry = {
       id: `exp-${Date.now()}`,
       company: '',
-      role: '',
+      position: '',
       startDate: '',
       endDate: '',
       isCurrentlyWorking: false
@@ -119,13 +178,135 @@ export function EmployeeModals({
     setExperienceEntries(experienceEntries.filter(entry => entry.id !== id))
   }
 
+  const handleSavePersonal = async () => {
+    try {
+      await updateEmployee(employeeId, {
+        firstName: personalInfo.firstName,
+        lastName: personalInfo.lastName,
+        email: personalInfo.email,
+        contactNumber: personalInfo.phone,
+        address: personalInfo.address,
+        userName: `${personalInfo.firstName}${personalInfo.lastName}`.toLowerCase(),
+        employeeDesignation: personalInfo.jobTitle,
+        joiningDate: personalInfo.dateOfJoin,
+        position: personalInfo.position,
+        departmentId: personalInfo.departmentId,
+        hireDate: personalInfo.hireDate,
+        birthday: personalInfo.birthday,
+        gender: personalInfo.gender
+      })
+      onSave()
+      closeModal()
+    } catch (error) {
+      console.error('Failed to save personal info:', error)
+    }
+  }
+
+  const handleSaveSocial = async () => {
+    try {
+      await updateEmployee(employeeId, {
+        socialProfile: {
+          linkedin: socialProfile.linkedin,
+          twitter: socialProfile.twitter,
+          facebook: socialProfile.facebook,
+          instagram: socialProfile.instagram,
+          whatsapp: socialProfile.whatsapp
+        }
+      })
+      onSave()
+      closeModal()
+    } catch (error) {
+      console.error('Failed to save social profile:', error)
+    }
+  }
+
+  const handleSaveEmergency = async () => {
+    try {
+      await updateEmployee(employeeId, {
+        emergencyContact: emergencyContact
+      })
+      onSave()
+      closeModal()
+    } catch (error) {
+      console.error('Failed to save emergency contact:', error)
+    }
+  }
+
+  const handleSaveEducation = async () => {
+    try {
+      await updateEmployee(employeeId, {
+        education: educationEntries.map(edu => ({
+          degree: edu.degree,
+          institution: edu.institution,
+          fieldOfStudy: edu.fieldOfStudy,
+          cgpa: edu.cgpa,
+          startDate: edu.startDate,
+          endDate: edu.endDate
+        }))
+      })
+      onSave()
+      closeModal()
+    } catch (error) {
+      console.error('Failed to save education:', error)
+    }
+  }
+
+  const handleSaveExperience = async () => {
+    try {
+      await updateEmployee(employeeId, {
+        experience: experienceEntries.map(entry => ({
+          company: entry.company,
+          position: entry.position,
+          startDate: entry.startDate,
+          endDate: entry.isCurrentlyWorking ? '' : entry.endDate,
+          description: ''
+        }))
+      })
+      onSave()
+      closeModal()
+    } catch (error) {
+      console.error('Failed to save experience:', error)
+    }
+  }
+
+  const handleSaveBank = async () => {
+    try {
+      await updateEmployee(employeeId, {
+        bankDetails: {
+          accountHolderName: bankAccount.accountHolderName,
+          accountNumber: bankAccount.accountNumber,
+          bankName: bankAccount.bankName,
+          branchName: bankAccount.branchName,
+          bicCode: bankAccount.bicCode,
+          salary: bankAccount.salary || undefined
+        }
+      })
+      onSave()
+      closeModal()
+    } catch (error) {
+      console.error('Failed to save bank account:', error)
+    }
+  }
+
+  const handleSavePassport = async () => {
+    try {
+      await updateEmployee(employeeId, {
+        passport: passport
+      })
+      onSave()
+      closeModal()
+    } catch (error) {
+      console.error('Failed to save passport info:', error)
+    }
+  }
+
   return (
     <>
       <EditModal
         isOpen={activeModal === 'personal'}
         onClose={closeModal}
         title="Edit Personal Information"
-        onSave={() => console.log('Personal info saved')}
+        onSave={handleSavePersonal}
       >
         <div style={{ fontFamily: 'var(--font-sans)' }}>
 
@@ -134,38 +315,43 @@ export function EmployeeModals({
             <p className="text-xs font-medium text-slate-400 uppercase tracking-widest mb-3">Identity</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-slate-500 mb-1.5">Full name</label>
+                <label className="block text-xs text-slate-500 mb-1.5">First name</label>
                 <input
                   type="text"
-                  defaultValue={employeeData.name}
+                  value={personalInfo.firstName}
+                  onChange={(e) => handlePersonalInfoChange('firstName', e.target.value)}
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-xs text-slate-500 mb-1.5">Employee ID</label>
+                <label className="block text-xs text-slate-500 mb-1.5">Last name</label>
                 <input
                   type="text"
-                  defaultValue={employeeData.id}
+                  value={personalInfo.lastName}
+                  onChange={(e) => handlePersonalInfoChange('lastName', e.target.value)}
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <div>
                 <label className="block text-xs text-slate-500 mb-1.5">Gender</label>
                 <select
-                  defaultValue={employeeData.gender}
+                  value={personalInfo.gender}
+                  onChange={(e) => handlePersonalInfoChange('gender', e.target.value)}
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option>Female</option>
-                  <option>Male</option>
-                  <option>Non-binary</option>
-                  <option>Prefer not to say</option>
+                  <option value="">Select gender</option>
+                  <option value="Female">Female</option>
+                  <option value="Male">Male</option>
+                  <option value="Non-binary">Non-binary</option>
+                  <option value="Prefer not to say">Prefer not to say</option>
                 </select>
               </div>
               <div>
                 <label className="block text-xs text-slate-500 mb-1.5">Birthday</label>
                 <input
                   type="date"
-                  defaultValue={employeeData.birthday}
+                  value={personalInfo.birthday}
+                  onChange={(e) => handlePersonalInfoChange('birthday', e.target.value)}
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -183,7 +369,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Position</label>
                 <input
                   type="text"
-                  defaultValue={employeeData.position}
+                  value={personalInfo.position}
+                  onChange={(e) => handlePersonalInfoChange('position', e.target.value)}
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -191,7 +378,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Job title</label>
                 <input
                   type="text"
-                  defaultValue={employeeData.jobTitle}
+                  value={personalInfo.jobTitle}
+                  onChange={(e) => handlePersonalInfoChange('jobTitle', e.target.value)}
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -199,7 +387,26 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Date of joining</label>
                 <input
                   type="date"
-                  defaultValue={employeeData.dateOfJoin}
+                  value={personalInfo.dateOfJoin}
+                  onChange={(e) => handlePersonalInfoChange('dateOfJoin', e.target.value)}
+                  className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-500 mb-1.5">Department ID</label>
+                <input
+                  type="text"
+                  value={personalInfo.departmentId}
+                  onChange={(e) => handlePersonalInfoChange('departmentId', e.target.value)}
+                  className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-500 mb-1.5">Hire Date</label>
+                <input
+                  type="date"
+                  value={personalInfo.hireDate}
+                  onChange={(e) => handlePersonalInfoChange('hireDate', e.target.value)}
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -217,7 +424,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Email</label>
                 <input
                   type="email"
-                  defaultValue={employeeData.email}
+                  value={personalInfo.email}
+                  onChange={(e) => handlePersonalInfoChange('email', e.target.value)}
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -225,7 +433,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Phone</label>
                 <input
                   type="tel"
-                  defaultValue={employeeData.phone}
+                  value={personalInfo.phone}
+                  onChange={(e) => handlePersonalInfoChange('phone', e.target.value)}
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -233,7 +442,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Address</label>
                 <input
                   type="text"
-                  defaultValue={employeeData.address}
+                  value={personalInfo.address}
+                  onChange={(e) => handlePersonalInfoChange('address', e.target.value)}
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -248,7 +458,7 @@ export function EmployeeModals({
         onClose={closeModal}
         title="Social profiles"
         description="Connect your social accounts to your employee profile."
-        onSave={() => console.log('Social profile saved')}
+        onSave={handleSaveSocial}
       >
         <div className="space-y-3">
 
@@ -261,7 +471,8 @@ export function EmployeeModals({
               </svg>
               <input
                 type="url"
-                defaultValue={employeeData.socialProfiles.linkedin}
+                value={socialProfile.linkedin}
+                onChange={(e) => handleSocialProfileChange('linkedin', e.target.value)}
                 placeholder="linkedin.com/in/username"
                 className="flex-1 bg-transparent text-sm text-slate-800 placeholder:text-slate-300 outline-none"
               />
@@ -277,7 +488,8 @@ export function EmployeeModals({
               </svg>
               <input
                 type="url"
-                defaultValue={employeeData.socialProfiles.twitter}
+                value={socialProfile.twitter}
+                onChange={(e) => handleSocialProfileChange('twitter', e.target.value)}
                 placeholder="x.com/username"
                 className="flex-1 bg-transparent text-sm text-slate-800 placeholder:text-slate-300 outline-none"
               />
@@ -293,7 +505,8 @@ export function EmployeeModals({
               </svg>
               <input
                 type="url"
-                defaultValue={employeeData.socialProfiles.facebook}
+                value={socialProfile.facebook}
+                onChange={(e) => handleSocialProfileChange('facebook', e.target.value)}
                 placeholder="facebook.com/username"
                 className="flex-1 bg-transparent text-sm text-slate-800 placeholder:text-slate-300 outline-none"
               />
@@ -319,7 +532,8 @@ export function EmployeeModals({
               </svg>
               <input
                 type="url"
-                defaultValue={employeeData.socialProfiles.instagram}
+                value={socialProfile.instagram}
+                onChange={(e) => handleSocialProfileChange('instagram', e.target.value)}
                 placeholder="instagram.com/username"
                 className="flex-1 bg-transparent text-sm text-slate-800 placeholder:text-slate-300 outline-none"
               />
@@ -335,7 +549,8 @@ export function EmployeeModals({
               </svg>
               <input
                 type="tel"
-                defaultValue={employeeData.socialProfiles.whatsapp}
+                value={socialProfile.whatsapp}
+                onChange={(e) => handleSocialProfileChange('whatsapp', e.target.value)}
                 placeholder="+1 (555) 000-0000"
                 className="flex-1 bg-transparent text-sm text-slate-800 placeholder:text-slate-300 outline-none"
               />
@@ -350,7 +565,7 @@ export function EmployeeModals({
         onClose={closeModal}
         title="Emergency contacts"
         description="Keep these details up to date for urgent situations."
-        onSave={() => console.log('Emergency contact saved')}
+        onSave={handleSaveEmergency}
       >
         <div className="space-y-5">
 
@@ -372,14 +587,16 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Full name</label>
                 <input
                   type="text"
-                  defaultValue={employeeData.emergencyContact.primary.name}
+                  value={emergencyContact.primary.name}
+                  onChange={(e) => handleEmergencyContactChange('primary', 'name', e.target.value)}
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <div>
                 <label className="block text-xs text-slate-500 mb-1.5">Relationship</label>
                 <select
-                  defaultValue={employeeData.emergencyContact.primary.relationship}
+                  value={emergencyContact.primary.relationship}
+                  onChange={(e) => handleEmergencyContactChange('primary', 'relationship', e.target.value)}
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select relationship</option>
@@ -395,7 +612,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Phone</label>
                 <input
                   type="tel"
-                  defaultValue={employeeData.emergencyContact.primary.phone}
+                  value={emergencyContact.primary.phone}
+                  onChange={(e) => handleEmergencyContactChange('primary', 'phone', e.target.value)}
                   placeholder="+1 (555) 000-0000"
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -404,7 +622,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Email</label>
                 <input
                   type="email"
-                  defaultValue={employeeData.emergencyContact.primary.email}
+                  value={emergencyContact.primary.email}
+                  onChange={(e) => handleEmergencyContactChange('primary', 'email', e.target.value)}
                   placeholder="name@example.com"
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -413,7 +632,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Address</label>
                 <input
                   type="text"
-                  defaultValue={employeeData.emergencyContact.primary.address}
+                  value={emergencyContact.primary.address}
+                  onChange={(e) => handleEmergencyContactChange('primary', 'address', e.target.value)}
                   placeholder="Street, City, State, ZIP"
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -439,14 +659,16 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Full name</label>
                 <input
                   type="text"
-                  defaultValue={employeeData.emergencyContact.secondary.name}
+                  value={emergencyContact.secondary.name}
+                  onChange={(e) => handleEmergencyContactChange('secondary', 'name', e.target.value)}
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <div>
                 <label className="block text-xs text-slate-500 mb-1.5">Relationship</label>
                 <select
-                  defaultValue={employeeData.emergencyContact.secondary.relationship}
+                  value={emergencyContact.secondary.relationship}
+                  onChange={(e) => handleEmergencyContactChange('secondary', 'relationship', e.target.value)}
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select relationship</option>
@@ -462,7 +684,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Phone</label>
                 <input
                   type="tel"
-                  defaultValue={employeeData.emergencyContact.secondary.phone}
+                  value={emergencyContact.secondary.phone}
+                  onChange={(e) => handleEmergencyContactChange('secondary', 'phone', e.target.value)}
                   placeholder="+1 (555) 000-0000"
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -471,7 +694,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Email</label>
                 <input
                   type="email"
-                  defaultValue={employeeData.emergencyContact.secondary.email}
+                  value={emergencyContact.secondary.email}
+                  onChange={(e) => handleEmergencyContactChange('secondary', 'email', e.target.value)}
                   placeholder="name@example.com"
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -480,7 +704,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Address</label>
                 <input
                   type="text"
-                  defaultValue={employeeData.emergencyContact.secondary.address}
+                  value={emergencyContact.secondary.address}
+                  onChange={(e) => handleEmergencyContactChange('secondary', 'address', e.target.value)}
                   placeholder="Street, City, State, ZIP"
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -496,7 +721,7 @@ export function EmployeeModals({
         onClose={closeModal}
         title="Education qualifications"
         description="Add or update your academic background and credentials."
-        onSave={() => console.log('Education saved')}
+        onSave={handleSaveEducation}
       >
         <div className="space-y-4">
 
@@ -516,7 +741,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Degree</label>
                 <input
                   type="text"
-                  defaultValue="Masters in Computer Science"
+                  value={educationEntries[0]?.degree || ''}
+                  onChange={(e) => handleEducationChange(educationEntries[0]?.id || '', 'degree', e.target.value)}
                   placeholder="e.g. Masters in Computer Science"
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -525,8 +751,29 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Institution name</label>
                 <input
                   type="text"
-                  defaultValue="Stanford University"
+                  value={educationEntries[0]?.institution || ''}
+                  onChange={(e) => handleEducationChange(educationEntries[0]?.id || '', 'institution', e.target.value)}
                   placeholder="e.g. Stanford University"
+                  className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-500 mb-1.5">Field of study</label>
+                <input
+                  type="text"
+                  value={educationEntries[0]?.fieldOfStudy || ''}
+                  onChange={(e) => handleEducationChange(educationEntries[0]?.id || '', 'fieldOfStudy', e.target.value)}
+                  placeholder="e.g. Computer Science"
+                  className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-500 mb-1.5">CGPA</label>
+                <input
+                  type="text"
+                  value={educationEntries[0]?.cgpa || ''}
+                  onChange={(e) => handleEducationChange(educationEntries[0]?.id || '', 'cgpa', e.target.value)}
+                  placeholder="e.g. 3.5"
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -534,7 +781,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Start date</label>
                 <input
                   type="date"
-                  defaultValue="2020-09-01"
+                  value={educationEntries[0]?.startDate || ''}
+                  onChange={(e) => handleEducationChange(educationEntries[0]?.id || '', 'startDate', e.target.value)}
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -542,7 +790,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Completion date</label>
                 <input
                   type="date"
-                  defaultValue="2022-06-30"
+                  value={educationEntries[0]?.endDate || ''}
+                  onChange={(e) => handleEducationChange(educationEntries[0]?.id || '', 'endDate', e.target.value)}
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -565,7 +814,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Degree</label>
                 <input
                   type="text"
-                  defaultValue="BSc in Information Technology"
+                  value={educationEntries[1]?.degree || ''}
+                  onChange={(e) => handleEducationChange(educationEntries[1]?.id || '', 'degree', e.target.value)}
                   placeholder="e.g. BSc in Information Technology"
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -574,8 +824,29 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Institution name</label>
                 <input
                   type="text"
-                  defaultValue="MIT"
+                  value={educationEntries[1]?.institution || ''}
+                  onChange={(e) => handleEducationChange(educationEntries[1]?.id || '', 'institution', e.target.value)}
                   placeholder="e.g. MIT"
+                  className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-500 mb-1.5">Field of study</label>
+                <input
+                  type="text"
+                  value={educationEntries[1]?.fieldOfStudy || ''}
+                  onChange={(e) => handleEducationChange(educationEntries[1]?.id || '', 'fieldOfStudy', e.target.value)}
+                  placeholder="e.g. Information Technology"
+                  className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-500 mb-1.5">CGPA</label>
+                <input
+                  type="text"
+                  value={educationEntries[1]?.cgpa || ''}
+                  onChange={(e) => handleEducationChange(educationEntries[1]?.id || '', 'cgpa', e.target.value)}
+                  placeholder="e.g. 3.2"
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -583,7 +854,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Start date</label>
                 <input
                   type="date"
-                  defaultValue="2016-09-01"
+                  value={educationEntries[1]?.startDate || ''}
+                  onChange={(e) => handleEducationChange(educationEntries[1]?.id || '', 'startDate', e.target.value)}
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -591,7 +863,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Completion date</label>
                 <input
                   type="date"
-                  defaultValue="2020-06-30"
+                  value={educationEntries[1]?.endDate || ''}
+                  onChange={(e) => handleEducationChange(educationEntries[1]?.id || '', 'endDate', e.target.value)}
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -614,7 +887,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Degree / certificate</label>
                 <input
                   type="text"
-                  defaultValue="High School Diploma"
+                  value={educationEntries[2]?.degree || ''}
+                  onChange={(e) => handleEducationChange(educationEntries[2]?.id || '', 'degree', e.target.value)}
                   placeholder="e.g. High School Diploma"
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -623,8 +897,29 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Institution name</label>
                 <input
                   type="text"
-                  defaultValue="Lincoln High School"
+                  value={educationEntries[2]?.institution || ''}
+                  onChange={(e) => handleEducationChange(educationEntries[2]?.id || '', 'institution', e.target.value)}
                   placeholder="e.g. Lincoln High School"
+                  className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-500 mb-1.5">Field of study</label>
+                <input
+                  type="text"
+                  value={educationEntries[2]?.fieldOfStudy || ''}
+                  onChange={(e) => handleEducationChange(educationEntries[2]?.id || '', 'fieldOfStudy', e.target.value)}
+                  placeholder="e.g. General Studies"
+                  className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-500 mb-1.5">CGPA</label>
+                <input
+                  type="text"
+                  value={educationEntries[2]?.cgpa || ''}
+                  onChange={(e) => handleEducationChange(educationEntries[2]?.id || '', 'cgpa', e.target.value)}
+                  placeholder="e.g. 4.0"
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -632,7 +927,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Start date</label>
                 <input
                   type="date"
-                  defaultValue="2012-09-01"
+                  value={educationEntries[2]?.startDate || ''}
+                  onChange={(e) => handleEducationChange(educationEntries[2]?.id || '', 'startDate', e.target.value)}
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -640,7 +936,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Completion date</label>
                 <input
                   type="date"
-                  defaultValue="2016-06-30"
+                  value={educationEntries[2]?.endDate || ''}
+                  onChange={(e) => handleEducationChange(educationEntries[2]?.id || '', 'endDate', e.target.value)}
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -655,7 +952,7 @@ export function EmployeeModals({
         onClose={closeModal}
         title="Work experience"
         description="Your professional history and previous roles."
-        onSave={() => console.log('Experience saved')}
+        onSave={handleSaveExperience}
       >
         <div className="space-y-4">
           {experienceEntries.map((entry, index) => (
@@ -711,8 +1008,8 @@ export function EmployeeModals({
                   <label className="block text-xs text-slate-500 mb-1.5">Role / title</label>
                   <input
                     type="text"
-                    value={entry.role}
-                    onChange={(e) => updateExperienceEntry(entry.id, 'role', e.target.value)}
+                    value={entry.position}
+                    onChange={(e) => updateExperienceEntry(entry.id, 'position', e.target.value)}
                     placeholder="e.g. Senior Engineer"
                     className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
@@ -771,7 +1068,7 @@ export function EmployeeModals({
         onClose={closeModal}
         title="Bank account"
         description="Your salary and reimbursements will be sent to this account."
-        onSave={() => console.log('Bank account saved')}
+        onSave={handleSaveBank}
       >
         <div className="space-y-4">
 
@@ -803,7 +1100,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Account holder name</label>
                 <input
                   type="text"
-                  defaultValue={employeeData.bankAccount.accountHolderName}
+                  value={bankAccount.accountHolderName}
+                  onChange={(e) => handleBankAccountChange('accountHolderName', e.target.value)}
                   placeholder="Full legal name"
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -812,7 +1110,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Account number</label>
                 <input
                   type="text"
-                  defaultValue={employeeData.bankAccount.accountNumber}
+                  value={bankAccount.accountNumber}
+                  onChange={(e) => handleBankAccountChange('accountNumber', e.target.value)}
                   placeholder="e.g. 0000 0000 0000 0000"
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -821,7 +1120,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Bank name</label>
                 <input
                   type="text"
-                  defaultValue={employeeData.bankAccount.bankName}
+                  value={bankAccount.bankName}
+                  onChange={(e) => handleBankAccountChange('bankName', e.target.value)}
                   placeholder="e.g. Chase Bank"
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -830,18 +1130,30 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Branch name</label>
                 <input
                   type="text"
-                  defaultValue={employeeData.bankAccount.branchName}
+                  value={bankAccount.branchName}
+                  onChange={(e) => handleBankAccountChange('branchName', e.target.value)}
                   placeholder="e.g. Downtown Branch"
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-xs text-slate-500 mb-1.5">SWIFT / BIC code</label>
+                <label className="block text-xs text-slate-500 mb-1.5">BIC code</label>
                 <input
                   type="text"
-                  defaultValue={employeeData.bankAccount.swiftCode}
+                  value={bankAccount.bicCode}
+                  onChange={(e) => handleBankAccountChange('bicCode', e.target.value)}
                   placeholder="e.g. CHASUS33"
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 font-mono uppercase focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-500 mb-1.5">Salary</label>
+                <input
+                  type="number"
+                  value={bankAccount.salary}
+                  onChange={(e) => handleBankAccountChange('salary', e.target.value)}
+                  placeholder="e.g. 50000"
+                  className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
@@ -855,7 +1167,7 @@ export function EmployeeModals({
         onClose={closeModal}
         title="Passport information"
         description="Used for travel, identity verification, and compliance records."
-        onSave={() => console.log('Passport info saved')}
+        onSave={handleSavePassport}
       >
         <div className="space-y-4">
 
@@ -876,7 +1188,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Passport number</label>
                 <input
                   type="text"
-                  defaultValue={employeeData.passport.passportNumber}
+                  value={passport.passportNumber}
+                  onChange={(e) => handlePassportChange('passportNumber', e.target.value)}
                   placeholder="e.g. A12345678"
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 font-mono uppercase focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -885,7 +1198,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Nationality</label>
                 <input
                   type="text"
-                  defaultValue={employeeData.passport.nationality}
+                  value={passport.nationality}
+                  onChange={(e) => handlePassportChange('nationality', e.target.value)}
                   placeholder="e.g. United States"
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -894,7 +1208,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Issue date</label>
                 <input
                   type="date"
-                  defaultValue={employeeData.passport.issueDate}
+                  value={passport.issueDate}
+                  onChange={(e) => handlePassportChange('issueDate', e.target.value)}
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -902,7 +1217,8 @@ export function EmployeeModals({
                 <label className="block text-xs text-slate-500 mb-1.5">Expiry date</label>
                 <input
                   type="date"
-                  defaultValue={employeeData.passport.expiryDate}
+                  value={passport.expiryDate}
+                  onChange={(e) => handlePassportChange('expiryDate', e.target.value)}
                   className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { X, Calendar, Sparkles, Gift, RefreshCw, CheckCircle } from "lucide-react"
+import { X, Calendar, Sparkles, Gift, CheckCircle } from "lucide-react"
 
 interface Holiday {
   id: string
@@ -22,12 +22,12 @@ interface HolidayModalProps {
 
 export default function HolidayModal({ isOpen, onClose, onSave, editingHoliday }: HolidayModalProps) {
   const [formData, setFormData] = useState({
-    name:        editingHoliday?.name        || "",
-    date:        editingHoliday?.date        || "",
-    type:        editingHoliday?.type        || "public" as "public" | "company" | "optional",
-    duration:    editingHoliday?.duration    || "full-day" as "full-day" | "half-day",
+    name: editingHoliday?.name || "",
+    date: editingHoliday?.date || "",
+    type: editingHoliday?.type || "public" as "public" | "company" | "optional",
+    duration: editingHoliday?.duration || "full-day" as "full-day" | "half-day",
     description: editingHoliday?.description || "",
-    recurring:   editingHoliday?.recurring   || false,
+    recurring: editingHoliday?.recurring || false,
   })
   const [saved, setSaved] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -35,8 +35,8 @@ export default function HolidayModal({ isOpen, onClose, onSave, editingHoliday }
   if (!isOpen) return null
 
   const typeConfig = {
-    public:   { label: "Public Holiday",  color: "#1d4ed8", bg: "#dbeafe", accent: "linear-gradient(135deg,#1d4ed8,#3b82f6)" },
-    company:  { label: "Company Holiday", color: "#065f46", bg: "#d1fae5", accent: "linear-gradient(135deg,#059669,#10b981)" },
+    public: { label: "Public Holiday", color: "#1d4ed8", bg: "#dbeafe", accent: "linear-gradient(135deg,#1d4ed8,#3b82f6)" },
+    company: { label: "Company Holiday", color: "#065f46", bg: "#d1fae5", accent: "linear-gradient(135deg,#059669,#10b981)" },
     optional: { label: "Optional Holiday", color: "#92400e", bg: "#fef3c7", accent: "linear-gradient(135deg,#d97706,#f59e0b)" },
   }
   const tc = typeConfig[formData.type]

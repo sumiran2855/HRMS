@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CalendarDays, CheckCircle2, Clock, LogOut, MapPin } from "lucide-react";
+import { CalendarDays, CheckCircle2, Clock, LogOut } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { cn } from "@/components/utils";
 import { AttendanceStatus } from "@/types/employee";

@@ -2,16 +2,8 @@
 
 import { Button } from "@/components/ui/Button"
 import { X, Calendar, Clock, Repeat, AlignLeft, Tag } from "lucide-react"
-import { CalendarEventForm, CalendarEvent, EventType, RecurringMode } from "@/types/dashboard"
-
-interface CalendarEventModalProps {
-  showEventModal: boolean
-  setShowEventModal: (show: boolean) => void
-  eventForm: CalendarEventForm
-  setEventForm: (form: CalendarEventForm) => void
-  editingEvent: CalendarEvent | null
-  handleSaveEvent: () => void
-}
+import { EventType, RecurringMode } from "@/types/dashboard"
+import { CalendarEventModalProps } from "./types"
 
 export function CalendarEventModal({
   showEventModal,

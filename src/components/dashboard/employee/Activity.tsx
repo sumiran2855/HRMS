@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { Calendar, Clock, TrendingUp, Users, FileText, CheckCircle, MoreVertical, Circle } from 'lucide-react'
+import { useMemo } from 'react'
+import { Calendar, Clock, TrendingUp, Users, FileText, CheckCircle, MoreVertical } from 'lucide-react'
 import { parse, isYesterday, isToday, format } from 'date-fns'
 import { Card, CardContent } from '@/components/ui/Card'
 import { activities } from '@/types/employee'
