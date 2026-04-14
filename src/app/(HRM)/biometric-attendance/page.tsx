@@ -1,9 +1,13 @@
 "use client"
 
-import { useState } from "react"
-import { Search, Users, Clock, Eye, Edit, Trash2, ChevronLeft, ChevronRight, Filter, Download, Fingerprint, MapPin, TrendingUp, Shield, X, Sparkles, Wifi, Activity } from "lucide-react"
+import { useState, useEffect, useCallback } from "react"
+import { Search, Users, Clock, Eye, Edit, Trash2, ChevronLeft, ChevronRight, Filter, Download, Fingerprint, Shield, X, Wifi, Activity, Loader2 } from "lucide-react"
 import BiometricAttendanceModal from "@/components/dashboard/biometric-attendance/BiometricAttendanceModal"
 import AdvancedFilterModal from "@/components/dashboard/biometric-attendance/AdvancedFilterModal"
+import { employeeService } from "@/services/employee.service"
+import { attendanceService } from "@/services/attendance.service"
+import { GetAttendanceByDateRangeDto } from "@/types/attendance.types"
+import { Employee } from "@/types/employee.types"
 
 interface BiometricAttendance {
   id: number
@@ -20,6 +24,9 @@ interface BiometricAttendance {
   geofenceStatus: "inside" | "outside" | "exempt"
 }
 
+// TODO: Get these from auth context
+const organizationId = "org123"
+
 export default function BiometricAttendancePage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
@@ -30,6 +37,10 @@ export default function BiometricAttendancePage() {
   const [modalMode, setModalMode] = useState<"view" | "edit" | "delete">("view")
   const [selectedAttendance, setSelectedAttendance] = useState<BiometricAttendance | null>(null)
   const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false)
+  const [employees, setEmployees] = useState<Employee[]>([])
+  const [attendanceData, setAttendanceData] = useState<BiometricAttendance[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [advancedFilters, setAdvancedFilters] = useState<{
     dateFrom: string
     dateTo: string
@@ -49,176 +60,55 @@ export default function BiometricAttendancePage() {
     minWorkHours: 0,
     maxWorkHours: 24,
   })
-  const [attendanceData, setAttendanceData] = useState<BiometricAttendance[]>([
-  {
-    id: 1,
-    employeeId: "EMP001",
-    name: "Alexander Smith",
-    department: "Engineering",
-    inTime: "09:00 AM",
-    outTime: "06:00 PM",
-    date: "2024-03-27",
-    status: "present",
-    location: "Main Gate",
-    workHours: 9,
-    device: "Fingerprint Scanner-01",
-    geofenceStatus: "inside"
-  },
-  {
-    id: 2,
-    employeeId: "EMP002", 
-    name: "Amelia Gonzalez",
-    department: "Design",
-    inTime: "08:45 AM",
-    outTime: "06:30 PM",
-    date: "2024-03-27",
-    status: "present",
-    location: "Main Gate",
-    workHours: 9.75,
-    device: "Face Recognition-02",
-    geofenceStatus: "inside"
-  },
-  {
-    id: 3,
-    employeeId: "EMP003",
-    name: "Ava Garcia",
-    department: "HR",
-    inTime: "09:15 AM",
-    outTime: "-",
-    date: "2024-03-27",
-    status: "late",
-    location: "Main Gate",
-    workHours: 0,
-    device: "Fingerprint Scanner-01",
-    geofenceStatus: "inside"
-  },
-  {
-    id: 4,
-    employeeId: "EMP004",
-    name: "Charlotte Hernandez",
-    department: "Marketing",
-    inTime: "-",
-    outTime: "-",
-    date: "2024-03-27",
-    status: "absent",
-    location: "-",
-    workHours: 0,
-    device: "-",
-    geofenceStatus: "outside"
-  },
-  {
-    id: 5,
-    employeeId: "EMP005",
-    name: "Emily Johnson",
-    department: "Sales",
-    inTime: "08:30 AM",
-    outTime: "05:30 PM",
-    date: "2024-03-27",
-    status: "present",
-    location: "Side Gate",
-    workHours: 9,
-    device: "Fingerprint Scanner-02",
-    geofenceStatus: "inside"
-  },
-  {
-    id: 6,
-    employeeId: "EMP006",
-    name: "Ethan Brown",
-    department: "Engineering",
-    inTime: "09:30 AM",
-    outTime: "07:00 PM",
-    date: "2024-03-27",
-    status: "late",
-    location: "Main Gate",
-    workHours: 9.5,
-    device: "Face Recognition-01",
-    geofenceStatus: "inside"
-  },
-  {
-    id: 7,
-    employeeId: "EMP007",
-    name: "Isabella Lopez",
-    department: "Finance",
-    inTime: "08:00 AM",
-    outTime: "06:00 PM",
-    date: "2024-03-27",
-    status: "present",
-    location: "Main Gate",
-    workHours: 10,
-    device: "Fingerprint Scanner-01",
-    geofenceStatus: "inside"
-  },
-  {
-    id: 8,
-    employeeId: "EMP008",
-    name: "Jacob Taylor",
-    department: "Engineering",
-    inTime: "-",
-    outTime: "-",
-    date: "2024-03-27",
-    status: "leave",
-    location: "-",
-    workHours: 0,
-    device: "-",
-    geofenceStatus: "exempt"
-  },
-  {
-    id: 9,
-    employeeId: "EMP009",
-    name: "Liam Davis",
-    department: "Support",
-    inTime: "08:45 AM",
-    outTime: "06:15 PM",
-    date: "2024-03-27",
-    status: "present",
-    location: "Main Gate",
-    workHours: 9.5,
-    device: "Face Recognition-02",
-    geofenceStatus: "inside"
-  },
-  {
-    id: 10,
-    employeeId: "EMP010",
-    name: "Mason Wilson",
-    department: "Engineering",
-    inTime: "09:00 AM",
-    outTime: "-",
-    date: "2024-03-27",
-    status: "present",
-    location: "Main Gate",
-    workHours: 0,
-    device: "Fingerprint Scanner-01",
-    geofenceStatus: "inside"
-  },
-  {
-    id: 11,
-    employeeId: "EMP011",
-    name: "Olivia Martinez",
-    department: "Design",
-    inTime: "08:15 AM",
-    outTime: "06:45 PM",
-    date: "2024-03-27",
-    status: "present",
-    location: "Side Gate",
-    workHours: 10.5,
-    device: "Face Recognition-01",
-    geofenceStatus: "inside"
-  },
-  {
-    id: 12,
-    employeeId: "EMP012",
-    name: "Noah Anderson",
-    department: "Sales",
-    inTime: "-",
-    outTime: "-",
-    date: "2024-03-27",
-    status: "absent",
-    location: "-",
-    workHours: 0,
-    device: "-",
-    geofenceStatus: "outside"
-  }
-  ])
+
+  // Load data when date changes
+  useEffect(() => {
+    loadData()
+  }, [selectedDate])
+
+  const loadData = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      const employeesResponse = await employeeService.getEmployees()
+      if (employeesResponse.success && employeesResponse.data) {
+        setEmployees(employeesResponse.data)
+      }
+
+      const query: GetAttendanceByDateRangeDto = {
+        organizationId,
+        startDate: selectedDate,
+        endDate: selectedDate,
+      }
+
+      const attendanceResponse = await attendanceService.getAttendanceByDateRange(query)
+      if (attendanceResponse.success && attendanceResponse.data) {
+        const transformedData = attendanceResponse.data.map((record, index) => {
+          const employee = employeesResponse.data?.find(emp => emp.employeeId === record.employeeId)
+          return {
+            id: index + 1,
+            employeeId: record.employeeId,
+            name: employee ? `${employee.firstName} ${employee.lastName}` : record.employeeId,
+            department: employee?.departmentId || 'Unassigned',
+            inTime: record.checkInTime ? new Date(`2000-01-01T${record.checkInTime}`).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '-',
+            outTime: record.checkOutTime ? new Date(`2000-01-01T${record.checkOutTime}`).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '-',
+            date: record.date,
+            status: record.status as "present" | "absent" | "late" | "leave",
+            location: record.checkInTime ? "Main Gate" : '-',
+            workHours: record.workHours || 0,
+            device: record.checkInTime ? "Fingerprint Scanner-01" : '-',
+            geofenceStatus: "inside" as const
+          }
+        })
+        setAttendanceData(transformedData)
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to load data")
+    } finally {
+      setLoading(false)
+    }
+  }, [selectedDate])
 
   // Filter data based on search, status, and advanced filters
   const filteredData = attendanceData.filter((employee) => {
@@ -335,6 +225,27 @@ export default function BiometricAttendancePage() {
       maxWorkHours: 24,
     })
     setCurrentPage(1)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center gap-2 text-slate-500">
+          <Loader2 className="w-6 h-6 animate-spin" />
+          <span>Loading biometric attendance data...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-sm text-red-600">{error}</p>
+        </div>
+      </div>
+    )
   }
 
   return (

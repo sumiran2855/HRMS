@@ -1,95 +1,88 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/Input"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
-import { Search, Calendar, Clock, CheckCircle, XCircle, AlertCircle, TrendingUp, User, Filter, Download, ChevronLeft, ChevronRight, Sun, Moon, CalendarDays, ArrowUpRight, ArrowDownRight, Activity } from "lucide-react"
+import { Search, Calendar, Clock, CheckCircle, XCircle, AlertCircle, TrendingUp, User, Filter, Download, ChevronLeft, ChevronRight, Sun, Moon, CalendarDays, ArrowUpRight, ArrowDownRight, Activity, Loader2 } from "lucide-react"
 import { AttendanceCalendar } from "@/components/dashboard/attendance/AttendanceCalendar"
+import { attendanceService } from "@/services/attendance.service"
+import { Attendance, AttendanceSummaryDto, GetAttendanceByDateRangeDto } from "@/types/attendance.types"
 
-// Mock current user data (in real app, this would come from auth context)
-const currentUser = {
-  id: 1,
-  name: "Alexander Smith",
-  employeeId: "EMP001",
-  department: "Engineering",
-  position: "Senior Developer",
-  role: "employee" // or "admin"
-}
-
-// Mock attendance data for current employee
-const employeeAttendanceData = [
-  { date: "2024-03-27", checkIn: "09:00 AM", checkOut: "06:00 PM", status: "present", overtime: "0h", notes: "Regular work day" },
-  { date: "2024-03-26", checkIn: "08:45 AM", checkOut: "07:15 PM", status: "present", overtime: "1h 15m", notes: "Worked on project deadline" },
-  { date: "2024-03-25", checkIn: "09:30 AM", checkOut: "06:30 PM", status: "late", overtime: "0h", notes: "Traffic delay" },
-  { date: "2024-03-24", checkIn: "-", checkOut: "-", status: "absent", overtime: "0h", notes: "Medical leave" },
-  { date: "2024-03-23", checkIn: "08:00 AM", checkOut: "05:00 PM", status: "present", overtime: "0h", notes: "Regular work day" },
-  { date: "2024-03-22", checkIn: "08:30 AM", checkOut: "06:30 PM", status: "present", overtime: "0h", notes: "Regular work day" },
-  { date: "2024-03-21", checkIn: "09:15 AM", checkOut: "06:00 PM", status: "late", overtime: "0h", notes: "Late start" },
-  { date: "2024-03-20", checkIn: "08:00 AM", checkOut: "02:00 PM", status: "halfday", overtime: "0h", notes: "Personal work" },
-  { date: "2024-03-19", checkIn: "-", checkOut: "-", status: "leave", overtime: "0h", notes: "Approved vacation" },
-  { date: "2024-03-18", checkIn: "08:45 AM", checkOut: "06:15 PM", status: "present", overtime: "0h", notes: "Regular work day" },
-  { date: "2024-03-17", checkIn: "09:00 AM", checkOut: "06:00 PM", status: "present", overtime: "0h", notes: "Regular work day" },
-  { date: "2024-03-16", checkIn: "08:00 AM", checkOut: "06:00 PM", status: "present", overtime: "0h", notes: "Regular work day" },
-  { date: "2024-03-15", checkIn: "-", checkOut: "-", status: "absent", overtime: "0h", notes: "Sick leave" },
-  { date: "2024-03-14", checkIn: "08:30 AM", checkOut: "06:30 PM", status: "present", overtime: "0h", notes: "Regular work day" },
-  { date: "2024-03-13", checkIn: "09:00 AM", checkOut: "06:00 PM", status: "present", overtime: "0h", notes: "Regular work day" },
-  { date: "2024-03-12", checkIn: "08:00 AM", checkOut: "06:00 PM", status: "present", overtime: "0h", notes: "Regular work day" },
-  { date: "2024-03-11", checkIn: "08:45 AM", checkOut: "06:15 PM", status: "present", overtime: "0h", notes: "Regular work day" },
-  { date: "2024-03-10", checkIn: "09:30 AM", checkOut: "06:00 PM", status: "late", overtime: "0h", notes: "Traffic delay" },
-  { date: "2024-03-09", checkIn: "08:00 AM", checkOut: "06:00 PM", status: "present", overtime: "0h", notes: "Regular work day" },
-  { date: "2024-03-08", checkIn: "08:00 AM", checkOut: "06:00 PM", status: "present", overtime: "0h", notes: "Regular work day" },
-  { date: "2024-03-07", checkIn: "08:30 AM", checkOut: "06:30 PM", status: "present", overtime: "0h", notes: "Regular work day" },
-  { date: "2024-03-06", checkIn: "-", checkOut: "-", status: "leave", overtime: "0h", notes: "Personal leave" },
-  { date: "2024-03-05", checkIn: "-", checkOut: "-", status: "holiday", overtime: "0h", notes: "Company holiday" },
-  { date: "2024-03-04", checkIn: "08:00 AM", checkOut: "06:00 PM", status: "present", overtime: "0h", notes: "Regular work day" },
-  { date: "2024-03-03", checkIn: "08:45 AM", checkOut: "06:15 PM", status: "present", overtime: "0h", notes: "Regular work day" },
-  { date: "2024-03-02", checkIn: "09:00 AM", checkOut: "06:00 PM", status: "present", overtime: "0h", notes: "Regular work day" },
-  { date: "2024-03-01", checkIn: "08:30 AM", checkOut: "06:30 PM", status: "present", overtime: "0h", notes: "Regular work day" }
-]
+// TODO: Get these from auth context
+const currentEmployeeId = "EMP001"
+const organizationId = "org123"
 
 export default function MyAttendancePage() {
   const [activeTab, setActiveTab] = useState("overview")
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedMonth, setSelectedMonth] = useState(new Date())
   const [selectedStatus, setSelectedStatus] = useState("All Status")
+  const [attendanceData, setAttendanceData] = useState<Attendance[]>([])
+  const [summary, setSummary] = useState<AttendanceSummaryDto | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Load attendance data when month changes
+  useEffect(() => {
+    loadAttendanceData()
+  }, [selectedMonth])
+
+  const loadAttendanceData = async () => {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      const startDate = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 1)
+      const endDate = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 0)
+      
+      const query: GetAttendanceByDateRangeDto = {
+        organizationId,
+        employeeId: currentEmployeeId,
+        startDate: startDate.toISOString().split('T')[0],
+        endDate: endDate.toISOString().split('T')[0],
+      }
+
+      const [attendanceResponse, summaryResponse] = await Promise.all([
+        attendanceService.getAttendanceByDateRange(query),
+        attendanceService.getAttendanceSummary(query)
+      ])
+
+      if (attendanceResponse.success && attendanceResponse.data) {
+        setAttendanceData(attendanceResponse.data)
+      }
+      
+      if (summaryResponse.success && summaryResponse.data) {
+        setSummary(summaryResponse.data)
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to load attendance data")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Filter attendance data
-  const filteredAttendance = employeeAttendanceData.filter(record => {
-    const matchesSearch = record.notes.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredAttendance = attendanceData.filter(record => {
+    const matchesSearch = record.remarks?.toLowerCase().includes(searchTerm.toLowerCase()) || false
     const matchesStatus = selectedStatus === "All Status" || record.status === selectedStatus.toLowerCase()
     return matchesSearch && matchesStatus
   })
 
-  // Calculate statistics
-  const stats = {
-    total: filteredAttendance.length,
-    present: filteredAttendance.filter(r => r.status === 'present').length,
-    absent: filteredAttendance.filter(r => r.status === 'absent').length,
-    late: filteredAttendance.filter(r => r.status === 'late').length,
-    halfDay: filteredAttendance.filter(r => r.status === 'halfday').length,
-    leave: filteredAttendance.filter(r => r.status === 'leave').length,
-    holiday: filteredAttendance.filter(r => r.status === 'holiday').length,
-    totalOvertime: filteredAttendance.reduce((sum, r) => {
-      if (r.overtime === "0h") return sum
-      const parts = r.overtime.split(' ')
-      let hours = 0
-      let minutes = 0
-      
-      parts.forEach(part => {
-        if (part.includes('h')) {
-          hours = parseInt(part.replace('h', '')) || 0
-        } else if (part.includes('m')) {
-          minutes = parseInt(part.replace('m', '')) || 0
-        }
-      })
-      
-      return sum + (hours * 60 + minutes)
-    }, 0)
+  // Calculate statistics from API summary or fallback to local calculation
+  const stats = summary || {
+    totalPresent: filteredAttendance.filter(r => r.status === 'present').length,
+    totalAbsent: filteredAttendance.filter(r => r.status === 'absent').length,
+    totalLate: filteredAttendance.filter(r => r.status === 'late').length,
+    totalHalfDay: filteredAttendance.filter(r => r.status === 'half-day').length,
+    totalLeave: filteredAttendance.filter(r => r.status === 'leave').length,
+    workingHours: 0,
+    overtimeHours: 0,
   }
 
-  const attendancePercentage = stats.total > 0 ? Math.round((stats.present / stats.total) * 100) : 0
-  const avgWorkingHours = stats.present > 0 ? 8 : 0 // Assuming 8 hours per day
+  const totalDays = filteredAttendance.length
+  const attendancePercentage = totalDays > 0 ? Math.round((stats.totalPresent / totalDays) * 100) : 0
+  const avgWorkingHours = stats.totalPresent > 0 ? Math.round(stats.workingHours / stats.totalPresent * 10) / 10 : 0
 
   const tabs = [
     { id: "overview", label: "Overview", icon: User },
@@ -105,7 +98,7 @@ export default function MyAttendancePage() {
         return { icon: XCircle, color: '#ef4444', bg: '#fee2e2', border: '#fca5a5', label: 'Absent' }
       case 'late':
         return { icon: Clock, color: '#f59e0b', bg: '#fef3c7', border: '#fcd34d', label: 'Late' }
-      case 'halfday':
+      case 'half-day':
         return { icon: AlertCircle, color: '#f97316', bg: '#ffedd5', border: '#fdba74', label: 'Half Day' }
       case 'leave':
         return { icon: AlertCircle, color: '#3b82f6', bg: '#dbeafe', border: '#93c5fd', label: 'On Leave' }
@@ -116,12 +109,22 @@ export default function MyAttendancePage() {
     }
   }
 
-  const formatOvertime = (minutes: number) => {
-    const hours = Math.floor(minutes / 60)
-    const mins = minutes % 60
-    if (hours === 0) return `${mins}m`
-    if (mins === 0) return `${hours}h`
-    return `${hours}h ${mins}m`
+  const formatOvertime = (hours: number) => {
+    if (hours === 0) return "0h"
+    const h = Math.floor(hours)
+    const m = Math.round((hours - h) * 60)
+    if (h === 0) return `${m}m`
+    if (m === 0) return `${h}h`
+    return `${h}h ${m}m`
+  }
+
+  const formatTime = (time?: string) => {
+    if (!time) return "--:--"
+    const [hours, minutes] = time.split(':')
+    const hour = parseInt(hours)
+    const ampm = hour >= 12 ? 'PM' : 'AM'
+    const displayHour = hour % 12 || 12
+    return `${displayHour}:${minutes} ${ampm}`
   }
 
   const monthYear = selectedMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
@@ -154,6 +157,13 @@ export default function MyAttendancePage() {
             Track your monthly attendance patterns and work hours
           </p>
         </div>
+
+        {loading && (
+          <div style={{ display: "flex", alignItems: "center", gap: 12, padding: 16, background: "#f8fafc", borderRadius: 12 }}>
+            <Loader2 style={{ width: 20, height: 20, color: "#3b82f6", animation: "spin 1s linear infinite" }} />
+            <span style={{ fontSize: 14, color: "#64748b" }}>Loading attendance data...</span>
+          </div>
+        )}
 
         {/* Month Selector */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fff", borderRadius: 12, padding: "12px 20px", border: "1px solid #e2e8f0" }}>
@@ -212,7 +222,7 @@ export default function MyAttendancePage() {
               {attendancePercentage}%
             </div>
           </div>
-          <div style={{ fontSize: 32, fontWeight: 800, marginBottom: 4 }}>{stats.present}</div>
+          <div style={{ fontSize: 32, fontWeight: 800, marginBottom: 4 }}>{stats.totalPresent}</div>
           <div style={{ fontSize: 13, opacity: 0.9 }}>Days Present</div>
         </div>
 
@@ -220,10 +230,10 @@ export default function MyAttendancePage() {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
             <XCircle style={{ width: 24, height: 24, opacity: 0.9 }} />
             <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.9, background: "rgba(255,255,255,0.2)", padding: "4px 10px", borderRadius: 20 }}>
-              {stats.total > 0 ? Math.round((stats.absent / stats.total) * 100) : 0}%
+              {totalDays > 0 ? Math.round((stats.totalAbsent / totalDays) * 100) : 0}%
             </div>
           </div>
-          <div style={{ fontSize: 32, fontWeight: 800, marginBottom: 4 }}>{stats.absent}</div>
+          <div style={{ fontSize: 32, fontWeight: 800, marginBottom: 4 }}>{stats.totalAbsent}</div>
           <div style={{ fontSize: 13, opacity: 0.9 }}>Days Absent</div>
         </div>
 
@@ -231,10 +241,10 @@ export default function MyAttendancePage() {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
             <Clock style={{ width: 24, height: 24, opacity: 0.9 }} />
             <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.9, background: "rgba(255,255,255,0.2)", padding: "4px 10px", borderRadius: 20 }}>
-              {stats.late}
+              {stats.totalLate}
             </div>
           </div>
-          <div style={{ fontSize: 32, fontWeight: 800, marginBottom: 4 }}>{stats.late}</div>
+          <div style={{ fontSize: 32, fontWeight: 800, marginBottom: 4 }}>{stats.totalLate}</div>
           <div style={{ fontSize: 13, opacity: 0.9 }}>Late Arrivals</div>
         </div>
 
@@ -245,7 +255,7 @@ export default function MyAttendancePage() {
               OT
             </div>
           </div>
-          <div style={{ fontSize: 32, fontWeight: 800, marginBottom: 4 }}>{formatOvertime(stats.totalOvertime)}</div>
+          <div style={{ fontSize: 32, fontWeight: 800, marginBottom: 4 }}>{formatOvertime(stats.overtimeHours)}</div>
           <div style={{ fontSize: 13, opacity: 0.9 }}>Total Overtime</div>
         </div>
       </div>
@@ -271,7 +281,7 @@ export default function MyAttendancePage() {
             </div>
             <div>
               <div style={{ fontSize: 13, color: "#64748b", marginBottom: 2 }}>Half Days</div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: "#0f172a" }}>{stats.halfDay}</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: "#0f172a" }}>{stats.totalHalfDay}</div>
             </div>
           </div>
         </div>
@@ -283,7 +293,7 @@ export default function MyAttendancePage() {
             </div>
             <div>
               <div style={{ fontSize: 13, color: "#64748b", marginBottom: 2 }}>Leave Taken</div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: "#0f172a" }}>{stats.leave}</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: "#0f172a" }}>{stats.totalLeave}</div>
             </div>
           </div>
         </div>
@@ -383,21 +393,21 @@ export default function MyAttendancePage() {
                   const StatusIcon = config.icon
                   
                   return (
-                    <div key={index} className="ma-row" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: index < 6 ? "1px solid #f1f5f9" : "none" }}>
+                    <div key={record._id} className="ma-row" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: index < 6 ? "1px solid #f1f5f9" : "none" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                         <div style={{ width: 44, height: 44, borderRadius: 12, background: config.bg, border: `1px solid ${config.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
                           <StatusIcon style={{ width: 20, height: 20, color: config.color }} />
                         </div>
                         <div>
                           <div style={{ fontSize: 14, fontWeight: 600, color: "#0f172a" }}>{record.date}</div>
-                          <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>{record.notes}</div>
+                          <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>{record.remarks || "No remarks"}</div>
                         </div>
                       </div>
                       <div style={{ textAlign: "right" }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: "#0f172a" }}>{record.checkIn}</div>
-                        <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>{record.checkOut}</div>
-                        {record.overtime !== "0h" && (
-                          <div style={{ fontSize: 11, color: "#3b82f6", fontWeight: 600, marginTop: 2 }}>+{record.overtime}</div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: "#0f172a" }}>{formatTime(record.checkInTime)}</div>
+                        <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>{formatTime(record.checkOutTime)}</div>
+                        {record.overtime && record.overtime > 0 && (
+                          <div style={{ fontSize: 11, color: "#3b82f6", fontWeight: 600, marginTop: 2 }}>+{formatOvertime(record.overtime)}</div>
                         )}
                       </div>
                     </div>
@@ -414,11 +424,11 @@ export default function MyAttendancePage() {
               <div style={{ padding: 20 }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   {[
-                    { label: "Present Days", value: stats.present, color: "#10b981", bg: "#dcfce7", icon: CheckCircle },
-                    { label: "Absent Days", value: stats.absent, color: "#ef4444", bg: "#fee2e2", icon: XCircle },
-                    { label: "Late Arrivals", value: stats.late, color: "#f59e0b", bg: "#fef3c7", icon: Clock },
-                    { label: "Leave Taken", value: stats.leave, color: "#3b82f6", bg: "#dbeafe", icon: AlertCircle },
-                    { label: "Total Overtime", value: formatOvertime(stats.totalOvertime), color: "#8b5cf6", bg: "#ede9fe", icon: TrendingUp },
+                    { label: "Present Days", value: stats.totalPresent, color: "#10b981", bg: "#dcfce7", icon: CheckCircle },
+                    { label: "Absent Days", value: stats.totalAbsent, color: "#ef4444", bg: "#fee2e2", icon: XCircle },
+                    { label: "Late Arrivals", value: stats.totalLate, color: "#f59e0b", bg: "#fef3c7", icon: Clock },
+                    { label: "Leave Taken", value: stats.totalLeave, color: "#3b82f6", bg: "#dbeafe", icon: AlertCircle },
+                    { label: "Total Overtime", value: formatOvertime(stats.overtimeHours), color: "#8b5cf6", bg: "#ede9fe", icon: TrendingUp },
                   ].map((item, index) => {
                     const Icon = item.icon
                     return (
@@ -471,7 +481,7 @@ export default function MyAttendancePage() {
                     const StatusIcon = config.icon
                     
                     return (
-                      <tr key={index} className="ma-row" style={{ borderBottom: index < filteredAttendance.length - 1 ? "1px solid #f1f5f9" : "none" }}>
+                      <tr key={record._id} className="ma-row" style={{ borderBottom: index < filteredAttendance.length - 1 ? "1px solid #f1f5f9" : "none" }}>
                         <td style={{ padding: "16px 20px" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                             <div style={{ width: 40, height: 40, borderRadius: 10, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -481,10 +491,10 @@ export default function MyAttendancePage() {
                           </div>
                         </td>
                         <td style={{ padding: "16px 20px", textAlign: "center" }}>
-                          <span style={{ fontSize: 14, fontWeight: 500, color: "#0f172a" }}>{record.checkIn}</span>
+                          <span style={{ fontSize: 14, fontWeight: 500, color: "#0f172a" }}>{formatTime(record.checkInTime)}</span>
                         </td>
                         <td style={{ padding: "16px 20px", textAlign: "center" }}>
-                          <span style={{ fontSize: 14, fontWeight: 500, color: "#0f172a" }}>{record.checkOut}</span>
+                          <span style={{ fontSize: 14, fontWeight: 500, color: "#0f172a" }}>{formatTime(record.checkOutTime)}</span>
                         </td>
                         <td style={{ padding: "16px 20px", textAlign: "center" }}>
                           <span style={{
@@ -496,12 +506,12 @@ export default function MyAttendancePage() {
                           </span>
                         </td>
                         <td style={{ padding: "16px 20px", textAlign: "center" }}>
-                          <span style={{ fontSize: 14, fontWeight: 600, color: record.overtime !== "0h" ? "#3b82f6" : "#94a3b8" }}>
-                            {record.overtime}
+                          <span style={{ fontSize: 14, fontWeight: 600, color: record.overtime && record.overtime > 0 ? "#3b82f6" : "#94a3b8" }}>
+                            {formatOvertime(record.overtime || 0)}
                           </span>
                         </td>
                         <td style={{ padding: "16px 20px" }}>
-                          <span style={{ fontSize: 13, color: "#64748b" }}>{record.notes}</span>
+                          <span style={{ fontSize: 14, color: "#64748b" }}>{record.remarks || "-"}</span>
                         </td>
                       </tr>
                     )

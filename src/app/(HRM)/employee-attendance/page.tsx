@@ -9,7 +9,7 @@ import { EmployeeAttendanceTabs } from "@/components/dashboard/attendance/Employ
 import { EmployeeAttendanceCard } from "@/components/dashboard/attendance/EmployeeAttendanceCard"
 import { AttendanceCalendar } from "@/components/dashboard/attendance/AttendanceCalendar"
 
-// Mock employee attendance data
+// Mock employee attendance data - TODO: Replace with API integration once Employee service is available
 const employeeAttendanceData = [
   {
     id: 1,
@@ -61,110 +61,6 @@ const employeeAttendanceData = [
       { date: "2024-03-25", checkIn: "09:15 AM", checkOut: "06:00 PM", status: "late", overtime: "0h" },
       { date: "2024-03-24", checkIn: "08:30 AM", checkOut: "02:00 PM", status: "halfday", overtime: "0h" },
       { date: "2024-03-23", checkIn: "08:00 AM", checkOut: "06:00 PM", status: "present", overtime: "0h" }
-    ]
-  },
-  {
-    id: 3,
-    name: "Ava Garcia",
-    employeeId: "EMP003",
-    department: "HR",
-    position: "HR Manager",
-    email: "ava.garcia@company.com",
-    phone: "+1 234-567-8903",
-    avatar: "/api/placeholder/60/60",
-    joinDate: "2021-11-10",
-    currentMonthStats: {
-      present: 22,
-      absent: 0,
-      late: 1,
-      halfDay: 1,
-      totalWorkingDays: 24,
-      attendancePercentage: 92
-    },
-    recentAttendance: [
-      { date: "2024-03-27", checkIn: "08:30 AM", checkOut: "06:30 PM", status: "present", overtime: "0h" },
-      { date: "2024-03-26", checkIn: "08:45 AM", checkOut: "06:15 PM", status: "present", overtime: "0h" },
-      { date: "2024-03-25", checkIn: "09:00 AM", checkOut: "06:00 PM", status: "present", overtime: "0h" },
-      { date: "2024-03-24", checkIn: "08:00 AM", checkOut: "02:00 PM", status: "halfday", overtime: "0h" },
-      { date: "2024-03-23", checkIn: "09:15 AM", checkOut: "06:00 PM", status: "late", overtime: "0h" }
-    ]
-  },
-  {
-    id: 4,
-    name: "Charlotte Hernandez",
-    employeeId: "EMP004",
-    department: "Marketing",
-    position: "Marketing Specialist",
-    email: "charlotte.hernandez@company.com",
-    phone: "+1 234-567-8904",
-    avatar: "/api/placeholder/60/60",
-    joinDate: "2023-02-01",
-    currentMonthStats: {
-      present: 19,
-      absent: 2,
-      late: 2,
-      halfDay: 1,
-      totalWorkingDays: 24,
-      attendancePercentage: 79
-    },
-    recentAttendance: [
-      { date: "2024-03-27", checkIn: "08:00 AM", checkOut: "06:00 PM", status: "present", overtime: "0h" },
-      { date: "2024-03-26", checkIn: "08:30 AM", checkOut: "06:30 PM", status: "present", overtime: "0h" },
-      { date: "2024-03-25", checkIn: "09:30 AM", checkOut: "06:00 PM", status: "late", overtime: "0h" },
-      { date: "2024-03-24", checkIn: "-", checkOut: "-", status: "absent", overtime: "0h" },
-      { date: "2024-03-23", checkIn: "08:45 AM", checkOut: "03:00 PM", status: "halfday", overtime: "0h" }
-    ]
-  },
-  {
-    id: 5,
-    name: "Emily Johnson",
-    employeeId: "EMP005",
-    department: "Sales",
-    position: "Sales Executive",
-    email: "emily.johnson@company.com",
-    phone: "+1 234-567-8905",
-    avatar: "/api/placeholder/60/60",
-    joinDate: "2023-06-15",
-    currentMonthStats: {
-      present: 21,
-      absent: 1,
-      late: 1,
-      halfDay: 1,
-      totalWorkingDays: 24,
-      attendancePercentage: 88
-    },
-    recentAttendance: [
-      { date: "2024-03-27", checkIn: "08:15 AM", checkOut: "06:15 PM", status: "present", overtime: "0h" },
-      { date: "2024-03-26", checkIn: "09:00 AM", checkOut: "06:00 PM", status: "present", overtime: "0h" },
-      { date: "2024-03-25", checkIn: "08:00 AM", checkOut: "05:00 PM", status: "present", overtime: "0h" },
-      { date: "2024-03-24", checkIn: "09:20 AM", checkOut: "06:00 PM", status: "late", overtime: "0h" },
-      { date: "2024-03-23", checkIn: "-", checkOut: "-", status: "absent", overtime: "0h" }
-    ]
-  },
-  {
-    id: 6,
-    name: "Ethan Brown",
-    employeeId: "EMP006",
-    department: "Engineering",
-    position: "Backend Developer",
-    email: "ethan.brown@company.com",
-    phone: "+1 234-567-8906",
-    avatar: "/api/placeholder/60/60",
-    joinDate: "2022-08-10",
-    currentMonthStats: {
-      present: 23,
-      absent: 0,
-      late: 1,
-      halfDay: 0,
-      totalWorkingDays: 24,
-      attendancePercentage: 96
-    },
-    recentAttendance: [
-      { date: "2024-03-27", checkIn: "08:00 AM", checkOut: "06:30 PM", status: "present", overtime: "0h" },
-      { date: "2024-03-26", checkIn: "08:30 AM", checkOut: "06:30 PM", status: "present", overtime: "0h" },
-      { date: "2024-03-25", checkIn: "09:15 AM", checkOut: "06:00 PM", status: "late", overtime: "0h" },
-      { date: "2024-03-24", checkIn: "08:00 AM", checkOut: "06:00 PM", status: "present", overtime: "0h" },
-      { date: "2024-03-23", checkIn: "08:45 AM", checkOut: "06:15 PM", status: "present", overtime: "0h" }
     ]
   }
 ]

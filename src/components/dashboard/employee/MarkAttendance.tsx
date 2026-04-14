@@ -1,15 +1,25 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CalendarDays, CheckCircle2, Clock, LogOut } from "lucide-react";
+import { CalendarDays, CheckCircle2, Clock, LogOut, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { cn } from "@/components/utils";
 import { AttendanceStatus } from "@/types/employee";
+import { attendanceService } from "@/services/attendance.service";
+import { CreateAttendanceDto, UpdateAttendanceDto } from "@/types/attendance.types";
 
 export default function MarkAttendance({ className }: { className?: string }) {
     const [status, setStatus] = useState<AttendanceStatus>("not-marked");
     const [checkInTime, setCheckInTime] = useState<Date | null>(null);
     const [checkOutTime, setCheckOutTime] = useState<Date | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [existingAttendanceId, setExistingAttendanceId] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
+
+    // TODO: Get these from auth context
+    const currentEmployeeId = "EMP001"; // Replace with actual employee ID from auth
+    const organizationId = "org123"; // Replace with actual org ID from auth
+    const currentUserId = "user123"; // Replace with actual user ID from auth
 
     const today = useMemo(() => new Date(), []);
 
@@ -30,18 +40,73 @@ export default function MarkAttendance({ className }: { className?: string }) {
             })
             : "--:--";
 
-    const handleCheckIn = () => {
-        const now = new Date();
-        setStatus("checked-in");
-        setCheckInTime(now);
-        setCheckOutTime(null);
+    const formatDateForAPI = (date: Date) => {
+        return date.toISOString().split('T')[0];
     };
 
-    const handleCheckOut = () => {
-        if (status !== "checked-in") return;
-        const now = new Date();
-        setStatus("checked-out");
-        setCheckOutTime(now);
+    const formatTimeForAPI = (date: Date) => {
+        return date.toTimeString().split(' ')[0].substring(0, 5);
+    };
+
+    const handleCheckIn = async () => {
+        setLoading(true);
+        setError(null);
+        
+        try {
+            const now = new Date();
+            const checkInDto: CreateAttendanceDto = {
+                employeeId: currentEmployeeId,
+                organizationId: organizationId,
+                date: formatDateForAPI(now),
+                checkInTime: formatTimeForAPI(now),
+                status: "present",
+                createdBy: currentUserId,
+            };
+
+            const response = await attendanceService.createAttendance(checkInDto);
+            
+            if (response.success && response.data) {
+                setStatus("checked-in");
+                setCheckInTime(now);
+                setCheckOutTime(null);
+                setExistingAttendanceId(response.data._id);
+            } else {
+                setError(response.message || "Failed to check in");
+            }
+        } catch (err: any) {
+            setError(err.message || "Failed to check in");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCheckOut = async () => {
+        if (status !== "checked-in" || !existingAttendanceId) return;
+        
+        setLoading(true);
+        setError(null);
+        
+        try {
+            const now = new Date();
+            const updateDto: UpdateAttendanceDto = {
+                id: existingAttendanceId,
+                organizationId: organizationId,
+                checkOutTime: formatTimeForAPI(now),
+            };
+
+            const response = await attendanceService.updateAttendance(updateDto);
+            
+            if (response.success) {
+                setStatus("checked-out");
+                setCheckOutTime(now);
+            } else {
+                setError(response.message || "Failed to check out");
+            }
+        } catch (err: any) {
+            setError(err.message || "Failed to check out");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const statusCopy = {
@@ -102,29 +167,43 @@ export default function MarkAttendance({ className }: { className?: string }) {
                     </div>
                 </div>
 
+                {error && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                        <p className="text-sm text-red-600">{error}</p>
+                    </div>
+                )}
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button
                         onClick={handleCheckIn}
-                        disabled={status === "checked-in"}
+                        disabled={status === "checked-in" || loading}
                         className={cn(
                             "flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 shadow-sm",
                             "bg-emerald-500 text-white hover:bg-emerald-600 hover:shadow-md",
-                            status === "checked-in" && "opacity-70 cursor-not-allowed"
+                            (status === "checked-in" || loading) && "opacity-70 cursor-not-allowed"
                         )}
                     >
-                        <CheckCircle2 className="w-4 h-4" />
+                        {loading && status === "not-marked" ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                            <CheckCircle2 className="w-4 h-4" />
+                        )}
                         Check In
                     </button>
                     <button
                         onClick={handleCheckOut}
-                        disabled={status !== "checked-in"}
+                        disabled={status !== "checked-in" || loading}
                         className={cn(
                             "flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 border",
                             "bg-white text-gray-800 border-gray-200 hover:border-gray-300 hover:shadow-sm",
-                            status !== "checked-in" && "opacity-70 cursor-not-allowed"
+                            (status !== "checked-in" || loading) && "opacity-70 cursor-not-allowed"
                         )}
                     >
-                        <LogOut className="w-4 h-4" />
+                        {loading && status === "checked-in" ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                            <LogOut className="w-4 h-4" />
+                        )}
                         Check Out
                     </button>
                 </div>

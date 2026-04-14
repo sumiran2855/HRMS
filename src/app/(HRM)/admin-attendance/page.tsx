@@ -1,210 +1,120 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Input } from "@/components/ui/Input"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent, CardHeader } from "@/components/ui/Card"
-import { Search, Users, CheckCircle, Clock, Plane, ChevronLeft, ChevronRight } from "lucide-react"
+import { Search, Users, CheckCircle, Clock, Plane, ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
 import { AttendanceLegend } from "@/components/dashboard/attendance/AttendanceLegend"
 import { AdminAttendanceTable } from "@/components/dashboard/attendance/AdminAttendanceTable"
 import { AttendancePagination } from "@/components/dashboard/attendance/AttendancePagination"
+import { employeeService } from "@/services/employee.service"
+import { attendanceService } from "@/services/attendance.service"
+import { Attendance, GetAttendanceByDateRangeDto } from "@/types/attendance.types"
+import { Employee } from "@/types/employee.types"
 
-// Mock attendance data
-const adminAttendanceData = [
-  {
-    id: 1,
-    name: "Alexander Smith",
-    avatar: "/api/placeholder/40/40",
-    employeeId: "EMP001",
-    department: "Engineering",
-    attendance: Array(31).fill(null).map((_, index) => {
-      const day = index + 1
-      // Mock attendance patterns
-      if ([5, 12, 19, 26].includes(day)) return "holiday" as const
-      if ([6, 13, 20, 27].includes(day)) return "off" as const
-      if ([2, 8, 15, 22, 29].includes(day)) return "late" as const
-      if ([3, 17].includes(day)) return "halfday" as const
-      if ([4, 11, 18, 25].includes(day)) return "absent" as const
-      return "present" as const
-    })
-  },
-  {
-    id: 2,
-    name: "Amelia Gonzalez", 
-    avatar: "/api/placeholder/40/40",
-    employeeId: "EMP002",
-    department: "Design",
-    attendance: Array(31).fill(null).map((_, index) => {
-      const day = index + 1
-      if ([5, 12, 19, 26].includes(day)) return "holiday"
-      if ([6, 13, 20, 27].includes(day)) return "off"
-      if ([1, 7, 14, 21, 28].includes(day)) return "late"
-      if ([9, 16, 23].includes(day)) return "halfday"
-      if ([10, 24].includes(day)) return "absent"
-      return "present"
-    })
-  },
-  {
-    id: 3,
-    name: "Ava Garcia",
-    avatar: "/api/placeholder/40/40", 
-    employeeId: "EMP003",
-    department: "HR",
-    attendance: Array(31).fill(null).map((_, index) => {
-      const day = index + 1
-      if ([5, 12, 19, 26].includes(day)) return "holiday"
-      if ([6, 13, 20, 27].includes(day)) return "off"
-      if ([3, 10, 17, 24].includes(day)) return "off" as const
-      if ([4, 11, 18].includes(day)) return "halfday"
-      if ([2, 9, 16, 23, 30].includes(day)) return "late"
-      return "present"
-    })
-  },
-  {
-    id: 4,
-    name: "Charlotte Hernandez",
-    avatar: "/api/placeholder/40/40",
-    employeeId: "EMP004", 
-    department: "Marketing",
-    attendance: Array(31).fill(null).map((_, index) => {
-      const day = index + 1
-      if ([5, 12, 19, 26].includes(day)) return "holiday"
-      if ([6, 13, 20, 27].includes(day)) return "off"
-      if ([1, 8, 15, 22, 29].includes(day)) return "present"
-      if ([2, 9, 16, 23, 30].includes(day)) return "present"
-      if ([3, 10, 17, 24].includes(day)) return "present"
-      if ([4, 11, 18, 25].includes(day)) return "present"
-      if ([7, 14, 21, 28].includes(day)) return "late"
-      return "present"
-    })
-  },
-  {
-    id: 5,
-    name: "Emily Johnson",
-    avatar: "/api/placeholder/40/40",
-    employeeId: "EMP005",
-    department: "Sales", 
-    attendance: Array(31).fill(null).map((_, index) => {
-      const day = index + 1
-      if ([5, 12, 19, 26].includes(day)) return "holiday"
-      if ([6, 13, 20, 27].includes(day)) return "off"
-      if ([1, 2, 3, 4].includes(day)) return "off" as const
-      if ([8, 15, 22].includes(day)) return "halfday"
-      if ([9, 16, 23, 30].includes(day)) return "late"
-      return "present"
-    })
-  },
-  {
-    id: 6,
-    name: "Ethan Brown",
-    avatar: "/api/placeholder/40/40",
-    employeeId: "EMP006",
-    department: "Engineering",
-    attendance: Array(31).fill(null).map((_, index) => {
-      const day = index + 1
-      if ([5, 12, 19, 26].includes(day)) return "holiday"
-      if ([6, 13, 20, 27].includes(day)) return "off"
-      if ([1, 7, 14, 21, 28].includes(day)) return "present"
-      if ([2, 8, 15, 22, 29].includes(day)) return "present"
-      if ([3, 10, 17, 24].includes(day)) return "present"
-      if ([4, 11, 18, 25].includes(day)) return "present"
-      if ([9, 16, 23, 30].includes(day)) return "late"
-      return "present"
-    })
-  },
-  {
-    id: 7,
-    name: "Isabella Lopez",
-    avatar: "/api/placeholder/40/40",
-    employeeId: "EMP007",
-    department: "Finance",
-    attendance: Array(31).fill(null).map((_, index) => {
-      const day = index + 1
-      if ([5, 12, 19, 26].includes(day)) return "holiday"
-      if ([6, 13, 20, 27].includes(day)) return "off"
-      if ([1, 2, 3].includes(day)) return "off" as const
-      if ([4, 11, 18].includes(day)) return "absent"
-      if ([8, 15, 22, 29].includes(day)) return "halfday"
-      return "present"
-    })
-  },
-  {
-    id: 8,
-    name: "Jacob Taylor",
-    avatar: "/api/placeholder/40/40",
-    employeeId: "EMP008",
-    department: "Engineering",
-    attendance: Array(31).fill(null).map((_, index) => {
-      const day = index + 1
-      if ([5, 12, 19, 26].includes(day)) return "holiday"
-      if ([6, 13, 20, 27].includes(day)) return "off"
-      if ([1, 7, 14, 21, 28].includes(day)) return "present"
-      if ([2, 8, 15, 22, 29].includes(day)) return "present"
-      if ([3, 10, 17, 24].includes(day)) return "present"
-      if ([4, 11, 18, 25].includes(day)) return "present"
-      if ([9, 16, 23, 30].includes(day)) return "late"
-      return "present"
-    })
-  },
-  {
-    id: 9,
-    name: "Liam Davis",
-    avatar: "/api/placeholder/40/40",
-    employeeId: "EMP009",
-    department: "Support",
-    attendance: Array(31).fill(null).map((_, index) => {
-      const day = index + 1
-      if ([5, 12, 19, 26].includes(day)) return "holiday"
-      if ([6, 13, 20, 27].includes(day)) return "off"
-      if ([1, 2].includes(day)) return "off" as const
-      if ([3, 10, 17].includes(day)) return "halfday"
-      if ([4, 11, 18].includes(day)) return "absent"
-      return "present"
-    })
-  },
-  {
-    id: 10,
-    name: "Mason Wilson",
-    avatar: "/api/placeholder/40/40",
-    employeeId: "EMP010",
-    department: "Engineering",
-    attendance: Array(31).fill(null).map((_, index) => {
-      const day = index + 1
-      if ([5, 12, 19, 26].includes(day)) return "holiday"
-      if ([6, 13, 20, 27].includes(day)) return "off"
-      if ([1, 7, 14, 21, 28].includes(day)) return "present"
-      if ([2, 8, 15, 22, 29].includes(day)) return "present"
-      if ([3, 10, 17, 24].includes(day)) return "present"
-      if ([4, 11, 18, 25].includes(day)) return "present"
-      if ([9, 16, 23, 30].includes(day)) return "late"
-      return "present"
-    })
-  }
-]
+// TODO: Get these from auth context
+const organizationId = "org123"
 
 export default function AdminAttendancePage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [entriesPerPage, setEntriesPerPage] = useState(10)
   const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [employees, setEmployees] = useState<Employee[]>([])
+  const [attendanceData, setAttendanceData] = useState<Attendance[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // Calculate statistics
-  const totalEmployees = adminAttendanceData.length
-  const totalPresent = adminAttendanceData.reduce((sum, emp) => 
-    sum + emp.attendance.filter(status => status === 'present').length, 0
-  )
-  const totalHalfDay = adminAttendanceData.reduce((sum, emp) => 
-    sum + emp.attendance.filter(status => status === 'halfday').length, 0
-  )
-  const onLeaveEmployees = adminAttendanceData.filter(emp => 
-    emp.attendance.includes('off')
-  ).length
+  const loadData = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      const employeesResponse = await employeeService.getEmployees()
+      if (employeesResponse.success && employeesResponse.data) {
+        setEmployees(employeesResponse.data)
+      }
+
+      const startDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1)
+      const endDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0)
+      
+      const query: GetAttendanceByDateRangeDto = {
+        organizationId,
+        startDate: startDate.toISOString().split('T')[0],
+        endDate: endDate.toISOString().split('T')[0],
+      }
+
+      const attendanceResponse = await attendanceService.getAttendanceByDateRange(query)
+      if (attendanceResponse.success && attendanceResponse.data) {
+        setAttendanceData(attendanceResponse.data)
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to load data")
+    } finally {
+      setLoading(false)
+    }
+  }, [currentMonth])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
+
+  const attendanceByEmployee = attendanceData.reduce((acc, record) => {
+    if (!acc[record.employeeId]) {
+      acc[record.employeeId] = []
+    }
+    acc[record.employeeId].push(record)
+    return acc
+  }, {} as Record<string, Attendance[]>)
+
+  const combinedData = employees.map((employee, index) => {
+    const employeeAttendance = attendanceByEmployee[employee.employeeId] || []
+    const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate()
+    
+    const attendanceArray = Array.from({ length: daysInMonth }, (_, dayIndex) => {
+      const day = dayIndex + 1
+      const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+      const record = employeeAttendance.find(r => r.date === dateStr)
+      return record ? record.status : null
+    }).map((status, idx) => {
+      // Convert null to 'off' for weekends/holidays or 'absent' for unmarked days
+      if (status) return status
+      const day = idx + 1
+      // Simple weekend check (Saturday = 6, Sunday = 0)
+      const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
+      const dayOfWeek = date.getDay()
+      if (dayOfWeek === 0 || dayOfWeek === 6) return 'off'
+      return 'absent'
+    })
+
+    return {
+      id: index + 1,
+      name: `${employee.firstName} ${employee.lastName}`,
+      employeeId: employee.employeeId,
+      department: employee.departmentId || 'Unassigned',
+      avatar: typeof employee.employeePhoto === 'string' ? employee.employeePhoto : "/api/placeholder/40/40",
+      attendance: attendanceArray
+    }
+  })
 
   // Filter data
-  const filteredData = adminAttendanceData.filter(employee =>
+  const filteredData = combinedData.filter(employee =>
     employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     employee.employeeId.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  // Calculate statistics
+  const totalEmployees = filteredData.length
+  const totalPresent = filteredData.reduce((sum, emp) => 
+    sum + emp.attendance.filter(status => status === 'present').length, 0
+  )
+  const totalHalfDay = filteredData.reduce((sum, emp) => 
+    sum + emp.attendance.filter(status => status === 'half-day').length, 0
+  )
+  const onLeaveEmployees = filteredData.filter(emp => 
+    emp.attendance.includes('off')
+  ).length
 
   // Pagination
   const totalPages = Math.ceil(filteredData.length / entriesPerPage)
@@ -225,6 +135,27 @@ export default function AdminAttendancePage() {
       }
       return newDate
     })
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center gap-2 text-slate-500">
+          <Loader2 className="w-6 h-6 animate-spin" />
+          <span>Loading attendance data...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-sm text-red-600">{error}</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -266,7 +197,7 @@ export default function AdminAttendancePage() {
               <div>
                 <p className="text-sm font-medium text-blue-600">Total Employee</p>
                 <p className="text-2xl font-bold text-blue-900">{totalEmployees}</p>
-                <p className="text-xs text-blue-600 mt-1">↑+5.15% Than Last Month</p>
+                <p className="text-xs text-blue-600 mt-1">Active this month</p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                 <Users className="w-6 h-6 text-blue-600" />
@@ -281,7 +212,7 @@ export default function AdminAttendancePage() {
               <div>
                 <p className="text-sm font-medium text-green-600">Total Present</p>
                 <p className="text-2xl font-bold text-green-900">{totalPresent}</p>
-                <p className="text-xs text-green-600 mt-1">↓+5.5% Than Last Month</p>
+                <p className="text-xs text-green-600 mt-1">This month</p>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                 <CheckCircle className="w-6 h-6 text-green-600" />
@@ -296,7 +227,7 @@ export default function AdminAttendancePage() {
               <div>
                 <p className="text-sm font-medium text-yellow-600">Total Half Day</p>
                 <p className="text-2xl font-bold text-yellow-900">{totalHalfDay}</p>
-                <p className="text-xs text-yellow-600 mt-1">↑+10% Than Last Year</p>
+                <p className="text-xs text-yellow-600 mt-1">This month</p>
               </div>
               <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
                 <Clock className="w-6 h-6 text-yellow-600" />
@@ -311,7 +242,7 @@ export default function AdminAttendancePage() {
               <div>
                 <p className="text-sm font-medium text-purple-600">On Leave Employee</p>
                 <p className="text-2xl font-bold text-purple-900">{onLeaveEmployees}</p>
-                <p className="text-xs text-purple-600 mt-1">↑+2.15% Than Last Month</p>
+                <p className="text-xs text-purple-600 mt-1">This month</p>
               </div>
               <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
                 <Plane className="w-6 h-6 text-purple-600" />
