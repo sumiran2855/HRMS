@@ -1,7 +1,8 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 
 const SERVICE_URLS = {
-  AUTH: process.env.NEXT_PUBLIC_AUTH_API_URL || 'https://auth-service-4cwu.onrender.com',
+  // AUTH: process.env.NEXT_PUBLIC_AUTH_API_URL || 'https://auth-service-4cwu.onrender.com',
+  AUTH: process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:3001/',
   EMPLOYEE: process.env.NEXT_PUBLIC_EMPLOYEE_API_URL || 'http://localhost:3002/',
   ATTENDANCE: process.env.NEXT_PUBLIC_ATTENDANCE_API_URL || 'http://localhost:3003/',
 } as const;

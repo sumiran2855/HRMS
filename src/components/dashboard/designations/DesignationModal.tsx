@@ -2,20 +2,7 @@
 
 import { useState } from "react"
 import { X, Briefcase, DollarSign, Users, CheckCircle, Plus, X as XIcon } from "lucide-react"
-
-interface Designation {
-  id: number
-  title: string
-  department: string
-  level: string
-  employeeCount: number
-  description: string
-  skills: string[]
-  minSalary: number
-  maxSalary: number
-  status: "active" | "inactive"
-  createdAt: string
-}
+import { Designation } from "@/types/designation.types"
 
 interface DesignationModalProps {
   isOpen: boolean

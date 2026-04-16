@@ -1,84 +1,28 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
-import { Star, Calendar, CheckCircle, AlertCircle, Clock, XCircle, Plane } from "lucide-react"
+import { LEGEND_KEYS, ATTENDANCE_STATUS_MAP } from "@/constants/attendance"
 
 export function AttendanceLegend() {
-  const legendItems = [
-    {
-      icon: Star,
-      label: "Holiday",
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
-      description: "Company holidays"
-    },
-    {
-      icon: Calendar,
-      label: "Day Off", 
-      color: "text-slate-600",
-      bgColor: "bg-slate-50",
-      description: "Weekly off days"
-    },
-    {
-      icon: CheckCircle,
-      label: "Present",
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-      description: "Present on time"
-    },
-    {
-      icon: AlertCircle,
-      label: "Half Day",
-      color: "text-yellow-600",
-      bgColor: "bg-yellow-50",
-      description: "Half day attendance"
-    },
-    {
-      icon: Clock,
-      label: "Late",
-      color: "text-orange-600",
-      bgColor: "bg-orange-50",
-      description: "Late arrival"
-    },
-    {
-      icon: XCircle,
-      label: "Absent",
-      color: "text-red-600",
-      bgColor: "bg-red-50",
-      description: "No attendance"
-    },
-    {
-      icon: Plane,
-      label: "On Leave",
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
-      description: "Approved leave"
-    }
-  ]
-
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold">Note</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4">
-          {legendItems.map((item, index) => {
-            const Icon = item.icon
-            return (
-              <div key={index} className="flex items-center gap-2">
-                <div className={`w-8 h-8 rounded-full ${item.bgColor} flex items-center justify-center`}>
-                  <Icon className={`w-4 h-4 ${item.color}`} />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-slate-900">{item.label}</p>
-                  <p className="text-xs text-slate-500">{item.description}</p>
-                </div>
+    <div className="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/60 dark:border-slate-800 p-5 shadow-sm">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="w-1 h-5 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full" />
+        <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Legend</h3>
+      </div>
+      <div className="flex flex-wrap gap-x-6 gap-y-3">
+        {LEGEND_KEYS.map((key) => {
+          const item = ATTENDANCE_STATUS_MAP[key]
+          return (
+            <div key={key} className="flex items-center gap-2.5 group">
+              <div className={`w-3 h-3 rounded-full ${item.dotColor} ring-2 ring-offset-1 ring-transparent group-hover:ring-current ${item.color} transition-all`} />
+              <div>
+                <span className="text-sm font-medium text-slate-700">{item.label}</span>
+                <span className="text-xs text-slate-400 ml-1.5 hidden sm:inline">— {item.description}</span>
               </div>
-            )
-          })}
-        </div>
-      </CardContent>
-    </Card>
+            </div>
+          )
+        })}
+      </div>
+    </div>
   )
 }

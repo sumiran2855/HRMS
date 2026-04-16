@@ -164,3 +164,32 @@ export interface EmployeesListResponse {
   data: Employee[];
   statusCode: number;
 }
+
+// Employees Page Types
+export interface EmployeeFilters {
+  searchName: string;
+  searchId: string;
+  selectedDesignation: string;
+}
+
+export interface EmployeeStats {
+  total: number;
+  active: number;
+  uniqueDesignations: number;
+  currentMonth: number;
+}
+
+export interface UseEmployeesPageReturn {
+  employees: Employee[];
+  filteredEmployees: Employee[];
+  filters: EmployeeFilters;
+  stats: EmployeeStats;
+  loading: boolean;
+  error: string | null;
+  isModalOpen: boolean;
+  setSearchName: (value: string) => void;
+  setSearchId: (value: string) => void;
+  setSelectedDesignation: (value: string) => void;
+  setIsModalOpen: (value: boolean) => void;
+  fetchEmployees: () => Promise<void>;
+}

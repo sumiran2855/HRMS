@@ -2,21 +2,7 @@
 
 import { useState } from "react"
 import { X, Fingerprint, Clock, MapPin, Wifi, Shield, Activity, Edit3, Trash2, CheckCircle, Save } from "lucide-react"
-
-interface BiometricAttendance {
-  id: number
-  employeeId: string
-  name: string
-  department: string
-  inTime: string
-  outTime: string
-  date: string
-  status: "present" | "absent" | "late" | "leave"
-  location: string
-  workHours: number
-  device: string
-  geofenceStatus: "inside" | "outside" | "exempt"
-}
+import { BiometricAttendance } from "@/types/attendance.types"
 
 interface BiometricAttendanceModalProps {
   isOpen: boolean

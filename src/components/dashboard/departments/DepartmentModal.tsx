@@ -2,17 +2,7 @@
 
 import { useState } from "react"
 import { X, Building2, Users, Mail, Phone, CheckCircle } from "lucide-react"
-
-interface Department {
-  id: string
-  name: string
-  description: string
-  head: string
-  employeeCount: number
-  email: string
-  phone: string
-  status: "active" | "inactive"
-}
+import { Department } from "@/types/department.types"
 
 interface DepartmentModalProps {
   isOpen: boolean

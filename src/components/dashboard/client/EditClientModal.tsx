@@ -109,737 +109,477 @@ export function EditClientModal({ isOpen, onClose, client }: EditClientModalProp
 
   return (
     <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Mono:wght@400;500&display=swap');
-
-        .edit-client-modal-overlay * {
-          font-family: 'DM Sans', sans-serif;
-          box-sizing: border-box;
-        }
-
-        .edit-client-modal-fade {
-          animation: editClientModalFadeIn 0.2s ease;
-        }
-
-        @keyframes editClientModalFadeIn {
-          from { opacity: 0; transform: scale(0.97) translateY(8px); }
-          to   { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        .section-card {
-          background: #fff;
-          border: 1px solid #e2e8f0;
-          border-radius: 12px;
-          overflow: hidden;
-          margin-bottom: 20px;
-        }
-
-        .section-card-header {
-          padding: 12px 16px;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-
-        .section-card-body {
-          padding: 16px;
-        }
-
-        .section-card-body.two-col {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 20px;
-        }
-
-        .edit-client-field-group {
-          margin-bottom: 16px;
-        }
-
-        .edit-client-label {
-          display: block;
-          font-size: 12px;
-          font-weight: 600;
-          color: #475569;
-          margin-bottom: 6px;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-        }
-
-        .edit-client-input-wrap {
-          position: relative;
-        }
-
-        .edit-client-input-icon {
-          position: absolute;
-          left: 12px;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 16px;
-          height: 16px;
-          color: #94a3b8;
-          z-index: 1;
-        }
-
-        .edit-client-input {
-          width: 100%;
-          height: 44px;
-          border-radius: 10px;
-          border: 1.5px solid #e2e8f0;
-          background: #fff;
-          padding: 0 14px 0 38px;
-          font-size: 13.5px;
-          color: #0f172a;
-          font-family: 'DM Sans', sans-serif;
-          outline: none;
-          transition: border-color 0.15s, box-shadow 0.15s;
-        }
-
-        .edit-client-input.with-icon {
-          padding-left: 38px;
-        }
-
-        .edit-client-input:focus {
-          border-color: #334155;
-          box-shadow: 0 0 0 3px rgba(51, 65, 85, 0.1);
-        }
-
-        .edit-client-input.error {
-          border-color: #ef4444;
-          background: #fff5f5;
-        }
-
-        .edit-client-select {
-          width: 100%;
-          height: 44px;
-          border-radius: 10px;
-          border: 1.5px solid #e2e8f0;
-          background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center;
-          padding: 0 38px 0 14px;
-          font-size: 13.5px;
-          color: #0f172a;
-          font-family: 'DM Sans', sans-serif;
-          outline: none;
-          cursor: pointer;
-          transition: border-color 0.15s, box-shadow 0.15s;
-          appearance: none;
-        }
-
-        .edit-client-select.with-icon {
-          padding-left: 38px;
-        }
-
-        .edit-client-select:focus {
-          border-color: #334155;
-          box-shadow: 0 0 0 3px rgba(51, 65, 85, 0.1);
-        }
-
-        .edit-client-textarea {
-          width: 100%;
-          min-height: 100px;
-          border-radius: 10px;
-          border: 1.5px solid #e2e8f0;
-          background: #fff;
-          padding: 12px 14px;
-          font-size: 13.5px;
-          color: #0f172a;
-          font-family: 'DM Sans', sans-serif;
-          outline: none;
-          transition: border-color 0.15s, box-shadow 0.15s;
-          resize: vertical;
-        }
-
-        .edit-client-textarea:focus {
-          border-color: #334155;
-          box-shadow: 0 0 0 3px rgba(51, 65, 85, 0.1);
-        }
-
-        .edit-client-error-msg {
-          color: #dc2626;
-          font-size: 11.5px;
-          font-weight: 500;
-          margin-top: 4px;
-        }
-
-        .service-chip {
-          display: inline-flex;
-          align-items: center;
-          padding: 6px 12px;
-          border-radius: 20px;
-          font-size: 12px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.15s;
-          margin-right: 8px;
-          margin-bottom: 8px;
-          border: 1.5px solid #e2e8f0;
-          background: #fff;
-          color: #475569;
-        }
-
-        .service-chip:hover {
-          background: #f8fafc;
-        }
-
-        .service-chip.selected {
-          background: #3b82f6;
-          color: #fff;
-          border-color: #3b82f6;
-        }
-
-        .edit-client-btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          padding: 10px 20px;
-          border-radius: 10px;
-          font-size: 13.5px;
-          font-weight: 600;
-          border: none;
-          cursor: pointer;
-          transition: all 0.15s;
-          font-family: 'DM Sans', sans-serif;
-        }
-
-        .edit-client-btn-primary {
-          background: #3b82f6;
-          color: #fff;
-        }
-
-        .edit-client-btn-primary:hover:not(:disabled) {
-          background: #2563eb;
-          transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
-
-        .edit-client-btn-primary:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-          transform: none;
-        }
-
-        .edit-client-btn-secondary {
-          background: transparent;
-          color: #64748b;
-          border: 1.5px solid #e2e8f0;
-        }
-
-        .edit-client-btn-secondary:hover {
-          background: #f8fafc;
-          transform: translateY(-1px);
-        }
-
-        @media (max-width: 768px) {
-          .section-card-body.two-col {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
-
-      <div
-        className="edit-client-modal-overlay"
-        style={{
-          position: "fixed", inset: 0,
-          background: "rgba(15, 23, 42, 0.55)",
-          backdropFilter: "blur(4px)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          zIndex: 50, padding: 16,
-        }}
-        onClick={(e) => e.target === e.currentTarget && onClose()}
-      >
+      {isOpen && (
         <div
-          className="edit-client-modal-fade"
-          style={{
-            background: "#fff",
-            borderRadius: 16,
-            width: "100%",
-            maxWidth: 900,
-            maxHeight: "92vh",
-            overflowY: "auto",
-            boxShadow: "0 24px 60px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.08)",
-            display: "flex",
-            flexDirection: "column",
-          }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+          onClick={(e) => e.target === e.currentTarget && onClose()}
         >
-          {/* Header */}
-          <div
-            style={{
-              position: "sticky", top: 0, zIndex: 10,
-              background: "#fff",
-              borderBottom: "1px solid #e2e8f0",
-              padding: "16px 24px",
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              borderRadius: "16px 16px 0 0",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{
-                width: 36, height: 36, borderRadius: 10,
-                background: "linear-gradient(135deg, #10b981, #059669)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                <Building2 style={{ width: 17, height: 17, color: "#fff" }} />
-              </div>
-              <div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: "#0f172a" }}>Edit Client</div>
-                <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 1 }}>
-                  Update client information and contract details
+          <div className="relative bg-white rounded-3xl w-full max-w-[820px] max-h-[92vh] overflow-hidden shadow-[0_32px_80px_-12px_rgba(0,0,0,0.25)] animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+
+            {/* Accent top bar */}
+            <div className="h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500" />
+
+            {/* Header */}
+            <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-lg border-b border-slate-100 px-8 py-5 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-200">
+                  <Building2 className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900 tracking-tight">Edit Client</h2>
+                  <p className="text-[13px] text-slate-400 mt-0.5">Update client information and details</p>
                 </div>
               </div>
-            </div>
-            <button
-              onClick={onClose}
-              style={{
-                width: 34, height: 34, borderRadius: 8,
-                border: "1.5px solid #e2e8f0",
-                background: "transparent", cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                transition: "background 0.15s",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#f1f5f9")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-            >
-              <X style={{ width: 16, height: 16, color: "#64748b" }} />
-            </button>
-          </div>
-
-          {/* Form Body */}
-          <form onSubmit={handleSubmit} style={{ padding: "24px", flex: 1 }}>
-            {/* Basic Information */}
-            <div className="section-card">
-              <div className="section-card-header" style={{ background: "linear-gradient(135deg, #3b82f6, #2563eb)" }}>
-                <div style={{
-                  width: 28, height: 28, borderRadius: 7,
-                  background: "rgba(255,255,255,0.15)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                  <Building2 style={{ width: 14, height: 14, color: "#fff" }} />
-                </div>
-                <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(255,255,255,0.85)" }}>
-                  Basic Information
-                </span>
-              </div>
-              <div className="section-card-body two-col">
-                {/* Company Name */}
-                <div className="edit-client-field-group">
-                  <label className="edit-client-label">Company Name</label>
-                  <div className="edit-client-input-wrap">
-                    <Building2 className="edit-client-input-icon" />
-                    <input
-                      className={`edit-client-input with-icon${errors.companyName ? " error" : ""}`}
-                      name="companyName"
-                      value={formData.companyName}
-                      onChange={handleChange}
-                      placeholder="Enter company name"
-                    />
-                  </div>
-                  {errors.companyName && <div className="edit-client-error-msg">{errors.companyName}</div>}
-                </div>
-
-                {/* Industry */}
-                <div className="edit-client-field-group">
-                  <label className="edit-client-label">Industry</label>
-                  <div className="edit-client-input-wrap">
-                    <Globe className="edit-client-input-icon" />
-                    <select
-                      className="edit-client-select with-icon"
-                      name="industry"
-                      value={formData.industry}
-                      onChange={handleChange}
-                    >
-                      <option value="">Select Industry</option>
-                      {industries.map((industry) => (
-                        <option key={industry} value={industry}>{industry}</option>
-                      ))}
-                    </select>
-                  </div>
-                  {errors.industry && <div className="edit-client-error-msg">{errors.industry}</div>}
-                </div>
-
-                {/* Contact Person */}
-                <div className="edit-client-field-group">
-                  <label className="edit-client-label">Contact Person</label>
-                  <div className="edit-client-input-wrap">
-                    <Users className="edit-client-input-icon" />
-                    <input
-                      className={`edit-client-input with-icon${errors.contactPerson ? " error" : ""}`}
-                      name="contactPerson"
-                      value={formData.contactPerson}
-                      onChange={handleChange}
-                      placeholder="John Doe"
-                    />
-                  </div>
-                  {errors.contactPerson && <div className="edit-client-error-msg">{errors.contactPerson}</div>}
-                </div>
-
-                {/* Email */}
-                <div className="edit-client-field-group">
-                  <label className="edit-client-label">Email Address</label>
-                  <div className="edit-client-input-wrap">
-                    <Mail className="edit-client-input-icon" />
-                    <input
-                      className={`edit-client-input with-icon${errors.email ? " error" : ""}`}
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="contact@company.com"
-                    />
-                  </div>
-                  {errors.email && <div className="edit-client-error-msg">{errors.email}</div>}
-                </div>
-
-                {/* Phone */}
-                <div className="edit-client-field-group">
-                  <label className="edit-client-label">Phone Number</label>
-                  <div className="edit-client-input-wrap">
-                    <Phone className="edit-client-input-icon" />
-                    <input
-                      className={`edit-client-input with-icon${errors.phone ? " error" : ""}`}
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      placeholder="+1 (555) 000-0000"
-                    />
-                  </div>
-                  {errors.phone && <div className="edit-client-error-msg">{errors.phone}</div>}
-                </div>
-
-                {/* Website */}
-                <div className="edit-client-field-group">
-                  <label className="edit-client-label">Website</label>
-                  <div className="edit-client-input-wrap">
-                    <Globe className="edit-client-input-icon" />
-                    <input
-                      className="edit-client-input with-icon"
-                      name="website"
-                      value={formData.website}
-                      onChange={handleChange}
-                      placeholder="www.example.com"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Contract Information */}
-            <div className="section-card">
-              <div className="section-card-header" style={{ background: "linear-gradient(135deg, #10b981, #059669)" }}>
-                <div style={{
-                  width: 28, height: 28, borderRadius: 7,
-                  background: "rgba(255,255,255,0.15)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                  <FileText style={{ width: 14, height: 14, color: "#fff" }} />
-                </div>
-                <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(255,255,255,0.85)" }}>
-                  Contract Information
-                </span>
-              </div>
-              <div className="section-card-body two-col">
-                {/* Contract Type */}
-                <div className="edit-client-field-group">
-                  <label className="edit-client-label">Contract Type</label>
-                  <div className="edit-client-input-wrap">
-                    <Briefcase className="edit-client-input-icon" />
-                    <select
-                      className="edit-client-select with-icon"
-                      name="contractType"
-                      value={formData.contractType}
-                      onChange={handleChange}
-                    >
-                      <option value="">Select Type</option>
-                      {contractTypes.map((type) => (
-                        <option key={type} value={type}>{type}</option>
-                      ))}
-                    </select>
-                  </div>
-                  {errors.contractType && <div className="edit-client-error-msg">{errors.contractType}</div>}
-                </div>
-
-                {/* Contract Value */}
-                <div className="edit-client-field-group">
-                  <label className="edit-client-label">Contract Value (USD)</label>
-                  <div className="edit-client-input-wrap">
-                    <DollarSign className="edit-client-input-icon" />
-                    <input
-                      className={`edit-client-input with-icon${errors.contractValue ? " error" : ""}`}
-                      name="contractValue"
-                      type="number"
-                      value={formData.contractValue}
-                      onChange={handleChange}
-                      placeholder="0"
-                      style={{ fontFamily: "'DM Mono', monospace" }}
-                    />
-                  </div>
-                  {errors.contractValue && <div className="edit-client-error-msg">{errors.contractValue}</div>}
-                </div>
-
-                {/* Start Date */}
-                <div className="edit-client-field-group">
-                  <label className="edit-client-label">Start Date</label>
-                  <div className="edit-client-input-wrap">
-                    <Calendar className="edit-client-input-icon" />
-                    <input
-                      className={`edit-client-input with-icon${errors.startDate ? " error" : ""}`}
-                      name="startDate"
-                      type="date"
-                      value={formData.startDate}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  {errors.startDate && <div className="edit-client-error-msg">{errors.startDate}</div>}
-                </div>
-
-                {/* End Date */}
-                <div className="edit-client-field-group">
-                  <label className="edit-client-label">End Date</label>
-                  <div className="edit-client-input-wrap">
-                    <Calendar className="edit-client-input-icon" />
-                    <input
-                      className={`edit-client-input with-icon${errors.endDate ? " error" : ""}`}
-                      name="endDate"
-                      type="date"
-                      value={formData.endDate}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  {errors.endDate && <div className="edit-client-error-msg">{errors.endDate}</div>}
-                </div>
-
-                {/* Payment Terms */}
-                <div className="edit-client-field-group">
-                  <label className="edit-client-label">Payment Terms</label>
-                  <div className="edit-client-input-wrap">
-                    <Clock className="edit-client-input-icon" />
-                    <select
-                      className="edit-client-select with-icon"
-                      name="paymentTerms"
-                      value={formData.paymentTerms}
-                      onChange={handleChange}
-                    >
-                      <option value="">Select Terms</option>
-                      {paymentTerms.map((terms) => (
-                        <option key={terms} value={terms}>{terms}</option>
-                      ))}
-                    </select>
-                  </div>
-                  {errors.paymentTerms && <div className="edit-client-error-msg">{errors.paymentTerms}</div>}
-                </div>
-
-                {/* Billing Cycle */}
-                <div className="edit-client-field-group">
-                  <label className="edit-client-label">Billing Cycle</label>
-                  <div className="edit-client-input-wrap">
-                    <TrendingUp className="edit-client-input-icon" />
-                    <select
-                      className="edit-client-select with-icon"
-                      name="billingCycle"
-                      value={formData.billingCycle}
-                      onChange={handleChange}
-                    >
-                      <option value="">Select Cycle</option>
-                      {billingCycles.map((cycle) => (
-                        <option key={cycle} value={cycle}>{cycle}</option>
-                      ))}
-                    </select>
-                  </div>
-                  {errors.billingCycle && <div className="edit-client-error-msg">{errors.billingCycle}</div>}
-                </div>
-              </div>
-            </div>
-
-            {/* Additional Information */}
-            <div className="section-card">
-              <div className="section-card-header" style={{ background: "linear-gradient(135deg, #8b5cf6, #7c3aed)" }}>
-                <div style={{
-                  width: 28, height: 28, borderRadius: 7,
-                  background: "rgba(255,255,255,0.15)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                  <UserCheck style={{ width: 14, height: 14, color: "#fff" }} />
-                </div>
-                <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(255,255,255,0.85)" }}>
-                  Additional Information
-                </span>
-              </div>
-              <div className="section-card-body two-col">
-                {/* Address */}
-                <div className="edit-client-field-group" style={{ gridColumn: "1 / -1" }}>
-                  <label className="edit-client-label">Address</label>
-                  <div className="edit-client-input-wrap">
-                    <MapPin className="edit-client-input-icon" />
-                    <input
-                      className={`edit-client-input with-icon${errors.address ? " error" : ""}`}
-                      name="address"
-                      value={formData.address}
-                      onChange={handleChange}
-                      placeholder="123 Business St, City, State 12345"
-                    />
-                  </div>
-                  {errors.address && <div className="edit-client-error-msg">{errors.address}</div>}
-                </div>
-
-                {/* Employees */}
-                <div className="edit-client-field-group">
-                  <label className="edit-client-label">Number of Employees</label>
-                  <div className="edit-client-input-wrap">
-                    <Users className="edit-client-input-icon" />
-                    <input
-                      className="edit-client-input with-icon"
-                      name="employees"
-                      type="number"
-                      value={formData.employees}
-                      onChange={handleChange}
-                      placeholder="0"
-                      style={{ fontFamily: "'DM Mono', monospace" }}
-                    />
-                  </div>
-                </div>
-
-                {/* Projects */}
-                <div className="edit-client-field-group">
-                  <label className="edit-client-label">Active Projects</label>
-                  <div className="edit-client-input-wrap">
-                    <Briefcase className="edit-client-input-icon" />
-                    <input
-                      className="edit-client-input with-icon"
-                      name="projects"
-                      type="number"
-                      value={formData.projects}
-                      onChange={handleChange}
-                      placeholder="0"
-                      style={{ fontFamily: "'DM Mono', monospace" }}
-                    />
-                  </div>
-                </div>
-
-                {/* Rating */}
-                <div className="edit-client-field-group">
-                  <label className="edit-client-label">Client Rating (0-5)</label>
-                  <div className="edit-client-input-wrap">
-                    <Star className="edit-client-input-icon" />
-                    <input
-                      className={`edit-client-input with-icon${errors.rating ? " error" : ""}`}
-                      name="rating"
-                      type="number"
-                      value={formData.rating}
-                      onChange={handleChange}
-                      placeholder="0"
-                      min="0"
-                      max="5"
-                      step="0.1"
-                      style={{ fontFamily: "'DM Mono', monospace" }}
-                    />
-                  </div>
-                  {errors.rating && <div className="edit-client-error-msg">{errors.rating}</div>}
-                </div>
-
-                {/* Account Manager */}
-                <div className="edit-client-field-group">
-                  <label className="edit-client-label">Account Manager</label>
-                  <div className="edit-client-input-wrap">
-                    <UserCheck className="edit-client-input-icon" />
-                    <input
-                      className={`edit-client-input with-icon${errors.accountManager ? " error" : ""}`}
-                      name="accountManager"
-                      value={formData.accountManager}
-                      onChange={handleChange}
-                      placeholder="John Smith"
-                    />
-                  </div>
-                  {errors.accountManager && <div className="edit-client-error-msg">{errors.accountManager}</div>}
-                </div>
-
-                {/* Status */}
-                <div className="edit-client-field-group">
-                  <label className="edit-client-label">Status</label>
-                  <div className="edit-client-input-wrap">
-                    <UserCheck className="edit-client-input-icon" />
-                    <select
-                      className="edit-client-select with-icon"
-                      name="status"
-                      value={formData.status}
-                      onChange={handleChange}
-                    >
-                      <option value="active">Active</option>
-                      <option value="completed">Completed</option>
-                      <option value="pending">Pending</option>
-                      <option value="inactive">Inactive</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Notes */}
-                <div className="edit-client-field-group" style={{ gridColumn: "1 / -1" }}>
-                  <label className="edit-client-label">Notes</label>
-                  <textarea
-                    className="edit-client-textarea"
-                    name="notes"
-                    value={formData.notes}
-                    onChange={handleChange}
-                    placeholder="Add any additional notes about this client..."
-                  />
-                </div>
-
-                {/* Services */}
-                <div className="edit-client-field-group" style={{ gridColumn: "1 / -1" }}>
-                  <label className="edit-client-label">Services</label>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                    {availableServices.map((service) => (
-                      <div
-                        key={service}
-                        className={`service-chip ${formData.services.includes(service) ? "selected" : ""}`}
-                        onClick={() => handleServiceChange(service)}
-                      >
-                        {service}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Form Actions */}
-            <div style={{
-              display: "flex", justifyContent: "flex-end", gap: 12,
-              paddingTop: 20, borderTop: "1px solid #e2e8f0",
-            }}>
               <button
-                type="button"
                 onClick={onClose}
-                className="edit-client-btn edit-client-btn-secondary"
+                className="group w-9 h-9 rounded-xl bg-slate-100 hover:bg-red-50 flex items-center justify-center transition-all duration-200"
               >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="edit-client-btn edit-client-btn-primary"
-                disabled={isSaving || saved}
-              >
-                {saved ? (
-                  <>
-                    <CheckCircle style={{ width: 16, height: 16 }} />
-                    Client Updated Successfully!
-                  </>
-                ) : isSaving ? (
-                  <>
-                    <div style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#fff", borderRadius: "50%", display: "inline-block", animation: "spin 0.7s linear infinite" }} />
-                    Updating Client...
-                  </>
-                ) : (
-                  <>
-                    <Save style={{ width: 16, height: 16 }} />
-                    Update Client
-                  </>
-                )}
+                <X className="w-4 h-4 text-slate-400 group-hover:text-red-500 transition-colors" />
               </button>
             </div>
-          </form>
-        </div>
-      </div>
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            {/* Scrollable Form */}
+            <form onSubmit={handleSubmit} className="overflow-y-auto max-h-[calc(92vh-140px)]">
+              <div className="px-8 py-6 space-y-8">
+
+                {/* ── Basic Information ── */}
+                <section>
+                  <div className="flex items-center gap-2.5 mb-5">
+                    <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center">
+                      <Building2 className="w-3.5 h-3.5 text-indigo-600" />
+                    </div>
+                    <h3 className="text-[13px] font-bold text-slate-800 uppercase tracking-widest">Basic Information</h3>
+                    <div className="flex-1 h-px bg-slate-100 ml-2" />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-x-5 gap-y-5">
+                    {/* Company Name */}
+                    <div className="group">
+                      <label className="block text-[11px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Company Name *</label>
+                      <div className="relative">
+                        <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-indigo-500 transition-colors" />
+                        <input
+                          className={`w-full h-11 pl-11 pr-4 rounded-xl text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none transition-all duration-200 shadow-sm ${errors.companyName ? "bg-red-50 border-[1.5px] border-red-400 ring-2 ring-red-100" : "bg-white border-[1.5px] border-slate-300 hover:border-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"}`}
+                          name="companyName"
+                          value={formData.companyName}
+                          onChange={handleChange}
+                          placeholder="Acme Corporation"
+                        />
+                      </div>
+                      {errors.companyName && <p className="text-[11px] text-red-500 mt-1.5 font-medium">{errors.companyName}</p>}
+                    </div>
+
+                    {/* Industry */}
+                    <div className="group">
+                      <label className="block text-[11px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Industry *</label>
+                      <div className="relative">
+                        <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-indigo-500 transition-colors" />
+                        <select
+                          className="w-full h-11 pl-11 pr-4 rounded-xl text-sm font-medium text-slate-800 bg-white border-[1.5px] border-slate-300 hover:border-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all duration-200 appearance-none cursor-pointer shadow-sm"
+                          name="industry"
+                          value={formData.industry}
+                          onChange={handleChange}
+                        >
+                          <option value="">Select industry</option>
+                          {industries.map((industry) => (
+                            <option key={industry} value={industry}>{industry}</option>
+                          ))}
+                        </select>
+                      </div>
+                      {errors.industry && <p className="text-[11px] text-red-500 mt-1.5 font-medium">{errors.industry}</p>}
+                    </div>
+
+                    {/* Contact Person */}
+                    <div className="group">
+                      <label className="block text-[11px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Contact Person *</label>
+                      <div className="relative">
+                        <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-indigo-500 transition-colors" />
+                        <input
+                          className={`w-full h-11 pl-11 pr-4 rounded-xl text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none transition-all duration-200 shadow-sm ${errors.contactPerson ? "bg-red-50 border-[1.5px] border-red-400 ring-2 ring-red-100" : "bg-white border-[1.5px] border-slate-300 hover:border-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"}`}
+                          name="contactPerson"
+                          value={formData.contactPerson}
+                          onChange={handleChange}
+                          placeholder="Jane Smith"
+                        />
+                      </div>
+                      {errors.contactPerson && <p className="text-[11px] text-red-500 mt-1.5 font-medium">{errors.contactPerson}</p>}
+                    </div>
+
+                    {/* Email */}
+                    <div className="group">
+                      <label className="block text-[11px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Email *</label>
+                      <div className="relative">
+                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-indigo-500 transition-colors" />
+                        <input
+                          className={`w-full h-11 pl-11 pr-4 rounded-xl text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none transition-all duration-200 shadow-sm ${errors.email ? "bg-red-50 border-[1.5px] border-red-400 ring-2 ring-red-100" : "bg-white border-[1.5px] border-slate-300 hover:border-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"}`}
+                          name="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={handleChange}
+                          placeholder="hello@acme.com"
+                        />
+                      </div>
+                      {errors.email && <p className="text-[11px] text-red-500 mt-1.5 font-medium">{errors.email}</p>}
+                    </div>
+
+                    {/* Phone */}
+                    <div className="group">
+                      <label className="block text-[11px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Phone *</label>
+                      <div className="relative">
+                        <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-indigo-500 transition-colors" />
+                        <input
+                          className={`w-full h-11 pl-11 pr-4 rounded-xl text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none transition-all duration-200 shadow-sm ${errors.phone ? "bg-red-50 border-[1.5px] border-red-400 ring-2 ring-red-100" : "bg-white border-[1.5px] border-slate-300 hover:border-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"}`}
+                          name="phone"
+                          value={formData.phone}
+                          onChange={handleChange}
+                          placeholder="+1 (555) 000-0000"
+                        />
+                      </div>
+                      {errors.phone && <p className="text-[11px] text-red-500 mt-1.5 font-medium">{errors.phone}</p>}
+                    </div>
+
+                    {/* Website */}
+                    <div className="group">
+                      <label className="block text-[11px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Website</label>
+                      <div className="relative">
+                        <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-indigo-500 transition-colors" />
+                        <input
+                          className="w-full h-11 pl-11 pr-4 rounded-xl text-sm font-medium text-slate-800 placeholder:text-slate-400 bg-white border-[1.5px] border-slate-300 hover:border-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all duration-200 shadow-sm"
+                          name="website"
+                          value={formData.website}
+                          onChange={handleChange}
+                          placeholder="www.acme.com"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                {/* ── Contract Details ── */}
+                <section>
+                  <div className="flex items-center gap-2.5 mb-5">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
+                      <FileText className="w-3.5 h-3.5 text-emerald-600" />
+                    </div>
+                    <h3 className="text-[13px] font-bold text-slate-800 uppercase tracking-widest">Contract Details</h3>
+                    <div className="flex-1 h-px bg-slate-100 ml-2" />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-x-5 gap-y-5">
+                    {/* Contract Type */}
+                    <div className="group">
+                      <label className="block text-[11px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Contract Type *</label>
+                      <div className="relative">
+                        <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
+                        <select
+                          className="w-full h-11 pl-11 pr-4 rounded-xl text-sm font-medium text-slate-800 bg-white border-[1.5px] border-slate-300 hover:border-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 outline-none transition-all duration-200 appearance-none cursor-pointer shadow-sm"
+                          name="contractType"
+                          value={formData.contractType}
+                          onChange={handleChange}
+                        >
+                          <option value="">Select type</option>
+                          {contractTypes.map((type) => (
+                            <option key={type} value={type}>{type}</option>
+                          ))}
+                        </select>
+                      </div>
+                      {errors.contractType && <p className="text-[11px] text-red-500 mt-1.5 font-medium">{errors.contractType}</p>}
+                    </div>
+
+                    {/* Contract Value */}
+                    <div className="group">
+                      <label className="block text-[11px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Value (USD) *</label>
+                      <div className="relative">
+                        <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
+                        <input
+                          className={`w-full h-11 pl-11 pr-4 rounded-xl text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none transition-all duration-200 tabular-nums shadow-sm ${errors.contractValue ? "bg-red-50 border-[1.5px] border-red-400 ring-2 ring-red-100" : "bg-white border-[1.5px] border-slate-300 hover:border-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"}`}
+                          name="contractValue"
+                          type="number"
+                          value={formData.contractValue}
+                          onChange={handleChange}
+                          placeholder="50,000"
+                        />
+                      </div>
+                      {errors.contractValue && <p className="text-[11px] text-red-500 mt-1.5 font-medium">{errors.contractValue}</p>}
+                    </div>
+
+                    {/* Start Date */}
+                    <div className="group">
+                      <label className="block text-[11px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Start Date *</label>
+                      <div className="relative">
+                        <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
+                        <input
+                          className={`w-full h-11 pl-11 pr-4 rounded-xl text-sm font-medium text-slate-800 outline-none transition-all duration-200 shadow-sm ${errors.startDate ? "bg-red-50 border-[1.5px] border-red-400 ring-2 ring-red-100" : "bg-white border-[1.5px] border-slate-300 hover:border-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"}`}
+                          name="startDate"
+                          type="date"
+                          value={formData.startDate}
+                          onChange={handleChange}
+                        />
+                      </div>
+                      {errors.startDate && <p className="text-[11px] text-red-500 mt-1.5 font-medium">{errors.startDate}</p>}
+                    </div>
+
+                    {/* End Date */}
+                    <div className="group">
+                      <label className="block text-[11px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">End Date *</label>
+                      <div className="relative">
+                        <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
+                        <input
+                          className={`w-full h-11 pl-11 pr-4 rounded-xl text-sm font-medium text-slate-800 outline-none transition-all duration-200 shadow-sm ${errors.endDate ? "bg-red-50 border-[1.5px] border-red-400 ring-2 ring-red-100" : "bg-white border-[1.5px] border-slate-300 hover:border-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"}`}
+                          name="endDate"
+                          type="date"
+                          value={formData.endDate}
+                          onChange={handleChange}
+                        />
+                      </div>
+                      {errors.endDate && <p className="text-[11px] text-red-500 mt-1.5 font-medium">{errors.endDate}</p>}
+                    </div>
+
+                    {/* Payment Terms */}
+                    <div className="group">
+                      <label className="block text-[11px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Payment Terms *</label>
+                      <div className="relative">
+                        <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
+                        <select
+                          className="w-full h-11 pl-11 pr-4 rounded-xl text-sm font-medium text-slate-800 bg-white border-[1.5px] border-slate-300 hover:border-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 outline-none transition-all duration-200 appearance-none cursor-pointer shadow-sm"
+                          name="paymentTerms"
+                          value={formData.paymentTerms}
+                          onChange={handleChange}
+                        >
+                          <option value="">Select terms</option>
+                          {paymentTerms.map((terms) => (
+                            <option key={terms} value={terms}>{terms}</option>
+                          ))}
+                        </select>
+                      </div>
+                      {errors.paymentTerms && <p className="text-[11px] text-red-500 mt-1.5 font-medium">{errors.paymentTerms}</p>}
+                    </div>
+
+                    {/* Billing Cycle */}
+                    <div className="group">
+                      <label className="block text-[11px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Billing Cycle *</label>
+                      <div className="relative">
+                        <TrendingUp className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
+                        <select
+                          className="w-full h-11 pl-11 pr-4 rounded-xl text-sm font-medium text-slate-800 bg-white border-[1.5px] border-slate-300 hover:border-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 outline-none transition-all duration-200 appearance-none cursor-pointer shadow-sm"
+                          name="billingCycle"
+                          value={formData.billingCycle}
+                          onChange={handleChange}
+                        >
+                          <option value="">Select cycle</option>
+                          {billingCycles.map((cycle) => (
+                            <option key={cycle} value={cycle}>{cycle}</option>
+                          ))}
+                        </select>
+                      </div>
+                      {errors.billingCycle && <p className="text-[11px] text-red-500 mt-1.5 font-medium">{errors.billingCycle}</p>}
+                    </div>
+                  </div>
+                </section>
+
+                {/* ── Additional Details ── */}
+                <section>
+                  <div className="flex items-center gap-2.5 mb-5">
+                    <div className="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center">
+                      <UserCheck className="w-3.5 h-3.5 text-violet-600" />
+                    </div>
+                    <h3 className="text-[13px] font-bold text-slate-800 uppercase tracking-widest">Additional Details</h3>
+                    <div className="flex-1 h-px bg-slate-100 ml-2" />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-x-5 gap-y-5">
+                    {/* Address - full width */}
+                    <div className="col-span-2 group">
+                      <label className="block text-[11px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Address *</label>
+                      <div className="relative">
+                        <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-violet-500 transition-colors" />
+                        <input
+                          className={`w-full h-11 pl-11 pr-4 rounded-xl text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none transition-all duration-200 shadow-sm ${errors.address ? "bg-red-50 border-[1.5px] border-red-400 ring-2 ring-red-100" : "bg-white border-[1.5px] border-slate-300 hover:border-slate-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-100"}`}
+                          name="address"
+                          value={formData.address}
+                          onChange={handleChange}
+                          placeholder="123 Business Ave, Suite 100, New York, NY 10001"
+                        />
+                      </div>
+                      {errors.address && <p className="text-[11px] text-red-500 mt-1.5 font-medium">{errors.address}</p>}
+                    </div>
+
+                    {/* Employees */}
+                    <div className="group">
+                      <label className="block text-[11px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Employees</label>
+                      <div className="relative">
+                        <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-violet-500 transition-colors" />
+                        <input
+                          className="w-full h-11 pl-11 pr-4 rounded-xl text-sm font-medium text-slate-800 placeholder:text-slate-400 bg-white border-[1.5px] border-slate-300 hover:border-slate-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-100 outline-none transition-all duration-200 tabular-nums shadow-sm"
+                          name="employees"
+                          type="number"
+                          value={formData.employees}
+                          onChange={handleChange}
+                          placeholder="250"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Projects */}
+                    <div className="group">
+                      <label className="block text-[11px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Active Projects</label>
+                      <div className="relative">
+                        <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-violet-500 transition-colors" />
+                        <input
+                          className="w-full h-11 pl-11 pr-4 rounded-xl text-sm font-medium text-slate-800 placeholder:text-slate-400 bg-white border-[1.5px] border-slate-300 hover:border-slate-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-100 outline-none transition-all duration-200 tabular-nums shadow-sm"
+                          name="projects"
+                          type="number"
+                          value={formData.projects}
+                          onChange={handleChange}
+                          placeholder="5"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Rating */}
+                    <div className="group">
+                      <label className="block text-[11px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Rating (0-5) *</label>
+                      <div className="relative">
+                        <Star className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-violet-500 transition-colors" />
+                        <input
+                          className={`w-full h-11 pl-11 pr-4 rounded-xl text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none transition-all duration-200 tabular-nums shadow-sm ${errors.rating ? "bg-red-50 border-[1.5px] border-red-400 ring-2 ring-red-100" : "bg-white border-[1.5px] border-slate-300 hover:border-slate-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-100"}`}
+                          name="rating"
+                          type="number"
+                          value={formData.rating}
+                          onChange={handleChange}
+                          placeholder="4.5"
+                          min="0"
+                          max="5"
+                          step="0.1"
+                        />
+                      </div>
+                      {errors.rating && <p className="text-[11px] text-red-500 mt-1.5 font-medium">{errors.rating}</p>}
+                    </div>
+
+                    {/* Account Manager */}
+                    <div className="group">
+                      <label className="block text-[11px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Account Manager *</label>
+                      <div className="relative">
+                        <UserCheck className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-violet-500 transition-colors" />
+                        <input
+                          className={`w-full h-11 pl-11 pr-4 rounded-xl text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none transition-all duration-200 shadow-sm ${errors.accountManager ? "bg-red-50 border-[1.5px] border-red-400 ring-2 ring-red-100" : "bg-white border-[1.5px] border-slate-300 hover:border-slate-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-100"}`}
+                          name="accountManager"
+                          value={formData.accountManager}
+                          onChange={handleChange}
+                          placeholder="Alex Johnson"
+                        />
+                      </div>
+                      {errors.accountManager && <p className="text-[11px] text-red-500 mt-1.5 font-medium">{errors.accountManager}</p>}
+                    </div>
+
+                    {/* Status */}
+                    <div className="col-span-2 group">
+                      <label className="block text-[11px] font-semibold text-slate-500 mb-2.5 uppercase tracking-wider">Status</label>
+                      <div className="flex gap-2">
+                        {[
+                          { value: "active", label: "Active", color: "bg-emerald-500" },
+                          { value: "pending", label: "Pending", color: "bg-amber-500" },
+                          { value: "completed", label: "Completed", color: "bg-blue-500" },
+                          { value: "inactive", label: "Inactive", color: "bg-slate-400" },
+                        ].map((s) => (
+                          <button
+                            key={s.value}
+                            type="button"
+                            onClick={() => setFormData(prev => ({ ...prev, status: s.value }))}
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                              formData.status === s.value
+                                ? "bg-slate-900 text-white shadow-md"
+                                : "bg-slate-50 text-slate-500 hover:bg-slate-100"
+                            }`}
+                          >
+                            <span className={`w-2 h-2 rounded-full ${formData.status === s.value ? "bg-white" : s.color}`} />
+                            {s.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Notes - full width */}
+                    <div className="col-span-2 group">
+                      <label className="block text-[11px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Notes</label>
+                      <textarea
+                        className="w-full px-4 py-3 rounded-xl text-sm font-medium text-slate-800 placeholder:text-slate-400 bg-white border-[1.5px] border-slate-300 hover:border-slate-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-100 outline-none transition-all duration-200 resize-none min-h-[88px] shadow-sm"
+                        name="notes"
+                        value={formData.notes}
+                        onChange={handleChange}
+                        placeholder="Any additional context about this client..."
+                      />
+                    </div>
+
+                    {/* Services - full width */}
+                    <div className="col-span-2">
+                      <label className="block text-[11px] font-semibold text-slate-500 mb-3 uppercase tracking-wider">Services</label>
+                      <div className="flex flex-wrap gap-2">
+                        {availableServices.map((service) => (
+                          <button
+                            key={service}
+                            type="button"
+                            onClick={() => handleServiceChange(service)}
+                            className={`px-3.5 py-2 rounded-lg text-[13px] font-medium transition-all duration-200 ${
+                              formData.services.includes(service)
+                                ? "bg-indigo-600 text-white shadow-md shadow-indigo-200 scale-[1.02]"
+                                : "bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                            }`}
+                          >
+                            {service}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              {/* Sticky Footer */}
+              <div className="sticky bottom-0 bg-white/95 backdrop-blur-lg border-t border-slate-100 px-8 py-4 flex items-center justify-between">
+                <p className="text-xs text-slate-400">* Required fields</p>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-500 hover:bg-slate-100 transition-all duration-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSaving || saved}
+                    className={`px-6 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all duration-200 ${
+                      saved
+                        ? "bg-emerald-500 text-white"
+                        : isSaving
+                          ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                          : "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-200 hover:shadow-xl hover:shadow-emerald-300 hover:-translate-y-0.5 active:translate-y-0"
+                    }`}
+                  >
+                    {saved ? (
+                      <>
+                        <CheckCircle className="w-4 h-4" />
+                        Updated!
+                      </>
+                    ) : isSaving ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-500 rounded-full animate-spin" />
+                        Updating...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4" />
+                        Update Client
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   )
 }

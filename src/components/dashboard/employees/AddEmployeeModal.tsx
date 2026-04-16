@@ -204,652 +204,367 @@ export function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmployeeModa
   ]
 
   return (
-    <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Mono:wght@400;500&display=swap');
+    <div
+      className="fixed inset-0 bg-slate-900/55 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className="animate-in fade-in zoom-in-95 duration-200 bg-white rounded-2xl w-full max-w-[900px] max-h-[92vh] overflow-y-auto flex flex-col shadow-2xl">
 
-        .employee-modal-overlay * { font-family: 'DM Sans', sans-serif; box-sizing: border-box; }
-
-        .employee-modal-fade {
-          animation: employeeModalFadeIn 0.2s ease;
-        }
-
-        @keyframes employeeModalFadeIn {
-          from { opacity: 0; transform: scale(0.97) translateY(8px); }
-          to   { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        .section-card {
-          background: #fff;
-          border: 1px solid #e2e8f0;
-          border-radius: 12px;
-          overflow: hidden;
-          margin-bottom: 20px;
-        }
-
-        .section-card-header {
-          padding: 12px 16px;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-
-        .section-card-body {
-          padding: 16px;
-        }
-
-        .section-card-body.two-col {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 20px;
-        }
-
-        .field-group {
-          margin-bottom: 16px;
-        }
-
-        .label {
-          display: block;
-          font-size: 12px;
-          font-weight: 600;
-          color: #475569;
-          margin-bottom: 6px;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-        }
-
-        .input-wrap {
-          position: relative;
-        }
-
-        .input-icon {
-          position: absolute;
-          left: 12px;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 16px;
-          height: 16px;
-          color: #94a3b8;
-          z-index: 1;
-        }
-
-        .input {
-          width: 100%;
-          height: 44px;
-          border-radius: 10px;
-          border: 1.5px solid #e2e8f0;
-          background: #fff;
-          padding: 0 14px 0 38px;
-          font-size: 13.5px;
-          color: #0f172a;
-          font-family: 'DM Sans', sans-serif;
-          outline: none;
-          transition: border-color 0.15s, box-shadow 0.15s;
-        }
-
-        .input.with-icon {
-          padding-left: 38px;
-        }
-
-        .input:focus {
-          border-color: #334155;
-          box-shadow: 0 0 0 3px rgba(51, 65, 85, 0.1);
-        }
-
-        .input.error {
-          border-color: #ef4444;
-          background: #fff5f5;
-        }
-
-        .select {
-          width: 100%;
-          height: 44px;
-          border-radius: 10px;
-          border: 1.5px solid #e2e8f0;
-          background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center;
-          padding: 0 38px 0 14px;
-          font-size: 13.5px;
-          color: #0f172a;
-          font-family: 'DM Sans', sans-serif;
-          outline: none;
-          cursor: pointer;
-          transition: border-color 0.15s, box-shadow 0.15s;
-          appearance: none;
-        }
-
-        .select.with-icon {
-          padding-left: 38px;
-        }
-
-        .select:focus {
-          border-color: #334155;
-          box-shadow: 0 0 0 3px rgba(51, 65, 85, 0.1);
-        }
-
-        .error-msg {
-          color: #dc2626;
-          font-size: 11.5px;
-          font-weight: 500;
-          margin-top: 4px;
-        }
-
-        .btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          padding: 10px 20px;
-          border-radius: 10px;
-          font-size: 13.5px;
-          font-weight: 600;
-          border: none;
-          cursor: pointer;
-          transition: all 0.15s;
-          font-family: 'DM Sans', sans-serif;
-        }
-
-        .btn-primary {
-          background: #3b82f6;
-          color: #fff;
-        }
-
-        .btn-primary:hover:not(:disabled) {
-          background: #2563eb;
-          transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
-
-        .btn-primary:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-          transform: none;
-        }
-
-        .btn-secondary {
-          background: transparent;
-          color: #64748b;
-          border: 1.5px solid #e2e8f0;
-        }
-
-        .btn-secondary:hover {
-          background: #f8fafc;
-          transform: translateY(-1px);
-        }
-
-        .btn-success {
-          background: #16a34a;
-          color: #fff;
-        }
-
-        .btn-success:hover:not(:disabled) {
-          background: #15803d;
-          transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
-        }
-
-        .upload-zone {
-          display: block;
-          border: 2px dashed #e2e8f0;
-          border-radius: 10px;
-          padding: 32px;
-          text-align: center;
-          transition: all 0.15s;
-          cursor: pointer;
-        }
-
-        .upload-zone:hover {
-          border-color: #3b82f6;
-          background: #f8fafc;
-        }
-
-        @media (max-width: 768px) {
-          .section-card-body.two-col {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
-
-      <div
-        className="employee-modal-overlay"
-        style={{
-          position: "fixed", inset: 0,
-          background: "rgba(15, 23, 42, 0.55)",
-          backdropFilter: "blur(4px)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          zIndex: 50, padding: 16,
-        }}
-        onClick={(e) => e.target === e.currentTarget && onClose()}
-      >
-        <div
-          className="employee-modal-fade"
-          style={{
-            background: "#fff",
-            borderRadius: 16,
-            width: "100%",
-            maxWidth: 900,
-            maxHeight: "92vh",
-            overflowY: "auto",
-            boxShadow: "0 24px 60px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.08)",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          {/* Header */}
-          <div
-            style={{
-              position: "sticky", top: 0, zIndex: 10,
-              background: "#fff",
-              borderBottom: "1px solid #e2e8f0",
-              padding: "16px 24px",
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              borderRadius: "16px 16px 0 0",
-            }}
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-[10px] bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+              <User className="w-[17px] h-[17px] text-white" />
+            </div>
+            <div>
+              <div className="text-[15px] font-bold text-slate-900">Add New Employee</div>
+              <div className="text-xs text-slate-400 mt-px">Employee personal, work, and bank information</div>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-[34px] h-[34px] rounded-lg border-[1.5px] border-slate-200 bg-transparent hover:bg-slate-100 flex items-center justify-center cursor-pointer transition-colors shrink-0"
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{
-                width: 36, height: 36, borderRadius: 10,
-                background: "linear-gradient(135deg, #3b82f6, #2563eb)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                <User style={{ width: 17, height: 17, color: "#fff" }} />
+            <X className="w-4 h-4 text-slate-500" />
+          </button>
+        </div>
+
+        {/* Form Body */}
+        <form onSubmit={handleSubmit} className="p-6 flex-1">
+
+          {/* Personal Information */}
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden mb-5">
+            <div className="px-4 py-3 flex items-center gap-2.5 bg-gradient-to-br from-blue-500 to-blue-600">
+              <div className="w-7 h-7 rounded-[7px] bg-white/15 flex items-center justify-center">
+                <User className="w-3.5 h-3.5 text-white" />
               </div>
-              <div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: "#0f172a" }}>Add New Employee</div>
-                <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 1 }}>
-                  Employee personal, work, and bank information
+              <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-white/85">Personal Information</span>
+            </div>
+            <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">First Name</label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-[1]" />
+                  <input
+                    className={`w-full h-11 rounded-[10px] border-[1.5px] bg-white pl-[38px] pr-3.5 text-[13.5px] text-slate-900 outline-none transition-all focus:border-slate-700 focus:ring-[3px] focus:ring-slate-700/10 ${errors.firstName ? "border-red-500 bg-red-50" : "border-slate-200"}`}
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleInputChange}
+                    placeholder="Enter first name"
+                  />
                 </div>
+                {errors.firstName && <div className="text-red-600 text-[11.5px] font-medium mt-1">{errors.firstName}</div>}
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Last Name</label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-[1]" />
+                  <input
+                    className={`w-full h-11 rounded-[10px] border-[1.5px] bg-white pl-[38px] pr-3.5 text-[13.5px] text-slate-900 outline-none transition-all focus:border-slate-700 focus:ring-[3px] focus:ring-slate-700/10 ${errors.lastName ? "border-red-500 bg-red-50" : "border-slate-200"}`}
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleInputChange}
+                    placeholder="Enter last name"
+                  />
+                </div>
+                {errors.lastName && <div className="text-red-600 text-[11.5px] font-medium mt-1">{errors.lastName}</div>}
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Contact Number</label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-[1]" />
+                  <input
+                    className={`w-full h-11 rounded-[10px] border-[1.5px] bg-white pl-[38px] pr-3.5 text-[13.5px] text-slate-900 outline-none transition-all focus:border-slate-700 focus:ring-[3px] focus:ring-slate-700/10 ${errors.contactNumber ? "border-red-500 bg-red-50" : "border-slate-200"}`}
+                    name="contactNumber"
+                    value={formData.contactNumber}
+                    onChange={handleInputChange}
+                    placeholder="+1 (555) 000-0000"
+                    type="tel"
+                  />
+                </div>
+                {errors.contactNumber && <div className="text-red-600 text-[11.5px] font-medium mt-1">{errors.contactNumber}</div>}
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-[1]" />
+                  <input
+                    className={`w-full h-11 rounded-[10px] border-[1.5px] bg-white pl-[38px] pr-3.5 text-[13.5px] text-slate-900 outline-none transition-all focus:border-slate-700 focus:ring-[3px] focus:ring-slate-700/10 ${errors.email ? "border-red-500 bg-red-50" : "border-slate-200"}`}
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="email@example.com"
+                    type="email"
+                  />
+                </div>
+                {errors.email && <div className="text-red-600 text-[11.5px] font-medium mt-1">{errors.email}</div>}
               </div>
             </div>
-            <button
-              onClick={onClose}
-              style={{
-                width: 34, height: 34, borderRadius: 8,
-                border: "1.5px solid #e2e8f0",
-                background: "transparent", cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                transition: "background 0.15s",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#f1f5f9")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-            >
-              <X style={{ width: 16, height: 16, color: "#64748b" }} />
-            </button>
           </div>
 
-          {/* Form Body */}
-          <form onSubmit={handleSubmit} style={{ padding: "24px", flex: 1 }}>
-            {/* Personal Information */}
-            <div className="section-card">
-              <div className="section-card-header" style={{ background: "linear-gradient(135deg, #3b82f6, #2563eb)" }}>
-                <div style={{
-                  width: 28, height: 28, borderRadius: 7,
-                  background: "rgba(255,255,255,0.15)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                  <User style={{ width: 14, height: 14, color: "#fff" }} />
-                </div>
-                <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(255,255,255,0.85)" }}>
-                  Personal Information
-                </span>
+          {/* Work Information */}
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden mb-5">
+            <div className="px-4 py-3 flex items-center gap-2.5 bg-gradient-to-br from-emerald-500 to-emerald-600">
+              <div className="w-7 h-7 rounded-[7px] bg-white/15 flex items-center justify-center">
+                <Briefcase className="w-3.5 h-3.5 text-white" />
               </div>
-              <div className="section-card-body two-col">
-                <div className="field-group">
-                  <label className="label">First Name</label>
-                  <div className="input-wrap">
-                    <User className="input-icon" />
-                    <input
-                      className={`input with-icon${errors.firstName ? " error" : ""}`}
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      placeholder="Enter first name"
-                    />
-                  </div>
-                  {errors.firstName && <div className="error-msg">{errors.firstName}</div>}
+              <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-white/85">Work Information</span>
+            </div>
+            <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Username</label>
+                <div className="relative">
+                  <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-[1]" />
+                  <input
+                    className={`w-full h-11 rounded-[10px] border-[1.5px] bg-white pl-[38px] pr-3.5 text-[13.5px] text-slate-900 outline-none transition-all focus:border-slate-700 focus:ring-[3px] focus:ring-slate-700/10 ${errors.userName ? "border-red-500 bg-red-50" : "border-slate-200"}`}
+                    name="userName"
+                    value={formData.userName}
+                    onChange={handleInputChange}
+                    placeholder="Enter username"
+                  />
                 </div>
+                {errors.userName && <div className="text-red-600 text-[11.5px] font-medium mt-1">{errors.userName}</div>}
+              </div>
 
-                <div className="field-group">
-                  <label className="label">Last Name</label>
-                  <div className="input-wrap">
-                    <User className="input-icon" />
-                    <input
-                      className={`input with-icon${errors.lastName ? " error" : ""}`}
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      placeholder="Enter last name"
-                    />
-                  </div>
-                  {errors.lastName && <div className="error-msg">{errors.lastName}</div>}
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Employee ID</label>
+                <div className="relative">
+                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-[1]" />
+                  <input
+                    className={`w-full h-11 rounded-[10px] border-[1.5px] bg-white pl-[38px] pr-3.5 text-[13.5px] text-slate-900 outline-none transition-all focus:border-slate-700 focus:ring-[3px] focus:ring-slate-700/10 ${errors.employeeId ? "border-red-500 bg-red-50" : "border-slate-200"}`}
+                    name="employeeId"
+                    value={formData.employeeId}
+                    onChange={handleInputChange}
+                    placeholder="EMP-001"
+                  />
                 </div>
+                {errors.employeeId && <div className="text-red-600 text-[11.5px] font-medium mt-1">{errors.employeeId}</div>}
+              </div>
 
-                <div className="field-group">
-                  <label className="label">Contact Number</label>
-                  <div className="input-wrap">
-                    <Phone className="input-icon" />
-                    <input
-                      className={`input with-icon${errors.contactNumber ? " error" : ""}`}
-                      name="contactNumber"
-                      value={formData.contactNumber}
-                      onChange={handleInputChange}
-                      placeholder="+1 (555) 000-0000"
-                      type="tel"
-                    />
-                  </div>
-                  {errors.contactNumber && <div className="error-msg">{errors.contactNumber}</div>}
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Designation</label>
+                <div className="relative">
+                  <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-[1]" />
+                  <select
+                    className={`w-full h-11 rounded-[10px] border-[1.5px] bg-white bg-[url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")] bg-no-repeat bg-[right_14px_center] pl-[38px] pr-[38px] text-[13.5px] text-slate-900 outline-none cursor-pointer transition-all focus:border-slate-700 focus:ring-[3px] focus:ring-slate-700/10 appearance-none ${errors.employeeDesignation ? "border-red-500 bg-red-50" : "border-slate-200"}`}
+                    name="employeeDesignation"
+                    value={formData.employeeDesignation}
+                    onChange={handleInputChange}
+                  >
+                    <option value="">Select designation</option>
+                    {designations.map((designation) => (
+                      <option key={designation} value={designation}>{designation}</option>
+                    ))}
+                  </select>
                 </div>
+                {errors.employeeDesignation && <div className="text-red-600 text-[11.5px] font-medium mt-1">{errors.employeeDesignation}</div>}
+              </div>
 
-                <div className="field-group">
-                  <label className="label">Email Address</label>
-                  <div className="input-wrap">
-                    <Mail className="input-icon" />
-                    <input
-                      className={`input with-icon${errors.email ? " error" : ""}`}
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      placeholder="email@example.com"
-                      type="email"
-                    />
-                  </div>
-                  {errors.email && <div className="error-msg">{errors.email}</div>}
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Joining Date</label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-[1]" />
+                  <input
+                    className={`w-full h-11 rounded-[10px] border-[1.5px] bg-white pl-[38px] pr-3.5 text-[13.5px] text-slate-900 outline-none transition-all focus:border-slate-700 focus:ring-[3px] focus:ring-slate-700/10 ${errors.joiningDate ? "border-red-500 bg-red-50" : "border-slate-200"}`}
+                    name="joiningDate"
+                    value={formData.joiningDate}
+                    onChange={handleInputChange}
+                    type="date"
+                  />
                 </div>
+                {errors.joiningDate && <div className="text-red-600 text-[11.5px] font-medium mt-1">{errors.joiningDate}</div>}
+              </div>
+
+              <div className="mb-4 md:col-span-2">
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Address</label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-[1]" />
+                  <input
+                    className={`w-full h-11 rounded-[10px] border-[1.5px] bg-white pl-[38px] pr-3.5 text-[13.5px] text-slate-900 outline-none transition-all focus:border-slate-700 focus:ring-[3px] focus:ring-slate-700/10 ${errors.address ? "border-red-500 bg-red-50" : "border-slate-200"}`}
+                    name="address"
+                    value={formData.address}
+                    onChange={handleInputChange}
+                    placeholder="123 Street, City, State 12345"
+                  />
+                </div>
+                {errors.address && <div className="text-red-600 text-[11.5px] font-medium mt-1">{errors.address}</div>}
               </div>
             </div>
+          </div>
 
-            {/* Work Information */}
-            <div className="section-card">
-              <div className="section-card-header" style={{ background: "linear-gradient(135deg, #10b981, #059669)" }}>
-                <div style={{
-                  width: 28, height: 28, borderRadius: 7,
-                  background: "rgba(255,255,255,0.15)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                  <Briefcase style={{ width: 14, height: 14, color: "#fff" }} />
-                </div>
-                <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(255,255,255,0.85)" }}>
-                  Work Information
-                </span>
+          {/* Bank Information */}
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden mb-5">
+            <div className="px-4 py-3 flex items-center gap-2.5 bg-gradient-to-br from-violet-500 to-violet-600">
+              <div className="w-7 h-7 rounded-[7px] bg-white/15 flex items-center justify-center">
+                <CreditCard className="w-3.5 h-3.5 text-white" />
               </div>
-              <div className="section-card-body two-col">
-                <div className="field-group">
-                  <label className="label">Username</label>
-                  <div className="input-wrap">
-                    <Users className="input-icon" />
-                    <input
-                      className={`input with-icon${errors.userName ? " error" : ""}`}
-                      name="userName"
-                      value={formData.userName}
-                      onChange={handleInputChange}
-                      placeholder="Enter username"
-                    />
-                  </div>
-                  {errors.userName && <div className="error-msg">{errors.userName}</div>}
+              <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-white/85">Bank Information</span>
+            </div>
+            <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Account Holder Name</label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-[1]" />
+                  <input
+                    className={`w-full h-11 rounded-[10px] border-[1.5px] bg-white pl-[38px] pr-3.5 text-[13.5px] text-slate-900 outline-none transition-all focus:border-slate-700 focus:ring-[3px] focus:ring-slate-700/10 ${errors.accountHolderName ? "border-red-500 bg-red-50" : "border-slate-200"}`}
+                    name="accountHolderName"
+                    value={formData.bankDetails.accountHolderName}
+                    onChange={handleInputChange}
+                    placeholder="John Doe"
+                  />
                 </div>
+                {errors.accountHolderName && <div className="text-red-600 text-[11.5px] font-medium mt-1">{errors.accountHolderName}</div>}
+              </div>
 
-                <div className="field-group">
-                  <label className="label">Employee ID</label>
-                  <div className="input-wrap">
-                    <Building2 className="input-icon" />
-                    <input
-                      className={`input with-icon${errors.employeeId ? " error" : ""}`}
-                      name="employeeId"
-                      value={formData.employeeId}
-                      onChange={handleInputChange}
-                      placeholder="EMP-001"
-                    />
-                  </div>
-                  {errors.employeeId && <div className="error-msg">{errors.employeeId}</div>}
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Account Number</label>
+                <div className="relative">
+                  <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-[1]" />
+                  <input
+                    className={`w-full h-11 rounded-[10px] border-[1.5px] bg-white pl-[38px] pr-3.5 text-[13.5px] text-slate-900 font-mono outline-none transition-all focus:border-slate-700 focus:ring-[3px] focus:ring-slate-700/10 ${errors.accountNumber ? "border-red-500 bg-red-50" : "border-slate-200"}`}
+                    name="accountNumber"
+                    value={formData.bankDetails.accountNumber}
+                    onChange={handleInputChange}
+                    placeholder="1234567890"
+                  />
                 </div>
+                {errors.accountNumber && <div className="text-red-600 text-[11.5px] font-medium mt-1">{errors.accountNumber}</div>}
+              </div>
 
-                <div className="field-group">
-                  <label className="label">Designation</label>
-                  <div className="input-wrap">
-                    <Briefcase className="input-icon" />
-                    <select
-                      className={`select with-icon${errors.employeeDesignation ? " error" : ""}`}
-                      name="employeeDesignation"
-                      value={formData.employeeDesignation}
-                      onChange={handleInputChange}
-                    >
-                      <option value="">Select designation</option>
-                      {designations.map((designation) => (
-                        <option key={designation} value={designation}>{designation}</option>
-                      ))}
-                    </select>
-                  </div>
-                  {errors.employeeDesignation && <div className="error-msg">{errors.employeeDesignation}</div>}
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Bank Name</label>
+                <div className="relative">
+                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-[1]" />
+                  <input
+                    className={`w-full h-11 rounded-[10px] border-[1.5px] bg-white pl-[38px] pr-3.5 text-[13.5px] text-slate-900 outline-none transition-all focus:border-slate-700 focus:ring-[3px] focus:ring-slate-700/10 ${errors.bankName ? "border-red-500 bg-red-50" : "border-slate-200"}`}
+                    name="bankName"
+                    value={formData.bankDetails.bankName}
+                    onChange={handleInputChange}
+                    placeholder="Bank of America"
+                  />
                 </div>
+                {errors.bankName && <div className="text-red-600 text-[11.5px] font-medium mt-1">{errors.bankName}</div>}
+              </div>
 
-                <div className="field-group">
-                  <label className="label">Joining Date</label>
-                  <div className="input-wrap">
-                    <Calendar className="input-icon" />
-                    <input
-                      className={`input with-icon${errors.joiningDate ? " error" : ""}`}
-                      name="joiningDate"
-                      value={formData.joiningDate}
-                      onChange={handleInputChange}
-                      type="date"
-                    />
-                  </div>
-                  {errors.joiningDate && <div className="error-msg">{errors.joiningDate}</div>}
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Branch Name</label>
+                <div className="relative">
+                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-[1]" />
+                  <input
+                    className={`w-full h-11 rounded-[10px] border-[1.5px] bg-white pl-[38px] pr-3.5 text-[13.5px] text-slate-900 outline-none transition-all focus:border-slate-700 focus:ring-[3px] focus:ring-slate-700/10 ${errors.branchName ? "border-red-500 bg-red-50" : "border-slate-200"}`}
+                    name="branchName"
+                    value={formData.bankDetails.branchName}
+                    onChange={handleInputChange}
+                    placeholder="Main Branch"
+                  />
                 </div>
+                {errors.branchName && <div className="text-red-600 text-[11.5px] font-medium mt-1">{errors.branchName}</div>}
+              </div>
 
-                <div className="field-group" style={{ gridColumn: "1 / -1" }}>
-                  <label className="label">Address</label>
-                  <div className="input-wrap">
-                    <MapPin className="input-icon" />
-                    <input
-                      className={`input with-icon${errors.address ? " error" : ""}`}
-                      name="address"
-                      value={formData.address}
-                      onChange={handleInputChange}
-                      placeholder="123 Street, City, State 12345"
-                    />
-                  </div>
-                  {errors.address && <div className="error-msg">{errors.address}</div>}
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">BIC Code</label>
+                <div className="relative">
+                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-[1]" />
+                  <input
+                    className={`w-full h-11 rounded-[10px] border-[1.5px] bg-white pl-[38px] pr-3.5 text-[13.5px] text-slate-900 font-mono outline-none transition-all focus:border-slate-700 focus:ring-[3px] focus:ring-slate-700/10 ${errors.bicCode ? "border-red-500 bg-red-50" : "border-slate-200"}`}
+                    name="bicCode"
+                    value={formData.bankDetails.bicCode}
+                    onChange={handleInputChange}
+                    placeholder="e.g. CHASUS33"
+                  />
                 </div>
+                {errors.bicCode && <div className="text-red-600 text-[11.5px] font-medium mt-1">{errors.bicCode}</div>}
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Salary</label>
+                <div className="relative">
+                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-[1]" />
+                  <input
+                    className={`w-full h-11 rounded-[10px] border-[1.5px] bg-white pl-[38px] pr-3.5 text-[13.5px] text-slate-900 outline-none transition-all focus:border-slate-700 focus:ring-[3px] focus:ring-slate-700/10 ${errors.salary ? "border-red-500 bg-red-50" : "border-slate-200"}`}
+                    name="salary"
+                    type="number"
+                    value={formData.bankDetails.salary}
+                    onChange={handleInputChange}
+                    placeholder="e.g. 50000"
+                  />
+                </div>
+                {errors.salary && <div className="text-red-600 text-[11.5px] font-medium mt-1">{errors.salary}</div>}
               </div>
             </div>
+          </div>
 
-            {/* Bank Information */}
-            <div className="section-card">
-              <div className="section-card-header" style={{ background: "linear-gradient(135deg, #8b5cf6, #7c3aed)" }}>
-                <div style={{
-                  width: 28, height: 28, borderRadius: 7,
-                  background: "rgba(255,255,255,0.15)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                  <CreditCard style={{ width: 14, height: 14, color: "#fff" }} />
-                </div>
-                <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(255,255,255,0.85)" }}>
-                  Bank Information
-                </span>
+          {/* Photo Upload */}
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden mb-5">
+            <div className="px-4 py-3 flex items-center gap-2.5 bg-gradient-to-br from-amber-500 to-amber-600">
+              <div className="w-7 h-7 rounded-[7px] bg-white/15 flex items-center justify-center">
+                <Camera className="w-3.5 h-3.5 text-white" />
               </div>
-              <div className="section-card-body two-col">
-                <div className="field-group">
-                  <label className="label">Account Holder Name</label>
-                  <div className="input-wrap">
-                    <User className="input-icon" />
-                    <input
-                      className={`input with-icon${errors.accountHolderName ? " error" : ""}`}
-                      name="accountHolderName"
-                      value={formData.bankDetails.accountHolderName}
-                      onChange={handleInputChange}
-                      placeholder="John Doe"
-                    />
-                  </div>
-                  {errors.accountHolderName && <div className="error-msg">{errors.accountHolderName}</div>}
-                </div>
-
-                <div className="field-group">
-                  <label className="label">Account Number</label>
-                  <div className="input-wrap">
-                    <CreditCard className="input-icon" />
-                    <input
-                      className={`input with-icon${errors.accountNumber ? " error" : ""}`}
-                      name="accountNumber"
-                      value={formData.bankDetails.accountNumber}
-                      onChange={handleInputChange}
-                      placeholder="1234567890"
-                      style={{ fontFamily: "'DM Mono', monospace" }}
-                    />
-                  </div>
-                  {errors.accountNumber && <div className="error-msg">{errors.accountNumber}</div>}
-                </div>
-
-                <div className="field-group">
-                  <label className="label">Bank Name</label>
-                  <div className="input-wrap">
-                    <Building2 className="input-icon" />
-                    <input
-                      className={`input with-icon${errors.bankName ? " error" : ""}`}
-                      name="bankName"
-                      value={formData.bankDetails.bankName}
-                      onChange={handleInputChange}
-                      placeholder="Bank of America"
-                    />
-                  </div>
-                  {errors.bankName && <div className="error-msg">{errors.bankName}</div>}
-                </div>
-
-                <div className="field-group">
-                  <label className="label">Branch Name</label>
-                  <div className="input-wrap">
-                    <Building2 className="input-icon" />
-                    <input
-                      className={`input with-icon${errors.branchName ? " error" : ""}`}
-                      name="branchName"
-                      value={formData.bankDetails.branchName}
-                      onChange={handleInputChange}
-                      placeholder="Main Branch"
-                    />
-                  </div>
-                  {errors.branchName && <div className="error-msg">{errors.branchName}</div>}
-                </div>
-
-                <div className="field-group">
-                  <label className="label">BIC Code</label>
-                  <div className="input-wrap">
-                    <Building2 className="input-icon" />
-                    <input
-                      className={`input with-icon${errors.bicCode ? " error" : ""}`}
-                      name="bicCode"
-                      value={formData.bankDetails.bicCode}
-                      onChange={handleInputChange}
-                      placeholder="e.g. CHASUS33"
-                      style={{ fontFamily: "'DM Mono', monospace" }}
-                    />
-                  </div>
-                  {errors.bicCode && <div className="error-msg">{errors.bicCode}</div>}
-                </div>
-
-                <div className="field-group">
-                  <label className="label">Salary</label>
-                  <div className="input-wrap">
-                    <Building2 className="input-icon" />
-                    <input
-                      className={`input with-icon${errors.salary ? " error" : ""}`}
-                      name="salary"
-                      type="number"
-                      value={formData.bankDetails.salary}
-                      onChange={handleInputChange}
-                      placeholder="e.g. 50000"
-                    />
-                  </div>
-                  {errors.salary && <div className="error-msg">{errors.salary}</div>}
-                </div>
-              </div>
+              <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-white/85">Employee Photo</span>
             </div>
-
-            {/* Photo Upload */}
-            <div className="section-card">
-              <div className="section-card-header" style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)" }}>
-                <div style={{
-                  width: 28, height: 28, borderRadius: 7,
-                  background: "rgba(255,255,255,0.15)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                  <Camera style={{ width: 14, height: 14, color: "#fff" }} />
+            <div className="p-4">
+              <input
+                type="file"
+                id="employeePhoto"
+                name="employeePhoto"
+                onChange={handleFileChange}
+                accept="image/*"
+                className="hidden"
+              />
+              <label htmlFor="employeePhoto" className="block border-2 border-dashed border-slate-200 rounded-[10px] p-8 text-center transition-all cursor-pointer hover:border-blue-500 hover:bg-slate-50">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center mx-auto mb-4">
+                  <Upload className="w-6 h-6 text-blue-500" />
                 </div>
-                <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(255,255,255,0.85)" }}>
-                  Employee Photo
-                </span>
-              </div>
-              <div className="section-card-body">
-                <input
-                  type="file"
-                  id="employeePhoto"
-                  name="employeePhoto"
-                  onChange={handleFileChange}
-                  accept="image/*"
-                  className="hidden"
-                />
-                <label htmlFor="employeePhoto" className="upload-zone">
-                  <div style={{
-                    width: 48, height: 48, borderRadius: "50%",
-                    background: "linear-gradient(135deg, #dbeafe, #bfdbfe)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    margin: "0 auto 16px",
-                  }}>
-                    <Upload style={{ width: 24, height: 24, color: "#3b82f6" }} />
-                  </div>
-                  <div style={{ color: "#0f172a", fontSize: "14px", fontWeight: 600, marginBottom: 4 }}>
-                    {formData.employeePhoto ? formData.employeePhoto.name : "Click to upload photo"}
-                  </div>
-                  <div style={{ color: "#94a3b8", fontSize: "12px" }}>
-                    PNG, JPG, GIF up to 10MB
-                  </div>
-                </label>
-              </div>
+                <div className="text-slate-900 text-sm font-semibold mb-1">
+                  {formData.employeePhoto ? formData.employeePhoto.name : "Click to upload photo"}
+                </div>
+                <div className="text-slate-400 text-xs">
+                  PNG, JPG, GIF up to 10MB
+                </div>
+              </label>
             </div>
+          </div>
 
-            {/* Form Actions */}
-            <div style={{
-              display: "flex", justifyContent: "flex-end", gap: 12,
-              paddingTop: 20, borderTop: "1px solid #e2e8f0",
-            }}>
-              <button
-                type="button"
-                onClick={onClose}
-                className="btn btn-secondary"
-                disabled={loading || saved}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className={`btn ${saved ? "btn-success" : "btn-primary"}`}
-                disabled={loading || saved}
-              >
-                {saved ? (
-                  <>
-                    <CheckCircle style={{ width: 16, height: 16 }} />
-                    Employee Added Successfully!
-                  </>
-                ) : loading ? (
-                  "Submitting..."
-                ) : (
-                  <>
-                    <Save style={{ width: 16, height: 16 }} />
-                    Add Employee
-                  </>
-                )}
-              </button>
+          {/* Form Actions */}
+          <div className="flex justify-end gap-3 pt-5 border-t border-slate-200">
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-[10px] text-[13.5px] font-semibold border-[1.5px] border-slate-200 bg-transparent text-slate-500 cursor-pointer transition-all hover:bg-slate-50 hover:-translate-y-px disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+              disabled={loading || saved}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className={`inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-[10px] text-[13.5px] font-semibold border-none cursor-pointer transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none ${saved ? "bg-green-600 text-white hover:bg-green-700 hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(22,163,74,0.3)]" : "bg-blue-500 text-white hover:bg-blue-600 hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(59,130,246,0.3)]"}`}
+              disabled={loading || saved}
+            >
+              {saved ? (
+                <>
+                  <CheckCircle className="w-4 h-4" />
+                  Employee Added Successfully!
+                </>
+              ) : loading ? (
+                "Submitting..."
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  Add Employee
+                </>
+              )}
+            </button>
+          </div>
+          {error && (
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-[10px] text-red-600 text-[13px] font-medium">
+              {error}
             </div>
-            {error && (
-              <div style={{
-                marginTop: 16, padding: 12,
-                background: "#fef2f2", border: "1px solid #fecaca",
-                borderRadius: 10, color: "#dc2626", fontSize: "13px", fontWeight: 500,
-              }}>
-                {error}
-              </div>
-            )}
-          </form>
-        </div>
+          )}
+        </form>
       </div>
-    </>
+    </div>
   )
 }

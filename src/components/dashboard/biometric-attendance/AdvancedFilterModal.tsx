@@ -78,291 +78,269 @@ export default function AdvancedFilterModal({ isOpen, onClose, onApply, onReset 
     filters.minWorkHours > 0 ||
     filters.maxWorkHours < 24
 
+  const activeFilterCount = [
+    filters.departments.length,
+    filters.statuses.length,
+    filters.devices.length,
+  ].reduce((a, b) => a + b, 0)
+
+  const statusColorMap: Record<string, string> = {
+    present: "border-green-200 text-green-600",
+    absent: "border-red-200 text-red-600",
+    late: "border-amber-200 text-amber-600",
+    leave: "border-blue-200 text-blue-600",
+  }
+
+  const geofenceColorMap: Record<string, string> = {
+    inside: "border-green-200 text-green-600",
+    outside: "border-red-200 text-red-600",
+    exempt: "border-slate-200 text-slate-500",
+  }
+
   if (!isOpen) return null
 
   return (
-    <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
+    <div
+      className="fixed inset-0 bg-slate-900/55 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className="animate-[fadeUp_0.22s_ease] bg-white rounded-[14px] w-full max-w-[620px] max-h-[90vh] overflow-y-auto flex flex-col shadow-[0_24px_60px_rgba(0,0,0,0.18),0_4px_16px_rgba(0,0,0,0.08)]">
 
-        .af * { font-family: 'DM Sans', sans-serif; box-sizing: border-box; }
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-white border-b border-slate-200 px-5 py-4 rounded-t-[14px] flex items-center justify-between">
+          <div className="flex items-center gap-[11px]">
+            <div className="w-[34px] h-[34px] rounded-[9px] bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center shadow-[0_4px_12px_rgba(15,23,42,0.25)]">
+              <Filter className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <div className="text-[15px] font-bold text-slate-900 leading-tight">Advanced Filters</div>
+              <div className="text-[11.5px] text-slate-400 mt-[1px]">
+                {hasActiveFilters ? `${activeFilterCount} filters active` : "No active filters"}
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-[8px] border-[1.5px] border-slate-200 bg-transparent flex items-center justify-center hover:bg-slate-100 transition-colors flex-shrink-0"
+          >
+            <X className="w-[14px] h-[14px] text-slate-500" />
+          </button>
+        </div>
 
-        .af-fade { animation: afFade 0.22s ease; }
-        @keyframes afFade {
-          from { opacity: 0; transform: scale(0.97) translateY(8px); }
-          to   { opacity: 1; transform: scale(1) translateY(0); }
-        }
+        {/* Filters */}
+        <div className="p-5 flex flex-col gap-4">
 
-        .af-input {
-          width: 100%; height: 42px;
-          border-radius: 9px; border: 1.5px solid #e2e8f0;
-          background: #fff; padding: 0 13px;
-          font-size: 13.5px; color: #0f172a;
-          outline: none; transition: border-color 0.15s, box-shadow 0.15s;
-        }
-        .af-input:focus { border-color: #334155; box-shadow: 0 0 0 3px rgba(51,65,85,0.08); }
-
-        .af-label {
-          font-size: 11px; font-weight: 700;
-          text-transform: uppercase; letter-spacing: 0.07em;
-          color: #64748b; display: flex; align-items: center; gap: 6px;
-          margin-bottom: 8px;
-        }
-
-        .af-chip {
-          display: inline-flex; align-items: center; gap: 6px;
-          padding: 8px 13px; border-radius: 9px;
-          border: 1.5px solid #e2e8f0; background: #f8fafc;
-          font-size: 12.5px; font-weight: 600; color: #64748b;
-          cursor: pointer; transition: all 0.15s;
-        }
-        .af-chip:hover { background: #f1f5f9; }
-        .af-chip.active {
-          background: #0f172a; color: #fff;
-          border-color: #0f172a;
-        }
-
-        .af-btn {
-          display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-          padding: 11px 20px; border-radius: 9px; font-size: 13.5px; font-weight: 600;
-          border: none; cursor: pointer; transition: all 0.15s;
-        }
-        .af-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.12); }
-        .af-btn-cancel  { background: transparent; color: #475569; border: 1.5px solid #e2e8f0; }
-        .af-btn-cancel:hover { background: #f8fafc; }
-        .af-btn-reset   { background: transparent; color: #dc2626; border: 1.5px solid #fecaca; }
-        .af-btn-reset:hover { background: #fef2f2; }
-        .af-btn-apply   { background: #0f172a; color: #fff; }
-
-        .af-close {
-          width: 32px; height: 32px; border-radius: 8px;
-          border: 1.5px solid #e2e8f0; background: transparent;
-          cursor: pointer; display: flex; align-items: center; justify-content: center;
-          transition: background 0.15s; flex-shrink: 0;
-        }
-        .af-close:hover { background: #f1f5f9; }
-
-        .af-section {
-          background: #f8fafc; border-radius: 10px; padding: 16px;
-          border: 1px solid #e2e8f0;
-        }
-
-        .af-range-inputs {
-          display: flex; align-items: center; gap: 8px;
-        }
-        .af-range-inputs .af-input { width: 80px; }
-      `}</style>
-
-      <div
-        className="af"
-        style={{
-          position: "fixed", inset: 0,
-          background: "rgba(15,23,42,0.55)", backdropFilter: "blur(4px)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          zIndex: 50, padding: 16,
-        }}
-        onClick={(e) => e.target === e.currentTarget && onClose()}
-      >
-        <div
-          className="af-fade"
-          style={{
-            background: "#fff", borderRadius: 14, width: "100%", maxWidth: 620,
-            maxHeight: "90vh", overflowY: "auto",
-            boxShadow: "0 24px 60px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.08)",
-            display: "flex", flexDirection: "column",
-          }}
-        >
-          {/* Header */}
-          <div style={{
-            position: "sticky", top: 0, zIndex: 10,
-            background: "#fff", borderBottom: "1px solid #e2e8f0",
-            padding: "16px 20px", borderRadius: "14px 14px 0 0",
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
-              <div style={{
-                width: 34, height: 34, borderRadius: 9,
-                background: "linear-gradient(135deg, #0f172a, #1e293b)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                boxShadow: "0 4px 12px rgba(15,23,42,0.25)",
-              }}>
-                <Filter style={{ width: 16, height: 16, color: "#fff" }} />
+          {/* Date Range */}
+          <div className="bg-slate-50 rounded-[10px] p-4 border border-slate-200">
+            <div className="flex items-center gap-[6px] text-[11px] font-bold uppercase tracking-[0.07em] text-slate-500 mb-2">
+              <Calendar className="w-3 h-3" />
+              Date Range
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <div className="text-xs text-slate-500 font-medium mb-[5px]">From</div>
+                <input
+                  type="date"
+                  value={filters.dateFrom}
+                  onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })}
+                  className="w-full h-[42px] rounded-[9px] border-[1.5px] border-slate-200 bg-white px-[13px] text-[13.5px] text-slate-900 outline-none focus:border-slate-700 focus:ring-[3px] focus:ring-slate-700/[0.08] transition-all"
+                />
               </div>
               <div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: "#0f172a" }}>Advanced Filters</div>
-                <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 1 }}>
-                  {hasActiveFilters ? `${[filters.departments.length, filters.statuses.length, filters.devices.length].reduce((a, b) => a + b, 0)} filters active` : "No active filters"}
-                </div>
+                <div className="text-xs text-slate-500 font-medium mb-[5px]">To</div>
+                <input
+                  type="date"
+                  value={filters.dateTo}
+                  onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
+                  className="w-full h-[42px] rounded-[9px] border-[1.5px] border-slate-200 bg-white px-[13px] text-[13.5px] text-slate-900 outline-none focus:border-slate-700 focus:ring-[3px] focus:ring-slate-700/[0.08] transition-all"
+                />
               </div>
             </div>
-            <button className="af-close" onClick={onClose}>
-              <X style={{ width: 14, height: 14, color: "#64748b" }} />
-            </button>
           </div>
 
-          {/* Filters */}
-          <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 16 }}>
-            {/* Date Range */}
-            <div className="af-section">
-              <div className="af-label"><Calendar style={{ width: 12, height: 12 }} />Date Range</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                <div>
-                  <div style={{ fontSize: 12, color: "#64748b", marginBottom: 5, fontWeight: 500 }}>From</div>
-                  <input
-                    className="af-input"
-                    type="date"
-                    value={filters.dateFrom}
-                    onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <div style={{ fontSize: 12, color: "#64748b", marginBottom: 5, fontWeight: 500 }}>To</div>
-                  <input
-                    className="af-input"
-                    type="date"
-                    value={filters.dateTo}
-                    onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
-                  />
-                </div>
-              </div>
+          {/* Departments */}
+          <div className="bg-slate-50 rounded-[10px] p-4 border border-slate-200">
+            <div className="flex items-center gap-[6px] text-[11px] font-bold uppercase tracking-[0.07em] text-slate-500 mb-2">
+              <Building2 className="w-3 h-3" />
+              Departments
             </div>
-
-            {/* Departments */}
-            <div className="af-section">
-              <div className="af-label"><Building2 style={{ width: 12, height: 12 }} />Departments</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {departments.map((dept) => (
+            <div className="flex flex-wrap gap-2">
+              {departments.map((dept) => {
+                const isActive = filters.departments.includes(dept)
+                return (
                   <button
                     key={dept}
                     type="button"
-                    className={`af-chip ${filters.departments.includes(dept) ? "active" : ""}`}
                     onClick={() => toggleArray("departments", dept)}
+                    className={`inline-flex items-center gap-[6px] px-[13px] py-2 rounded-[9px] border-[1.5px] text-[12.5px] font-semibold cursor-pointer transition-all hover:bg-slate-100
+                      ${isActive
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : "bg-slate-50 text-slate-500 border-slate-200"
+                      }`}
                   >
-                    {filters.departments.includes(dept) && <Check style={{ width: 12, height: 12 }} />}
+                    {isActive && <Check className="w-3 h-3" />}
                     {dept}
                   </button>
-                ))}
-              </div>
+                )
+              })}
             </div>
+          </div>
 
-            {/* Status */}
-            <div className="af-section">
-              <div className="af-label"><Activity style={{ width: 12, height: 12 }} />Attendance Status</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {statuses.map((status) => {
-                  const color = status === "present" ? "#16a34a" : status === "absent" ? "#dc2626" : status === "late" ? "#d97706" : "#2563eb"
-                  return (
-                    <button
-                      key={status}
-                      type="button"
-                      className={`af-chip ${filters.statuses.includes(status) ? "active" : ""}`}
-                      onClick={() => toggleArray("statuses", status)}
-                      style={filters.statuses.includes(status) ? {} : { borderColor: color + "40", color: color }}
-                    >
-                      {filters.statuses.includes(status) && <Check style={{ width: 12, height: 12 }} />}
-                      {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </button>
-                  )
-                })}
-              </div>
+          {/* Attendance Status */}
+          <div className="bg-slate-50 rounded-[10px] p-4 border border-slate-200">
+            <div className="flex items-center gap-[6px] text-[11px] font-bold uppercase tracking-[0.07em] text-slate-500 mb-2">
+              <Activity className="w-3 h-3" />
+              Attendance Status
             </div>
-
-            {/* Geofence Status */}
-            <div className="af-section">
-              <div className="af-label"><Wifi style={{ width: 12, height: 12 }} />Geofence Status</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {geofenceStatuses.map((status) => {
-                  const color = status === "inside" ? "#16a34a" : status === "outside" ? "#dc2626" : "#64748b"
-                  return (
-                    <button
-                      key={status}
-                      type="button"
-                      className={`af-chip ${filters.geofenceStatuses.includes(status) ? "active" : ""}`}
-                      onClick={() => toggleArray("geofenceStatuses", status)}
-                      style={filters.geofenceStatuses.includes(status) ? {} : { borderColor: color + "40", color: color }}
-                    >
-                      {filters.geofenceStatuses.includes(status) && <Check style={{ width: 12, height: 12 }} />}
-                      {status === "inside" && <Wifi style={{ width: 12, height: 12 }} />}
-                      {status === "outside" && <Wifi style={{ width: 12, height: 12 }} />}
-                      {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </button>
-                  )
-                })}
-              </div>
+            <div className="flex flex-wrap gap-2">
+              {statuses.map((status) => {
+                const isActive = filters.statuses.includes(status)
+                return (
+                  <button
+                    key={status}
+                    type="button"
+                    onClick={() => toggleArray("statuses", status)}
+                    className={`inline-flex items-center gap-[6px] px-[13px] py-2 rounded-[9px] border-[1.5px] text-[12.5px] font-semibold cursor-pointer transition-all
+                      ${isActive
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : `bg-slate-50 ${statusColorMap[status]}`
+                      }`}
+                  >
+                    {isActive && <Check className="w-3 h-3" />}
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                  </button>
+                )
+              })}
             </div>
+          </div>
 
-            {/* Devices */}
-            <div className="af-section">
-              <div className="af-label"><Fingerprint style={{ width: 12, height: 12 }} />Biometric Devices</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {devices.map((device) => (
+          {/* Geofence Status */}
+          <div className="bg-slate-50 rounded-[10px] p-4 border border-slate-200">
+            <div className="flex items-center gap-[6px] text-[11px] font-bold uppercase tracking-[0.07em] text-slate-500 mb-2">
+              <Wifi className="w-3 h-3" />
+              Geofence Status
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {geofenceStatuses.map((status) => {
+                const isActive = filters.geofenceStatuses.includes(status)
+                return (
+                  <button
+                    key={status}
+                    type="button"
+                    onClick={() => toggleArray("geofenceStatuses", status)}
+                    className={`inline-flex items-center gap-[6px] px-[13px] py-2 rounded-[9px] border-[1.5px] text-[12.5px] font-semibold cursor-pointer transition-all
+                      ${isActive
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : `bg-slate-50 ${geofenceColorMap[status]}`
+                      }`}
+                  >
+                    {isActive && <Check className="w-3 h-3" />}
+                    {(status === "inside" || status === "outside") && (
+                      <Wifi className="w-3 h-3" />
+                    )}
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Biometric Devices */}
+          <div className="bg-slate-50 rounded-[10px] p-4 border border-slate-200">
+            <div className="flex items-center gap-[6px] text-[11px] font-bold uppercase tracking-[0.07em] text-slate-500 mb-2">
+              <Fingerprint className="w-3 h-3" />
+              Biometric Devices
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {devices.map((device) => {
+                const isActive = filters.devices.includes(device)
+                return (
                   <button
                     key={device}
                     type="button"
-                    className={`af-chip ${filters.devices.includes(device) ? "active" : ""}`}
                     onClick={() => toggleArray("devices", device)}
+                    className={`inline-flex items-center gap-[6px] px-[13px] py-2 rounded-[9px] border-[1.5px] text-[12.5px] font-semibold cursor-pointer transition-all hover:bg-slate-100
+                      ${isActive
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : "bg-slate-50 text-slate-500 border-slate-200"
+                      }`}
                   >
-                    {filters.devices.includes(device) && <Check style={{ width: 12, height: 12 }} />}
+                    {isActive && <Check className="w-3 h-3" />}
                     {device}
                   </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Work Hours Range */}
-            <div className="af-section">
-              <div className="af-label"><Clock style={{ width: 12, height: 12 }} />Work Hours Range</div>
-              <div className="af-range-inputs">
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, color: "#64748b", marginBottom: 5, fontWeight: 500 }}>Min Hours</div>
-                  <input
-                    className="af-input"
-                    type="number"
-                    min="0"
-                    max="24"
-                    step="0.5"
-                    value={filters.minWorkHours}
-                    onChange={(e) => setFilters({ ...filters, minWorkHours: Number(e.target.value) })}
-                  />
-                </div>
-                <span style={{ color: "#94a3b8", fontSize: 14, marginTop: 18 }}>to</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, color: "#64748b", marginBottom: 5, fontWeight: 500 }}>Max Hours</div>
-                  <input
-                    className="af-input"
-                    type="number"
-                    min="0"
-                    max="24"
-                    step="0.5"
-                    value={filters.maxWorkHours}
-                    onChange={(e) => setFilters({ ...filters, maxWorkHours: Number(e.target.value) })}
-                  />
-                </div>
-              </div>
+                )
+              })}
             </div>
           </div>
 
-          {/* Actions */}
-          <div style={{
-            position: "sticky", bottom: 0, zIndex: 10,
-            background: "#fff", borderTop: "1px solid #e2e8f0",
-            padding: "16px 20px", borderRadius: "0 0 14px 14px",
-            display: "flex", gap: 10,
-          }}>
-            <button className="af-btn af-btn-cancel" onClick={onClose}>
-              Cancel
-            </button>
-            {hasActiveFilters && (
-              <button className="af-btn af-btn-reset" onClick={handleReset}>
-                Reset All
-              </button>
-            )}
-            <button className="af-btn af-btn-apply" onClick={handleApply} style={{ flex: 1 }}>
-              <Filter style={{ width: 14, height: 14 }} /> Apply Filters
-            </button>
+          {/* Work Hours Range */}
+          <div className="bg-slate-50 rounded-[10px] p-4 border border-slate-200">
+            <div className="flex items-center gap-[6px] text-[11px] font-bold uppercase tracking-[0.07em] text-slate-500 mb-2">
+              <Clock className="w-3 h-3" />
+              Work Hours Range
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex-1">
+                <div className="text-xs text-slate-500 font-medium mb-[5px]">Min Hours</div>
+                <input
+                  type="number"
+                  min="0"
+                  max="24"
+                  step="0.5"
+                  value={filters.minWorkHours}
+                  onChange={(e) => setFilters({ ...filters, minWorkHours: Number(e.target.value) })}
+                  className="w-full h-[42px] rounded-[9px] border-[1.5px] border-slate-200 bg-white px-[13px] text-[13.5px] text-slate-900 outline-none focus:border-slate-700 focus:ring-[3px] focus:ring-slate-700/[0.08] transition-all"
+                />
+              </div>
+              <span className="text-sm text-slate-400 mt-[18px]">to</span>
+              <div className="flex-1">
+                <div className="text-xs text-slate-500 font-medium mb-[5px]">Max Hours</div>
+                <input
+                  type="number"
+                  min="0"
+                  max="24"
+                  step="0.5"
+                  value={filters.maxWorkHours}
+                  onChange={(e) => setFilters({ ...filters, maxWorkHours: Number(e.target.value) })}
+                  className="w-full h-[42px] rounded-[9px] border-[1.5px] border-slate-200 bg-white px-[13px] text-[13.5px] text-slate-900 outline-none focus:border-slate-700 focus:ring-[3px] focus:ring-slate-700/[0.08] transition-all"
+                />
+              </div>
+            </div>
           </div>
         </div>
+
+        {/* Actions */}
+        <div className="sticky bottom-0 z-10 bg-white border-t border-slate-200 px-5 py-4 rounded-b-[14px] flex gap-[10px]">
+          <button
+            onClick={onClose}
+            className="inline-flex items-center justify-center gap-[7px] px-5 py-[11px] rounded-[9px] text-[13.5px] font-semibold border-[1.5px] border-slate-200 bg-transparent text-slate-600 cursor-pointer transition-all hover:bg-slate-50 hover:-translate-y-px hover:shadow-[0_4px_14px_rgba(0,0,0,0.12)]"
+          >
+            Cancel
+          </button>
+          {hasActiveFilters && (
+            <button
+              onClick={handleReset}
+              className="inline-flex items-center justify-center gap-[7px] px-5 py-[11px] rounded-[9px] text-[13.5px] font-semibold border-[1.5px] border-red-200 bg-transparent text-red-600 cursor-pointer transition-all hover:bg-red-50 hover:-translate-y-px hover:shadow-[0_4px_14px_rgba(0,0,0,0.12)]"
+            >
+              Reset All
+            </button>
+          )}
+          <button
+            onClick={handleApply}
+            className="inline-flex flex-1 items-center justify-center gap-[7px] px-5 py-[11px] rounded-[9px] text-[13.5px] font-semibold bg-slate-900 text-white border-none cursor-pointer transition-all hover:-translate-y-px hover:shadow-[0_4px_14px_rgba(0,0,0,0.12)]"
+          >
+            <Filter className="w-[14px] h-[14px]" />
+            Apply Filters
+          </button>
+        </div>
       </div>
-    </>
+
+      <style>{`
+        @keyframes fadeUp {
+          from { opacity: 0; transform: scale(0.97) translateY(8px); }
+          to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+      `}</style>
+    </div>
   )
 }

@@ -2,16 +2,7 @@
 
 import { useState } from "react"
 import { X, Calendar, Sparkles, Gift, CheckCircle } from "lucide-react"
-
-interface Holiday {
-  id: string
-  name: string
-  date: string
-  type: "public" | "company" | "optional"
-  duration: "full-day" | "half-day"
-  description: string
-  recurring: boolean
-}
+import type { Holiday } from "@/types/holiday.types"
 
 interface HolidayModalProps {
   isOpen: boolean
