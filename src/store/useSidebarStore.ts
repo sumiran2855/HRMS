@@ -79,6 +79,12 @@ export const sidebarConfig: SidebarItem[] = [
         label: "Holidays",
         href: "/holidays",
         icon: "gift",
+      },
+      {
+        id: "leave-management",
+        label: "Leave Management",
+        href: "/leave-management",
+        icon: "calendar-check",
       }
     ],
   },
@@ -197,7 +203,7 @@ export const sidebarConfig: SidebarItem[] = [
   {
     id: "training",
     label: "Training",
-    href: "/dashboard/training",
+    href: "/training",
     icon: "book",
   },
   {
@@ -262,7 +268,7 @@ export const useSidebarStore = create<SidebarState>()(
   persist(
     (set, get) => ({
       isOpen: true,
-      expandedItems: ["dashboard", "crm", "erp"],
+      expandedItems: [],
       toggleSidebar: () => set({ isOpen: !get().isOpen }),
       setOpen: (open: boolean) => set({ isOpen: open }),
       toggleExpanded: (id: string) => {

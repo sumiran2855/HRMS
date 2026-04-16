@@ -15,12 +15,28 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/DropdownMenu"
 import { Bell, Mail, Search, Menu, ChevronDown, LogOut, User, Settings } from "lucide-react"
-import { useLogin } from "@/hooks/auth/useLogin"
+import { useAuth } from "@/providers/auth.provider"
 
 export function Navbar() {
   const { toggleSidebar } = useSidebarStore()
   const [searchQuery, setSearchQuery] = useState("")
-  const { handleLogout, user } = useLogin()
+  const { logout, user } = useAuth()
+
+  const handleLogout = async () => {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL || 'https://auth-service-4cwu.onrender.com'}/logout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth-access-token')}`
+        }
+      })
+    } catch (err) {
+      console.info('Logout API call failed:', err)
+    } finally {
+      logout(true)
+    }
+  }
 
   return (
     <header className="bg-gradient-to-r from-card via-card to-card/95 border-b border-border/50 backdrop-blur-xl sticky top-0 z-40 shadow-sm">

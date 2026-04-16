@@ -116,6 +116,12 @@ export function LoginForm() {
                         Privacy Policy
                     </a>
                 </p>
+                <p className="text-sm text-center text-slate-600 pt-2">
+                    Don't have an account?{" "}
+                    <a href="/register" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors cursor-pointer">
+                        Sign up
+                    </a>
+                </p>
             </form>
         </div>
     )

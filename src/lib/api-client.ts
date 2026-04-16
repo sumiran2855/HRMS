@@ -29,6 +29,16 @@ function createApiClient(service: ServiceType): AxiosInstance {
   client.interceptors.response.use(
     response => response,
     (error: AxiosError) => {
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        localStorage.removeItem('auth-access-token');
+        localStorage.removeItem('auth-refresh-token');
+        localStorage.removeItem('auth-user');
+        localStorage.removeItem('auth-is-authenticated');
+        
+        if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
+      }
       return Promise.reject(error);
     }
   );

@@ -22,7 +22,7 @@ export default function DashboardLayout({
         <div className={cn("transition-all duration-300 flex flex-col h-screen", isOpen ? "lg:ml-64" : "lg:ml-0")}>
           <Navbar />
 
-          <main className="flex-1 p-4 lg:p-6 overflow-y-auto mt-0">{children}</main>
+          <main className="flex-1 p-4 lg:p-6 mt-0">{children}</main>
         </div>
       </div>
     </ProtectedRoute>

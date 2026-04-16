@@ -20,7 +20,7 @@ interface AuthContextType {
     isAuthenticated: boolean
     isLoading: boolean
     setAuth: (user: User, accessToken: string, refreshToken: string) => void
-    logout: () => void
+    logout: (redirectToLogin?: boolean) => void
     setLoading: (loading: boolean) => void
     clearAuth: () => void
 }
