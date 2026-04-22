@@ -2,6 +2,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
 import {
   Eye,
   Edit,
+  Trash2,
   ArrowUpRight,
   ArrowDownRight,
   CheckCircle,
@@ -17,6 +18,9 @@ interface FinanceTransactionsProps {
   entriesPerPage: number
   setEntriesPerPage: (n: number) => void
   formatCurrency: (amount: number) => string
+  onView: (transaction: Transaction) => void
+  onEdit: (transaction: Transaction) => void
+  onDelete: (transaction: Transaction) => void
 }
 
 function getStatusIcon(status: string) {
@@ -37,6 +41,9 @@ export function FinanceTransactions({
   entriesPerPage,
   setEntriesPerPage,
   formatCurrency,
+  onView,
+  onEdit,
+  onDelete,
 }: FinanceTransactionsProps) {
   return (
     <Card>
@@ -140,16 +147,25 @@ export function FinanceTransactions({
                     <td className="py-3 px-4">
                       <div className="flex items-center justify-center gap-1">
                         <button
-                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          onClick={() => onView(transaction)}
+                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
                           title="View Details"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
-                          className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                          onClick={() => onEdit(transaction)}
+                          className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors cursor-pointer"
                           title="Edit Transaction"
                         >
                           <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => onDelete(transaction)}
+                          className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                          title="Delete Transaction"
+                        >
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </td>

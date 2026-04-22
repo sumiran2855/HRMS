@@ -25,6 +25,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     return (
       <button
+        suppressHydrationWarning
         className={cn(baseStyles, variants[variant], sizes[size], className)}
         ref={ref}
         {...props}
