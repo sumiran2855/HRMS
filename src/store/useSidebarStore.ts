@@ -209,50 +209,38 @@ export const sidebarConfig: SidebarItem[] = [
   {
     id: "resignation",
     label: "Resignation",
-    href: "/dashboard/resignation",
+    href: "/resignation",
     icon: "log-out",
   },
   {
     id: "promotion",
     label: "Promotion",
-    href: "/dashboard/promotion",
+    href: "/promotion",
     icon: "trending-up",
   },
   {
     id: "award",
     label: "Award",
-    href: "/dashboard/award",
+    href: "/award",
     icon: "award",
   },
   {
     id: "meeting",
     label: "Meeting",
-    href: "/dashboard/meeting",
+    href: "/meeting",
     icon: "calendar",
   },
   {
     id: "tickets",
     label: "Tickets",
-    href: "/dashboard/tickets",
+    href: "/tickets",
     icon: "ticket",
-  },
-  {
-    id: "transfer",
-    label: "Transfer",
-    href: "/dashboard/transfer",
-    icon: "shuffle",
   },
   {
     id: "termination",
     label: "Termination",
-    href: "/dashboard/termination",
+    href: "/termination",
     icon: "x-circle",
-  },
-  {
-    id: "document",
-    label: "Document",
-    href: "/dashboard/document",
-    icon: "file-text",
   },
 ]
 
