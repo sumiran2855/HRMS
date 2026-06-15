@@ -1,45 +1,70 @@
 "use client"
 
-import { useState } from "react"
 import { Button } from "@/components/ui/Button"
 import { Download, UserPlus } from "lucide-react"
 import { useHR } from "@/hooks/hr/useHR"
 import { HR_TABS } from "@/constants/hr"
 import { AddEmployeeModal } from "@/components/dashboard/employees/AddEmployeeModal"
+import { EmployeeStatsCards } from "@/components/dashboard/employees/EmployeeStatsCards"
+import { EmployeeSearchBar } from "@/components/dashboard/employees/EmployeeSearchBar"
+import { EmployeeCard } from "@/components/dashboard/employees/EmployeeCard"
+import { EmployeeListState } from "@/components/dashboard/employees/EmployeeListState"
+import { useEmployeesPage } from "@/hooks/employee/useEmployeesPage"
+import { DEFAULT_DESIGNATION } from "@/constants/employees"
+import { DepartmentStatsCards } from "@/components/dashboard/departments/DepartmentStatsCards"
+import { DepartmentFilters } from "@/components/dashboard/departments/DepartmentFilters"
+import { DepartmentGrid } from "@/components/dashboard/departments/DepartmentGrid"
+import DepartmentModal from "@/components/dashboard/departments/DepartmentModal"
+import { useDepartments } from "@/hooks/department/useDepartments"
 import {
   HRStatsCards,
-  HRFilters,
-  HREmployeesTable,
-  HRDepartments,
   HRAttendance,
   HRPayroll,
-  ViewEmployeeModal,
-  EditEmployeeModal,
-  DeleteEmployeeModal,
 } from "@/components/dashboard/hr"
 
 export default function HRPage() {
   const {
-    searchTerm, setSearchTerm,
-    selectedDepartment, setSelectedDepartment,
-    selectedStatus, setSelectedStatus,
     activeTab, setActiveTab,
-    entriesPerPage, setEntriesPerPage,
-    paginatedData,
-    hrStats, departments,
-    formatCurrency, getStatusColor, getPerformanceColor,
-    // Modal state
-    isAddOpen, setIsAddOpen,
-    selectedEmployee,
-    isViewOpen, isEditOpen, isDeleteOpen,
-    handleView, handleEdit, handleDelete,
-    handleCloseView, handleCloseEdit, handleCloseDelete,
-    handleConfirmDelete, handleUpdateEmployee,
+    hrStats, formatCurrency,
   } = useHR()
+
+  const {
+    employees,
+    filteredEmployees,
+    filters,
+    stats: employeeStats,
+    loading,
+    error,
+    isModalOpen,
+    setSearchName,
+    setSearchId,
+    setSelectedDesignation,
+    setIsModalOpen,
+    fetchEmployees,
+  } = useEmployeesPage()
+
+  const hasActiveFilters =
+    !!filters.searchName ||
+    !!filters.searchId ||
+    filters.selectedDesignation !== DEFAULT_DESIGNATION
+
+  const {
+    searchTerm: deptSearch,
+    setSearchTerm: setDeptSearch,
+    showAddModal: deptShowAdd,
+    setShowAddModal: setDeptShowAdd,
+    editingDepartment,
+    filteredDepartments,
+    stats: deptStats,
+    handleAddDepartment,
+    handleEditDepartment,
+    handleDeleteDepartment,
+    openEditModal,
+    closeModal: closeDeptModal,
+  } = useDepartments()
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Human Resources</h1>
@@ -50,17 +75,31 @@ export default function HRPage() {
             <Download className="w-4 h-4 mr-2" />
             Export Report
           </Button>
-          <Button
-            className="bg-purple-600 hover:bg-purple-700 text-white cursor-pointer"
-            onClick={() => setIsAddOpen(true)}
-          >
-            <UserPlus className="w-4 h-4 mr-2" />
-            Add Employee
-          </Button>
+          {activeTab === "employees" && (
+            <Button
+              className="bg-purple-600 hover:bg-purple-700 text-white cursor-pointer"
+              onClick={() => setIsModalOpen(true)}
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Add Employee
+            </Button>
+          )}
         </div>
       </div>
 
-      <HRStatsCards stats={hrStats} formatCurrency={formatCurrency} />
+      <HRStatsCards
+        stats={{
+          ...hrStats,
+          totalEmployees: employeeStats.total,
+          activeEmployees: employeeStats.active,
+          activePercentage:
+            employeeStats.total > 0
+              ? Math.round((employeeStats.active / employeeStats.total) * 100)
+              : 0,
+          departmentCount: deptStats.totalDepartments,
+        }}
+        formatCurrency={formatCurrency}
+      />
 
       {/* Tabs */}
       <div className="border-b border-slate-200">
@@ -84,31 +123,46 @@ export default function HRPage() {
       {/* Tab Content */}
       {activeTab === "employees" && (
         <div className="space-y-6">
-          <HRFilters
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            selectedDepartment={selectedDepartment}
-            setSelectedDepartment={setSelectedDepartment}
-            selectedStatus={selectedStatus}
-            setSelectedStatus={setSelectedStatus}
+          <EmployeeSearchBar
+            filters={filters}
+            onSearchNameChange={setSearchName}
+            onSearchIdChange={setSearchId}
+            onDesignationChange={setSelectedDesignation}
           />
-          <HREmployeesTable
-            paginatedData={paginatedData}
-            entriesPerPage={entriesPerPage}
-            setEntriesPerPage={setEntriesPerPage}
-            formatCurrency={formatCurrency}
-            getStatusColor={getStatusColor}
-            getPerformanceColor={getPerformanceColor}
-            onView={handleView}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
+          {loading ? (
+            <EmployeeListState type="loading" />
+          ) : error ? (
+            <EmployeeListState type="error" message={error} />
+          ) : filteredEmployees.length === 0 ? (
+            <EmployeeListState type="empty" hasActiveFilters={hasActiveFilters} />
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {filteredEmployees.map((employee) => (
+                <EmployeeCard key={employee._id} employee={employee} />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
       {activeTab === "departments" && (
         <div className="space-y-6">
-          <HRDepartments departments={departments} formatCurrency={formatCurrency} />
+          <DepartmentFilters
+            searchTerm={deptSearch}
+            onSearchChange={setDeptSearch}
+          />
+          <DepartmentGrid
+            departments={filteredDepartments}
+            searchTerm={deptSearch}
+            onEdit={openEditModal}
+            onDelete={handleDeleteDepartment}
+          />
+          <DepartmentModal
+            isOpen={deptShowAdd || !!editingDepartment}
+            onClose={closeDeptModal}
+            onSave={editingDepartment ? handleEditDepartment : handleAddDepartment}
+            editingDepartment={editingDepartment}
+          />
         </div>
       )}
 
@@ -120,38 +174,19 @@ export default function HRPage() {
 
       {activeTab === "payroll" && (
         <div className="space-y-6">
-          <HRPayroll />
+          <HRPayroll employees={employees} />
         </div>
       )}
 
-      {/* Modals */}
+      {/* Add Employee Modal */}
       <AddEmployeeModal
-        isOpen={isAddOpen}
-        onClose={() => setIsAddOpen(false)}
-      />
-
-      <ViewEmployeeModal
-        isOpen={isViewOpen}
-        onClose={handleCloseView}
-        employee={selectedEmployee}
-        formatCurrency={formatCurrency}
-        getStatusColor={getStatusColor}
-        getPerformanceColor={getPerformanceColor}
-      />
-
-      <EditEmployeeModal
-        isOpen={isEditOpen}
-        onClose={handleCloseEdit}
-        employee={selectedEmployee}
-        onSave={handleUpdateEmployee}
-      />
-
-      <DeleteEmployeeModal
-        isOpen={isDeleteOpen}
-        onClose={handleCloseDelete}
-        employee={selectedEmployee}
-        onConfirm={handleConfirmDelete}
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false)
+          fetchEmployees()
+        }}
       />
     </div>
   )
 }
+

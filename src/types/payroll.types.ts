@@ -1,5 +1,6 @@
 export interface PayrollEmployee {
   id: string
+  _id?: string
   name: string
   designation: string
   email: string
@@ -7,6 +8,10 @@ export interface PayrollEmployee {
   salary: number
   status: "paid" | "pending"
   paymentDate: string | null
+  phone?: string
+  bankAccount?: string
+  bankName?: string
+  address?: string
 }
 
 export interface PayrollStats {
@@ -27,6 +32,7 @@ export interface UsePayrollReturn {
   setSelectedStatus: React.Dispatch<React.SetStateAction<string>>
   filteredEmployees: PayrollEmployee[]
   paginatedEmployees: PayrollEmployee[]
+  totalCount: number
   currentPage: number
   totalPages: number
   rowsPerPage: number
@@ -43,8 +49,8 @@ export interface UsePayrollReturn {
   deleteModalOpen: boolean
   payrollModalOpen: boolean
   setPayrollModalOpen: React.Dispatch<React.SetStateAction<boolean>>
-  handleView: (employee: PayrollEmployee) => void
-  handleEdit: (employee: PayrollEmployee) => void
+  handleView: (employee: PayrollEmployee) => void | Promise<void>
+  handleEdit: (employee: PayrollEmployee) => void | Promise<void>
   handleDelete: (employee: PayrollEmployee) => void
   handleCloseView: () => void
   handleCloseEdit: () => void

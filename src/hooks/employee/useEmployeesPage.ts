@@ -43,15 +43,21 @@ export function useEmployeesPage(): UseEmployeesPageReturn {
     });
   }, [employees, searchName, searchId, selectedDesignation]);
 
-  const stats = useMemo(
-    () => ({
+  const stats = useMemo(() => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    return {
       total: employees.length,
       active: employees.filter((e) => e.isActive !== false).length,
       uniqueDesignations: new Set(employees.map((e) => e.employeeDesignation)).size,
-      currentMonth: new Date().getMonth() + 1,
-    }),
-    [employees]
-  );
+      currentMonth: employees.filter((e) => {
+        if (!e.createdAt) return false;
+        const created = new Date(e.createdAt);
+        return created.getFullYear() === currentYear && created.getMonth() === currentMonth;
+      }).length,
+    };
+  }, [employees]);
 
   return {
     employees,

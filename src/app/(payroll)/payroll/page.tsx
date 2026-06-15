@@ -62,6 +62,7 @@ export default function PayrollPage() {
         setRowsPerPage={p.setRowsPerPage}
         goToPage={p.goToPage}
         filteredCount={p.filteredEmployees.length}
+        totalCount={p.totalCount}
       />
 
       {/* Modals */}

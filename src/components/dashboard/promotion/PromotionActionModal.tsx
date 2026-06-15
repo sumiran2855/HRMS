@@ -44,7 +44,7 @@ export function PromotionActionModal({ isOpen, actionType, request, onClose, onC
           <p className="text-sm text-slate-600 leading-6">
             You are about to <span className="font-semibold text-slate-900">{ACTION_LABELS[actionType].toLowerCase()}</span> promotion request
             <span className="font-semibold text-slate-900"> {request.id}</span> for
-            <span className="font-semibold text-slate-900"> {request.employeeName}</span>.
+            <span className="font-semibold text-slate-900"> {request.employee.name}</span>.
           </p>
 
           <div>

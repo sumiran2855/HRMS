@@ -3,6 +3,15 @@
 import { useState } from "react"
 import { X, Save, User, Mail, DollarSign, Calendar, Building, Phone, MapPin, CreditCard, FileText, CheckCircle } from "lucide-react"
 
+function toDateInputValue(dateStr: string): string {
+  if (!dateStr) return ""
+  // Already YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr
+  const d = new Date(dateStr)
+  if (isNaN(d.getTime())) return ""
+  return d.toISOString().split("T")[0]
+}
+
 interface EditEmployeeModalProps {
   isOpen: boolean
   onClose: () => void
@@ -15,12 +24,12 @@ export function EditEmployeeModal({ isOpen, onClose, employee }: EditEmployeeMod
     name: employee?.name ?? "",
     designation: employee?.designation ?? "",
     email: employee?.email ?? "",
-    joiningDate: employee?.joiningDate ?? "",
+    joiningDate: toDateInputValue(employee?.joiningDate ?? ""),
     salary: employee?.salary ?? "",
-    phone: "+1 (555) 000-0000",
-    address: "123 Main St, City, State 12345",
-    pan: "ABCDE1234F",
-    bankAccount: "****1234",
+    phone: employee?.phone ?? "",
+    address: employee?.address ?? "",
+    bankName: employee?.bankName ?? "",
+    bankAccount: employee?.bankAccount ?? "",
   })
 
   const [isSaving, setIsSaving] = useState(false)
@@ -69,10 +78,10 @@ export function EditEmployeeModal({ isOpen, onClose, employee }: EditEmployeeMod
 
   return (
     <div
-      className="fixed inset-0 bg-slate-900/55 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-slate-900/55 backdrop-blur-sm flex items-center justify-center z-50 p-4 [&::-webkit-scrollbar]:hidden"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="animate-in fade-in zoom-in-95 duration-200 bg-white rounded-2xl w-full max-w-[680px] max-h-[92vh] overflow-y-auto flex flex-col shadow-2xl">
+      <div className="animate-in fade-in zoom-in-95 duration-200 bg-white rounded-2xl w-full max-w-[680px] max-h-[92vh] overflow-y-auto flex flex-col shadow-2xl [&::-webkit-scrollbar]:hidden">
 
         {/* Sticky Header */}
         <div className="sticky top-0 z-10 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
@@ -257,17 +266,18 @@ export function EditEmployeeModal({ isOpen, onClose, employee }: EditEmployeeMod
               <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-white/85">Financial Information</span>
             </div>
             <div className="p-[18px] grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              {/* PAN */}
+              {/* PAN removed — replaced with Bank Name */}
+              {/* Bank Name */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11.5px] font-semibold uppercase tracking-wide text-slate-500">PAN Number</label>
+                <label className="text-[11.5px] font-semibold uppercase tracking-wide text-slate-500">Bank Name</label>
                 <div className="relative">
                   <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-[15px] h-[15px] text-slate-400 pointer-events-none" />
                   <input
-                    className="w-full h-11 rounded-[10px] border-[1.5px] border-slate-200 bg-white pl-[38px] pr-3.5 text-[13.5px] text-slate-900 font-mono tracking-wide outline-none transition-all focus:border-slate-700 focus:ring-[3px] focus:ring-slate-700/10"
-                    name="pan"
-                    value={formData.pan}
+                    className="w-full h-11 rounded-[10px] border-[1.5px] border-slate-200 bg-white pl-[38px] pr-3.5 text-[13.5px] text-slate-900 outline-none transition-all focus:border-slate-700 focus:ring-[3px] focus:ring-slate-700/10"
+                    name="bankName"
+                    value={formData.bankName}
                     onChange={handleChange}
-                    placeholder="ABCDE1234F"
+                    placeholder="Bank name"
                   />
                 </div>
               </div>

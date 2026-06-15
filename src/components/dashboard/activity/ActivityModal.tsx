@@ -113,7 +113,7 @@ export function ActivityModal({ isOpen, onClose, activity }: ActivityModalProps)
         onClick={(e) => e.target === e.currentTarget && onClose()}
       >
         {/* Modal */}
-        <div className="modal-in bg-white rounded-2xl w-full max-w-[860px] max-h-[92vh] overflow-y-auto flex flex-col shadow-[0_32px_64px_rgba(0,0,0,0.2),0_8px_24px_rgba(0,0,0,0.08)]">
+        <div className="modal-in bg-white rounded-2xl w-full max-w-[860px] max-h-[92vh] overflow-y-auto flex flex-col shadow-[0_32px_64px_rgba(0,0,0,0.2),0_8px_24px_rgba(0,0,0,0.08)] [&::-webkit-scrollbar]:hidden">
 
           {/* Header */}
           <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-slate-100 px-6 py-4 rounded-t-2xl flex items-center justify-between">

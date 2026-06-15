@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { authClient } from "@/lib/api-client"
 import {
   User, Mail, Phone, MapPin, Bell, Shield, Palette, Globe,
   Edit2, Save, X, Plus, Trash2, CheckCircle, Eye, EyeOff,
@@ -12,7 +13,12 @@ export default function SettingsPage() {
   const [editProfile, setEditProfile] = useState(false)
   const [editNotifications, setEditNotifications] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [theme, setTheme] = useState("system")
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
+  const [passwordError, setPasswordError] = useState<string | null>(null)
+  const [passwordSuccess, setPasswordSuccess] = useState(false)
 
   const [profile, setProfile] = useState({
     firstName: "Sumiran",
@@ -58,10 +64,39 @@ export default function SettingsPage() {
     // Save logic here
   }
 
-  const handleChangePassword = () => {
-    if (password.new === password.confirm) {
+  const handleChangePassword = async () => {
+    setPasswordError(null)
+    setPasswordSuccess(false)
+
+    if (!password.current || !password.new || !password.confirm) {
+      setPasswordError("All fields are required.")
+      return
+    }
+    if (password.new !== password.confirm) {
+      setPasswordError("New password and confirm password do not match.")
+      return
+    }
+    if (password.new.length < 6) {
+      setPasswordError("New password must be at least 6 characters.")
+      return
+    }
+
+    setIsChangingPassword(true)
+    try {
+      await authClient.post("/api/auth/change-password", {
+        currentPassword: password.current,
+        newPassword: password.new,
+      })
       setPassword({ current: "", new: "", confirm: "" })
-      // Change password logic here
+      setPasswordSuccess(true)
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        "Failed to update password. Please try again."
+      setPasswordError(message)
+    } finally {
+      setIsChangingPassword(false)
     }
   }
 
@@ -357,20 +392,21 @@ export default function SettingsPage() {
                 <div style={{ marginBottom: 32 }}>
                   <div style={{ fontSize: 14, fontWeight: 600, color: "#0f172a", marginBottom: 16 }}>Change Password</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                    {[
-                      { label: "Current Password", key: "current" },
-                      { label: "New Password", key: "new" },
-                      { label: "Confirm Password", key: "confirm" },
-                    ].map((field) => (
+                    {([
+                      { label: "Current Password", key: "current", show: showPassword, toggle: () => { setPasswordError(null); setPasswordSuccess(false); setShowPassword(!showPassword) } },
+                      { label: "New Password", key: "new", show: showNewPassword, toggle: () => { setPasswordError(null); setPasswordSuccess(false); setShowNewPassword(!showNewPassword) } },
+                      { label: "Confirm New Password", key: "confirm", show: showConfirmPassword, toggle: () => { setPasswordError(null); setPasswordSuccess(false); setShowConfirmPassword(!showConfirmPassword) } },
+                    ] as const).map((field) => (
                       <div key={field.key}>
                         <label style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "#94a3b8", display: "block", marginBottom: 6 }}>
                           {field.label}
                         </label>
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                           <input
-                            type={showPassword ? "text" : "password"}
-                            value={password[field.key as keyof typeof password]}
-                            onChange={(e) => setPassword({ ...password, [field.key]: e.target.value })}
+                            type={field.show ? "text" : "password"}
+                            value={password[field.key]}
+                            onChange={(e) => { setPasswordError(null); setPasswordSuccess(false); setPassword({ ...password, [field.key]: e.target.value }) }}
+                            placeholder={field.key === "current" ? "Enter current password" : field.key === "new" ? "Enter new password" : "Confirm new password"}
                             style={{
                               flex: 1,
                               height: 40,
@@ -388,7 +424,8 @@ export default function SettingsPage() {
                             onBlur={(e) => (e.target.style.borderColor = "#e2e8f0")}
                           />
                           <button
-                            onClick={() => setShowPassword(!showPassword)}
+                            type="button"
+                            onClick={field.toggle}
                             style={{
                               width: 40,
                               height: 40,
@@ -404,28 +441,44 @@ export default function SettingsPage() {
                             onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#334155")}
                             onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#e2e8f0")}
                           >
-                            {showPassword ? <EyeOff style={{ width: 16, height: 16, color: "#64748b" }} /> : <Eye style={{ width: 16, height: 16, color: "#64748b" }} />}
+                            {field.show ? <EyeOff style={{ width: 16, height: 16, color: "#64748b" }} /> : <Eye style={{ width: 16, height: 16, color: "#64748b" }} />}
                           </button>
                         </div>
                       </div>
                     ))}
+
+                    {passwordError && (
+                      <div style={{ padding: "10px 14px", borderRadius: 8, background: "#fef2f2", border: "1px solid #fecaca", fontSize: 13, color: "#dc2626", fontWeight: 500 }}>
+                        {passwordError}
+                      </div>
+                    )}
+
+                    {passwordSuccess && (
+                      <div style={{ padding: "10px 14px", borderRadius: 8, background: "#f0fdf4", border: "1px solid #bbf7d0", fontSize: 13, color: "#16a34a", fontWeight: 500, display: "flex", alignItems: "center", gap: 8 }}>
+                        <CheckCircle style={{ width: 16, height: 16 }} />
+                        Password updated successfully!
+                      </div>
+                    )}
+
                     <button
                       onClick={handleChangePassword}
+                      disabled={isChangingPassword}
                       style={{
                         padding: "10px 24px",
                         borderRadius: 8,
-                        border: "1.5px solid #3b82f6",
-                        background: "#3b82f6",
+                        border: isChangingPassword ? "1.5px solid #93c5fd" : "1.5px solid #3b82f6",
+                        background: isChangingPassword ? "#93c5fd" : "#3b82f6",
                         fontSize: 13,
                         fontWeight: 600,
                         color: "#fff",
-                        cursor: "pointer",
+                        cursor: isChangingPassword ? "not-allowed" : "pointer",
                         fontFamily: "inherit",
                         marginTop: 8,
                         alignSelf: "flex-start",
+                        transition: "all 0.15s",
                       }}
                     >
-                      Update Password
+                      {isChangingPassword ? "Updating..." : "Update Password"}
                     </button>
                   </div>
                 </div>

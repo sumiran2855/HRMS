@@ -192,7 +192,7 @@ export function ViewActivityModal({ isOpen, onClose, activity }: ViewActivityMod
         onClick={(e) => e.target === e.currentTarget && onClose()}
       >
         <div
-          className="view-activity-fade"
+          className="view-activity-fade [&::-webkit-scrollbar]:hidden"
           style={{
             background: "#fff",
             borderRadius: 16,
@@ -200,6 +200,7 @@ export function ViewActivityModal({ isOpen, onClose, activity }: ViewActivityMod
             maxWidth: 800,
             maxHeight: "92vh",
             overflowY: "auto",
+            scrollbarWidth: "none",
             boxShadow: "0 24px 60px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.08)",
             display: "flex",
             flexDirection: "column",

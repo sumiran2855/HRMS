@@ -39,7 +39,7 @@ export function ViewClientModal({ isOpen, onClose, client }: ViewClientModalProp
       className="fixed inset-0 bg-slate-900/55 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="animate-in fade-in zoom-in-95 duration-200 bg-white rounded-2xl w-full max-w-[800px] max-h-[92vh] overflow-y-auto flex flex-col shadow-2xl">
+      <div className="animate-in fade-in zoom-in-95 duration-200 bg-white rounded-2xl w-full max-w-[800px] max-h-[92vh] overflow-y-auto flex flex-col shadow-2xl [&::-webkit-scrollbar]:hidden">
 
         {/* Hero Header */}
         <div className="bg-gradient-to-br from-slate-900 to-slate-700 rounded-t-2xl pt-7 px-6 pb-6 relative">

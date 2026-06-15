@@ -41,7 +41,7 @@ export function ViewSalarySlipModal({ isOpen, onClose, employee }: ViewSalarySli
         <head>
           <title>Salary Slip – ${employee.name}</title>
           <style>
-            @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Dancing+Script:wght@600&display=swap');
             * { box-sizing: border-box; margin: 0; padding: 0; }
             body { font-family: 'DM Sans', sans-serif; padding: 40px; color: #1e293b; }
             h1 { font-size: 22px; font-weight: 700; }
@@ -116,16 +116,16 @@ export function ViewSalarySlipModal({ isOpen, onClose, employee }: ViewSalarySli
 
   const employmentDetails = [
     { icon: Calendar, label: "Joining Date", value: formatDate(employee.joiningDate) },
-    { icon: Phone, label: "Phone Number", value: "+1 (555) 000-0000" },
-    { icon: DollarSign, label: "PAN Number", value: "ABCDE1234F" },
-    { icon: FileText, label: "Bank Account", value: "****1234" },
+    { icon: Phone, label: "Phone Number", value: employee.phone || "N/A" },
+    { icon: DollarSign, label: "Bank Name", value: employee.bankName || "N/A" },
+    { icon: FileText, label: "Bank Account", value: employee.bankAccount || "N/A" },
   ]
 
   return (
     <>
       {/* Google Font Import */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&family=Dancing+Script:wght@600&display=swap');
 
         .salary-modal-overlay {
           font-family: 'DM Sans', sans-serif;
@@ -271,7 +271,7 @@ export function ViewSalarySlipModal({ isOpen, onClose, employee }: ViewSalarySli
         onClick={(e) => e.target === e.currentTarget && onClose()}
       >
         <div
-          className="modal-fade-in"
+          className="modal-fade-in [&::-webkit-scrollbar]:hidden"
           style={{
             background: "#fff",
             borderRadius: "16px",
@@ -279,6 +279,7 @@ export function ViewSalarySlipModal({ isOpen, onClose, employee }: ViewSalarySli
             maxWidth: "860px",
             maxHeight: "92vh",
             overflowY: "auto",
+            scrollbarWidth: "none",
             boxShadow: "0 24px 60px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.08)",
             display: "flex",
             flexDirection: "column",
@@ -540,24 +541,29 @@ export function ViewSalarySlipModal({ isOpen, onClose, employee }: ViewSalarySli
               gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
               gap: 24,
             }}>
-              {["Employee Signature", "HR Manager", "Authorized Signatory"].map((label) => (
+              {[
+                { label: "Employee Signature", name: employee.name, title: "Employee" },
+                { label: "HR Manager", name: "Sarah Mitchell", title: "Head of Human Resources" },
+                { label: "Authorized Signatory", name: "David Reynolds", title: "Chief Financial Officer" },
+              ].map(({ label, name, title }) => (
                 <div key={label} style={{ textAlign: "center" }}>
+                  <div style={{ marginBottom: 6 }}>
+                    <span style={{
+                      fontFamily: "'Dancing Script', 'Brush Script MT', cursive",
+                      fontSize: 22,
+                      color: "#1e293b",
+                      fontStyle: "italic",
+                      letterSpacing: "0.02em",
+                    }}>
+                      {name}
+                    </span>
+                  </div>
                   <div className="signature-line" />
-                  <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500 }}>{label}</div>
+                  <div style={{ fontSize: 12, color: "#0f172a", fontWeight: 600, marginTop: 4 }}>{name}</div>
+                  <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500, marginTop: 1 }}>{title}</div>
+                  <div style={{ fontSize: 10, color: "#cbd5e1", marginTop: 1 }}>{label}</div>
                 </div>
               ))}
-            </div>
-
-            <div style={{ textAlign: "center", marginTop: 20 }}>
-              <div style={{
-                display: "inline-block",
-                fontSize: 11, color: "#cbd5e1",
-                padding: "6px 14px",
-                border: "1px solid #f1f5f9",
-                borderRadius: 6,
-              }}>
-                This is a computer-generated document. No signature is required.
-              </div>
             </div>
           </div>
 

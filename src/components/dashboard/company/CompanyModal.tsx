@@ -90,7 +90,7 @@ export function CompanyModal({ isOpen, onClose, company }: CompanyModalProps) {
       className="fixed inset-0 bg-slate-900/55 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="animate-in fade-in zoom-in-95 duration-200 bg-white rounded-2xl w-full max-w-[720px] max-h-[92vh] overflow-y-auto flex flex-col shadow-2xl">
+      <div className="animate-in fade-in zoom-in-95 duration-200 bg-white rounded-2xl w-full max-w-[720px] max-h-[92vh] overflow-y-auto flex flex-col shadow-2xl [&::-webkit-scrollbar]:hidden">
 
         {/* Header */}
         <div className="sticky top-0 z-10 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
@@ -100,7 +100,7 @@ export function CompanyModal({ isOpen, onClose, company }: CompanyModalProps) {
             </div>
             <div>
               <div className="text-[15px] font-bold text-slate-900">
-                {company ? "Edit Company" : "Add New Company"}
+                {company ? "pany" : "Add New Company"}
               </div>
               <div className="text-xs text-slate-400 mt-px">
                 {company ? `Company ID: ${company.id}` : "Create a new company profile"}

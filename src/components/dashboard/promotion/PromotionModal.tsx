@@ -1,8 +1,55 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { X } from "lucide-react"
+import { Check, X, User, Briefcase, TrendingUp, FileText } from "lucide-react"
 import { PROMOTION_DEPARTMENTS, PROMOTION_TYPE_OPTIONS } from "@/constants/promotion"
+
+function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="block text-xs font-semibold text-slate-600 mb-1.5">{label}</label>
+      {children}
+      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+    </div>
+  )
+}
+
+const STEPS = [
+  { id: 1, label: "Employee", icon: User },
+  { id: 2, label: "Role", icon: Briefcase },
+  { id: 3, label: "Salary & Performance", icon: TrendingUp },
+  { id: 4, label: "Justification", icon: FileText },
+]
+
+const INITIAL_FORM = {
+  employeeId: "",
+  employeeName: "",
+  joiningDate: "",
+  department: "Engineering",
+  currentDesignation: "",
+  currentResponsibilitiesText: "",
+  proposedDesignation: "",
+  proposedDepartment: "Engineering",
+  reportingManager: "",
+  proposedReportingManager: "",
+  requestedDate: "",
+  effectiveDate: "",
+  currentSalary: 0,
+  proposedSalary: 0,
+  oldBonus: 0,
+  newBonus: 0,
+  allowanceText: "",
+  benefitText: "",
+  performanceRating: 3.5,
+  kpiText: "",
+  achievementsText: "",
+  appraisalHistory: "",
+  justification: "",
+  promotionType: "vertical" as "vertical" | "lateral" | "temporary",
+  probationMonths: 3,
+  requiresHigherAuthority: false,
+  attachmentText: "",
+}
 
 interface PromotionModalProps {
   isOpen: boolean
@@ -39,35 +86,8 @@ interface PromotionModalProps {
 }
 
 export function PromotionModal({ isOpen, onClose, onSubmit }: PromotionModalProps) {
-  const [formData, setFormData] = useState({
-    employeeId: "",
-    employeeName: "",
-    joiningDate: "",
-    department: "Engineering",
-    currentDesignation: "",
-    currentResponsibilitiesText: "",
-    proposedDesignation: "",
-    proposedDepartment: "Engineering",
-    reportingManager: "",
-    proposedReportingManager: "",
-    requestedDate: "",
-    effectiveDate: "",
-    currentSalary: 0,
-    proposedSalary: 0,
-    oldBonus: 0,
-    newBonus: 0,
-    allowanceText: "",
-    benefitText: "",
-    performanceRating: 3.5,
-    kpiText: "",
-    achievementsText: "",
-    appraisalHistory: "",
-    justification: "",
-    promotionType: "vertical" as "vertical" | "lateral" | "temporary",
-    probationMonths: 3,
-    requiresHigherAuthority: false,
-    attachmentText: "",
-  })
+  const [step, setStep] = useState(1)
+  const [formData, setFormData] = useState(INITIAL_FORM)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const departmentOptions = useMemo(() => PROMOTION_DEPARTMENTS.filter((d) => d !== "All Departments"), [])
@@ -75,13 +95,13 @@ export function PromotionModal({ isOpen, onClose, onSubmit }: PromotionModalProp
   if (!isOpen) return null
 
   const inputClass =
-    "w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:border-indigo-500 text-sm"
+    "w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:border-indigo-500 text-sm bg-white text-slate-800 placeholder:text-slate-400"
+
+  const set = (key: keyof typeof INITIAL_FORM, value: unknown) =>
+    setFormData((p) => ({ ...p, [key]: value }))
 
   const parseList = (value: string) =>
-    value
-      .split("\n")
-      .map((item) => item.trim())
-      .filter(Boolean)
+    value.split("\n").map((s) => s.trim()).filter(Boolean)
 
   const parseAllowances = (value: string) =>
     parseList(value).map((line) => {
@@ -95,32 +115,51 @@ export function PromotionModal({ isOpen, onClose, onSubmit }: PromotionModalProp
       return { label, oldValue: oldV, newValue: newV }
     })
 
-  const validate = () => {
+  const validateStep = (s: number): Record<string, string> => {
     const e: Record<string, string> = {}
-    if (!formData.employeeId.trim()) e.employeeId = "Employee ID is required"
-    if (!formData.employeeName.trim()) e.employeeName = "Employee name is required"
-    if (!formData.joiningDate) e.joiningDate = "Joining date is required"
-    if (!formData.currentDesignation.trim()) e.currentDesignation = "Current designation is required"
-    if (!formData.proposedDesignation.trim()) e.proposedDesignation = "Proposed designation is required"
-    if (!formData.reportingManager.trim()) e.reportingManager = "Current reporting manager is required"
-    if (!formData.proposedReportingManager.trim()) e.proposedReportingManager = "New reporting manager is required"
-    if (!formData.requestedDate) e.requestedDate = "Requested date is required"
-    if (!formData.effectiveDate) e.effectiveDate = "Effective date is required"
-    if (formData.currentSalary <= 0) e.currentSalary = "Current salary must be greater than 0"
-    if (formData.proposedSalary <= formData.currentSalary) e.proposedSalary = "Proposed salary must be greater than current salary"
-    if (!formData.justification.trim()) e.justification = "Reason for promotion is required"
-    if (!formData.appraisalHistory.trim()) e.appraisalHistory = "Appraisal history is required"
+    if (s === 1) {
+      if (!formData.employeeId.trim()) e.employeeId = "Required"
+      if (!formData.employeeName.trim()) e.employeeName = "Required"
+      if (!formData.joiningDate) e.joiningDate = "Required"
+    }
+    if (s === 2) {
+      if (!formData.currentDesignation.trim()) e.currentDesignation = "Required"
+      if (!formData.reportingManager.trim()) e.reportingManager = "Required"
+      if (!formData.proposedDesignation.trim()) e.proposedDesignation = "Required"
+      if (!formData.proposedReportingManager.trim()) e.proposedReportingManager = "Required"
+      if (!formData.requestedDate) e.requestedDate = "Required"
+      if (!formData.effectiveDate) e.effectiveDate = "Required"
+    }
+    if (s === 3) {
+      if (formData.currentSalary <= 0) e.currentSalary = "Must be greater than 0"
+      if (formData.proposedSalary <= formData.currentSalary) e.proposedSalary = "Must exceed current salary"
+      if (!formData.appraisalHistory.trim()) e.appraisalHistory = "Required"
+    }
+    if (s === 4) {
+      if (!formData.justification.trim()) e.justification = "Required"
+    }
     return e
   }
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault()
-    const e = validate()
-    if (Object.keys(e).length > 0) {
-      setErrors(e)
-      return
-    }
+  const handleNext = () => {
+    const e = validateStep(step)
+    if (Object.keys(e).length > 0) { setErrors(e); return }
+    setErrors({})
+    setStep((s) => s + 1)
+  }
 
+  const handleBack = () => { setErrors({}); setStep((s) => s - 1) }
+
+  const handleClose = () => {
+    setStep(1)
+    setFormData(INITIAL_FORM)
+    setErrors({})
+    onClose()
+  }
+
+  const handleSubmit = () => {
+    const e = validateStep(4)
+    if (Object.keys(e).length > 0) { setErrors(e); return }
     onSubmit({
       employeeId: formData.employeeId,
       employeeName: formData.employeeName,
@@ -150,180 +189,318 @@ export function PromotionModal({ isOpen, onClose, onSubmit }: PromotionModalProp
       requiresHigherAuthority: formData.requiresHigherAuthority,
       attachmentNames: parseList(formData.attachmentText),
     })
-
-    onClose()
+    handleClose()
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm" onClick={(e) => e.currentTarget === e.target && onClose()}>
-      <div className="bg-white rounded-2xl w-full max-w-6xl max-h-[92vh] overflow-y-auto border border-slate-200 shadow-xl">
-        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white z-10">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
+      onClick={(e) => e.currentTarget === e.target && handleClose()}
+    >
+      <div className="bg-white rounded-2xl w-full max-w-2xl border border-slate-200 shadow-2xl flex flex-col max-h-[92vh]">
+
+        {/* Header */}
+        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
           <div>
-            <h3 className="text-lg font-semibold text-slate-900">Create Promotion Request</h3>
-            <p className="text-xs text-slate-500 mt-0.5">Structured request for employee promotion decision-making.</p>
+            <h3 className="text-base font-semibold text-slate-900">Create Promotion Request</h3>
+            <p className="text-xs text-slate-400 mt-0.5">Step {step} of {STEPS.length}</p>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50">
+          <button
+            onClick={handleClose}
+            className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Employee ID</label>
-              <input className={inputClass} value={formData.employeeId} onChange={(e) => setFormData((p) => ({ ...p, employeeId: e.target.value }))} />
-              {errors.employeeId && <p className="mt-1 text-xs text-red-600">{errors.employeeId}</p>}
+        {/* Stepper */}
+        <div className="px-6 pt-5 pb-4 flex-shrink-0">
+          <div className="flex items-center">
+            {STEPS.map((s, i) => {
+              const isCompleted = step > s.id
+              const isCurrent = step === s.id
+              const Icon = s.icon
+              return (
+                <div key={s.id} className="flex items-center flex-1 last:flex-none">
+                  <div className="flex flex-col items-center gap-1.5">
+                    <div
+                      className={`w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all duration-200 ${
+                        isCompleted
+                          ? "bg-indigo-600 border-indigo-600 text-white"
+                          : isCurrent
+                          ? "bg-white border-indigo-600 text-indigo-600"
+                          : "bg-white border-slate-200 text-slate-400"
+                      }`}
+                    >
+                      {isCompleted ? (
+                        <Check className="w-4 h-4" strokeWidth={2.5} />
+                      ) : (
+                        <Icon className="w-4 h-4" />
+                      )}
+                    </div>
+                    <span
+                      className={`text-[11px] font-medium whitespace-nowrap ${
+                        isCurrent ? "text-indigo-600" : isCompleted ? "text-slate-600" : "text-slate-400"
+                      }`}
+                    >
+                      {s.label}
+                    </span>
+                  </div>
+                  {i < STEPS.length - 1 && (
+                    <div
+                      className={`flex-1 h-0.5 mb-4 mx-2 rounded-full transition-all duration-300 ${
+                        step > s.id ? "bg-indigo-600" : "bg-slate-200"
+                      }`}
+                    />
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Step Content */}
+        <div className="flex-1 overflow-y-auto px-6 pb-2">
+
+          {/* Step 1 – Employee Info */}
+          {step === 1 && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Employee ID *" error={errors.employeeId}>
+                  <input
+                    className={inputClass}
+                    placeholder="e.g. EMP-001"
+                    value={formData.employeeId}
+                    onChange={(e) => set("employeeId", e.target.value)}
+                  />
+                </Field>
+                <Field label="Employee Name *" error={errors.employeeName}>
+                  <input
+                    className={inputClass}
+                    placeholder="Full name"
+                    value={formData.employeeName}
+                    onChange={(e) => set("employeeName", e.target.value)}
+                  />
+                </Field>
+                <Field label="Department *">
+                  <select className={inputClass} value={formData.department} onChange={(e) => set("department", e.target.value)}>
+                    {departmentOptions.map((d) => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                </Field>
+                <Field label="Joining Date *" error={errors.joiningDate}>
+                  <input
+                    type="date"
+                    className={inputClass}
+                    value={formData.joiningDate}
+                    onChange={(e) => set("joiningDate", e.target.value)}
+                  />
+                </Field>
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Employee Name</label>
-              <input className={inputClass} value={formData.employeeName} onChange={(e) => setFormData((p) => ({ ...p, employeeName: e.target.value }))} />
-              {errors.employeeName && <p className="mt-1 text-xs text-red-600">{errors.employeeName}</p>}
+          )}
+
+          {/* Step 2 – Role & Promotion */}
+          {step === 2 && (
+            <div className="space-y-4">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Current Role</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Current Designation *" error={errors.currentDesignation}>
+                  <input
+                    className={inputClass}
+                    placeholder="e.g. Software Engineer"
+                    value={formData.currentDesignation}
+                    onChange={(e) => set("currentDesignation", e.target.value)}
+                  />
+                </Field>
+                <Field label="Current Reporting Manager *" error={errors.reportingManager}>
+                  <input
+                    className={inputClass}
+                    placeholder="Manager name"
+                    value={formData.reportingManager}
+                    onChange={(e) => set("reportingManager", e.target.value)}
+                  />
+                </Field>
+                <div className="sm:col-span-2">
+                  <Field label="Current Responsibilities (one per line)">
+                    <textarea
+                      rows={3}
+                      className={inputClass}
+                      placeholder="List key responsibilities..."
+                      value={formData.currentResponsibilitiesText}
+                      onChange={(e) => set("currentResponsibilitiesText", e.target.value)}
+                    />
+                  </Field>
+                </div>
+              </div>
+
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider pt-1">Proposed Promotion</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Proposed Designation *" error={errors.proposedDesignation}>
+                  <input
+                    className={inputClass}
+                    placeholder="e.g. Senior Software Engineer"
+                    value={formData.proposedDesignation}
+                    onChange={(e) => set("proposedDesignation", e.target.value)}
+                  />
+                </Field>
+                <Field label="Proposed Department *">
+                  <select className={inputClass} value={formData.proposedDepartment} onChange={(e) => set("proposedDepartment", e.target.value)}>
+                    {departmentOptions.map((d) => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                </Field>
+                <Field label="New Reporting Manager *" error={errors.proposedReportingManager}>
+                  <input
+                    className={inputClass}
+                    placeholder="New manager name"
+                    value={formData.proposedReportingManager}
+                    onChange={(e) => set("proposedReportingManager", e.target.value)}
+                  />
+                </Field>
+                <Field label="Promotion Type *">
+                  <select className={inputClass} value={formData.promotionType} onChange={(e) => set("promotionType", e.target.value as "vertical" | "lateral" | "temporary")}>
+                    {PROMOTION_TYPE_OPTIONS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+                  </select>
+                </Field>
+                <Field label="Requested Date *" error={errors.requestedDate}>
+                  <input
+                    type="date"
+                    className={inputClass}
+                    value={formData.requestedDate}
+                    onChange={(e) => set("requestedDate", e.target.value)}
+                  />
+                </Field>
+                <Field label="Effective Date *" error={errors.effectiveDate}>
+                  <input
+                    type="date"
+                    className={inputClass}
+                    value={formData.effectiveDate}
+                    onChange={(e) => set("effectiveDate", e.target.value)}
+                  />
+                </Field>
+                <Field label="Probation Period (months)">
+                  <input
+                    type="number"
+                    min={0}
+                    className={inputClass}
+                    value={formData.probationMonths}
+                    onChange={(e) => set("probationMonths", Number(e.target.value))}
+                  />
+                </Field>
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Department</label>
-              <select className={inputClass} value={formData.department} onChange={(e) => setFormData((p) => ({ ...p, department: e.target.value }))}>
-                {departmentOptions.map((d) => <option key={d} value={d}>{d}</option>)}
-              </select>
+          )}
+
+          {/* Step 3 – Salary & Performance */}
+          {step === 3 && (
+            <div className="space-y-4">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Salary Revision</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <Field label="Current Salary *" error={errors.currentSalary}>
+                  <input type="number" min={0} className={inputClass} value={formData.currentSalary} onChange={(e) => set("currentSalary", Number(e.target.value))} />
+                </Field>
+                <Field label="Proposed Salary *" error={errors.proposedSalary}>
+                  <input type="number" min={0} className={inputClass} value={formData.proposedSalary} onChange={(e) => set("proposedSalary", Number(e.target.value))} />
+                </Field>
+                <Field label="Current Bonus">
+                  <input type="number" min={0} className={inputClass} value={formData.oldBonus} onChange={(e) => set("oldBonus", Number(e.target.value))} />
+                </Field>
+                <Field label="New Bonus">
+                  <input type="number" min={0} className={inputClass} value={formData.newBonus} onChange={(e) => set("newBonus", Number(e.target.value))} />
+                </Field>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Allowance Changes (Name|Old|New, one per line)">
+                  <textarea rows={3} className={inputClass} placeholder="Housing|5000|6000" value={formData.allowanceText} onChange={(e) => set("allowanceText", e.target.value)} />
+                </Field>
+                <Field label="Benefit Updates (Name|Old|New, one per line)">
+                  <textarea rows={3} className={inputClass} placeholder="Health Insurance|Basic|Premium" value={formData.benefitText} onChange={(e) => set("benefitText", e.target.value)} />
+                </Field>
+              </div>
+
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider pt-1">Performance</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Performance Rating (1–5)">
+                  <input type="number" min={1} max={5} step="0.1" className={inputClass} value={formData.performanceRating} onChange={(e) => set("performanceRating", Number(e.target.value))} />
+                </Field>
+                <Field label="Appraisal History Summary *" error={errors.appraisalHistory}>
+                  <textarea rows={3} className={inputClass} placeholder="Summarise past appraisals..." value={formData.appraisalHistory} onChange={(e) => set("appraisalHistory", e.target.value)} />
+                </Field>
+                <Field label="KPIs (one per line)">
+                  <textarea rows={3} className={inputClass} placeholder="Delivered X feature..." value={formData.kpiText} onChange={(e) => set("kpiText", e.target.value)} />
+                </Field>
+                <Field label="Achievements (one per line)">
+                  <textarea rows={3} className={inputClass} placeholder="Reduced latency by 40%..." value={formData.achievementsText} onChange={(e) => set("achievementsText", e.target.value)} />
+                </Field>
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Joining Date</label>
-              <input type="date" className={inputClass} value={formData.joiningDate} onChange={(e) => setFormData((p) => ({ ...p, joiningDate: e.target.value }))} />
-              {errors.joiningDate && <p className="mt-1 text-xs text-red-600">{errors.joiningDate}</p>}
+          )}
+
+          {/* Step 4 – Justification & Docs */}
+          {step === 4 && (
+            <div className="space-y-4">
+              <Field label="Reason for Promotion *" error={errors.justification}>
+                <textarea
+                  rows={5}
+                  className={inputClass}
+                  placeholder="Explain why this promotion is warranted..."
+                  value={formData.justification}
+                  onChange={(e) => set("justification", e.target.value)}
+                />
+              </Field>
+              <Field label="Supporting Documents (one filename per line)">
+                <textarea
+                  rows={3}
+                  className={inputClass}
+                  placeholder={"Appraisal_Q4.pdf\nRecommendation.docx"}
+                  value={formData.attachmentText}
+                  onChange={(e) => set("attachmentText", e.target.value)}
+                />
+              </Field>
+              <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <input
+                  id="higher-auth"
+                  type="checkbox"
+                  checked={formData.requiresHigherAuthority}
+                  onChange={(e) => set("requiresHigherAuthority", e.target.checked)}
+                  className="w-4 h-4 accent-indigo-600 cursor-pointer"
+                />
+                <label htmlFor="higher-auth" className="text-sm text-slate-700 cursor-pointer select-none">
+                  Requires higher authority approval
+                </label>
+              </div>
             </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between flex-shrink-0 bg-white rounded-b-2xl">
+          <button
+            type="button"
+            onClick={step === 1 ? handleClose : handleBack}
+            className="px-4 py-2 text-sm font-medium border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors"
+          >
+            {step === 1 ? "Cancel" : "Back"}
+          </button>
+
+          <div className="flex items-center gap-2">
+            {STEPS.map((s) => (
+              <div
+                key={s.id}
+                className={`h-1.5 rounded-full transition-all duration-200 ${
+                  s.id === step ? "w-5 bg-indigo-600" : s.id < step ? "w-2 bg-indigo-300" : "w-2 bg-slate-200"
+                }`}
+              />
+            ))}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Current Designation</label>
-              <input className={inputClass} value={formData.currentDesignation} onChange={(e) => setFormData((p) => ({ ...p, currentDesignation: e.target.value }))} />
-              {errors.currentDesignation && <p className="mt-1 text-xs text-red-600">{errors.currentDesignation}</p>}
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Current Reporting Manager</label>
-              <input className={inputClass} value={formData.reportingManager} onChange={(e) => setFormData((p) => ({ ...p, reportingManager: e.target.value }))} />
-              {errors.reportingManager && <p className="mt-1 text-xs text-red-600">{errors.reportingManager}</p>}
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Current Responsibilities (one per line)</label>
-              <textarea rows={3} className={inputClass} value={formData.currentResponsibilitiesText} onChange={(e) => setFormData((p) => ({ ...p, currentResponsibilitiesText: e.target.value }))} />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Proposed Designation</label>
-              <input className={inputClass} value={formData.proposedDesignation} onChange={(e) => setFormData((p) => ({ ...p, proposedDesignation: e.target.value }))} />
-              {errors.proposedDesignation && <p className="mt-1 text-xs text-red-600">{errors.proposedDesignation}</p>}
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Proposed Department</label>
-              <select className={inputClass} value={formData.proposedDepartment} onChange={(e) => setFormData((p) => ({ ...p, proposedDepartment: e.target.value }))}>
-                {departmentOptions.map((d) => <option key={d} value={d}>{d}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Proposed Reporting Manager</label>
-              <input className={inputClass} value={formData.proposedReportingManager} onChange={(e) => setFormData((p) => ({ ...p, proposedReportingManager: e.target.value }))} />
-              {errors.proposedReportingManager && <p className="mt-1 text-xs text-red-600">{errors.proposedReportingManager}</p>}
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Promotion Type</label>
-              <select className={inputClass} value={formData.promotionType} onChange={(e) => setFormData((p) => ({ ...p, promotionType: e.target.value as "vertical" | "lateral" | "temporary" }))}>
-                {PROMOTION_TYPE_OPTIONS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Requested Date</label>
-              <input type="date" className={inputClass} value={formData.requestedDate} onChange={(e) => setFormData((p) => ({ ...p, requestedDate: e.target.value }))} />
-              {errors.requestedDate && <p className="mt-1 text-xs text-red-600">{errors.requestedDate}</p>}
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Promotion Start Date</label>
-              <input type="date" className={inputClass} value={formData.effectiveDate} onChange={(e) => setFormData((p) => ({ ...p, effectiveDate: e.target.value }))} />
-              {errors.effectiveDate && <p className="mt-1 text-xs text-red-600">{errors.effectiveDate}</p>}
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Probation (months)</label>
-              <input type="number" min={0} className={inputClass} value={formData.probationMonths} onChange={(e) => setFormData((p) => ({ ...p, probationMonths: Number(e.target.value) }))} />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Current Salary</label>
-              <input type="number" min={0} className={inputClass} value={formData.currentSalary} onChange={(e) => setFormData((p) => ({ ...p, currentSalary: Number(e.target.value) }))} />
-              {errors.currentSalary && <p className="mt-1 text-xs text-red-600">{errors.currentSalary}</p>}
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">New Salary</label>
-              <input type="number" min={0} className={inputClass} value={formData.proposedSalary} onChange={(e) => setFormData((p) => ({ ...p, proposedSalary: Number(e.target.value) }))} />
-              {errors.proposedSalary && <p className="mt-1 text-xs text-red-600">{errors.proposedSalary}</p>}
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Old Bonus</label>
-              <input type="number" min={0} className={inputClass} value={formData.oldBonus} onChange={(e) => setFormData((p) => ({ ...p, oldBonus: Number(e.target.value) }))} />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">New Bonus</label>
-              <input type="number" min={0} className={inputClass} value={formData.newBonus} onChange={(e) => setFormData((p) => ({ ...p, newBonus: Number(e.target.value) }))} />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Allowance changes (one per line: Name|Old|New)</label>
-              <textarea rows={3} className={inputClass} value={formData.allowanceText} onChange={(e) => setFormData((p) => ({ ...p, allowanceText: e.target.value }))} />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Benefit updates (one per line: Name|Old|New)</label>
-              <textarea rows={3} className={inputClass} value={formData.benefitText} onChange={(e) => setFormData((p) => ({ ...p, benefitText: e.target.value }))} />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Performance rating</label>
-              <input type="number" min={1} max={5} step="0.1" className={inputClass} value={formData.performanceRating} onChange={(e) => setFormData((p) => ({ ...p, performanceRating: Number(e.target.value) }))} />
-            </div>
-            <div className="flex items-end">
-              <label className="inline-flex items-center gap-2 text-sm text-slate-700">
-                <input type="checkbox" checked={formData.requiresHigherAuthority} onChange={(e) => setFormData((p) => ({ ...p, requiresHigherAuthority: e.target.checked }))} className="accent-indigo-600" />
-                Requires higher authority approval
-              </label>
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">KPIs (one per line)</label>
-              <textarea rows={3} className={inputClass} value={formData.kpiText} onChange={(e) => setFormData((p) => ({ ...p, kpiText: e.target.value }))} />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Achievements (one per line)</label>
-              <textarea rows={3} className={inputClass} value={formData.achievementsText} onChange={(e) => setFormData((p) => ({ ...p, achievementsText: e.target.value }))} />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Appraisal history summary</label>
-              <textarea rows={3} className={inputClass} value={formData.appraisalHistory} onChange={(e) => setFormData((p) => ({ ...p, appraisalHistory: e.target.value }))} />
-              {errors.appraisalHistory && <p className="mt-1 text-xs text-red-600">{errors.appraisalHistory}</p>}
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Supporting documents (one filename per line)</label>
-              <textarea rows={3} className={inputClass} value={formData.attachmentText} onChange={(e) => setFormData((p) => ({ ...p, attachmentText: e.target.value }))} placeholder="Appraisal_Q4.pdf\nRecommendation.docx" />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5">Reason for promotion</label>
-            <textarea rows={4} className={inputClass} value={formData.justification} onChange={(e) => setFormData((p) => ({ ...p, justification: e.target.value }))} />
-            {errors.justification && <p className="mt-1 text-xs text-red-600">{errors.justification}</p>}
-          </div>
-
-          <div className="pt-2 flex items-center justify-end gap-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-50">Cancel</button>
-            <button type="submit" className="px-4 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg">Create Draft</button>
-          </div>
-        </form>
+          <button
+            type="button"
+            onClick={step === STEPS.length ? handleSubmit : handleNext}
+            className="px-4 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+          >
+            {step === STEPS.length ? "Create Draft" : "Next"}
+          </button>
+        </div>
       </div>
     </div>
   )

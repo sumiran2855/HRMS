@@ -45,11 +45,6 @@ const seed = {
     { name: "Google Cloud Professional", issuer: "Google", date: "2022-09", status: "active" },
     { name: "Kubernetes Administrator", issuer: "CNCF", date: "2023-03", status: "active" },
   ] as Certification[],
-  activities: [
-    { id: "ACT001", title: "API Endpoint Development", type: "Development", status: "completed", date: "2024-02-15", hoursSpent: 40 },
-    { id: "ACT008", title: "User Authentication Flow", type: "Development", status: "in-progress", date: "2024-01-22", hoursSpent: 15 },
-    { id: "ACT005", title: "Cloud Infrastructure Setup", type: "DevOps", status: "in-progress", date: "2024-01-12", hoursSpent: 35 },
-  ] as Activity[],
   metrics: { completedProjects: 12, activeProjects: 3, totalHours: 2840, averageRating: 4.8, teamSize: 8, skillsCount: 8 },
   socialLinks: { linkedin: "linkedin.com/in/michaelchen", twitter: "@michaelchen_dev", github: "github.com/michaelchen", portfolio: "michaelchen.dev" },
 }
@@ -587,27 +582,6 @@ export default function ProfilePage() {
                   )}
                 </div>
               </Section>
-
-              {/* Recent Activities */}
-              <Section title="Recent Activities" icon={Clock} accent="#7c3aed">
-                <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-                  {seed.activities.map((a, i) => (
-                    <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 0", borderBottom: i < seed.activities.length - 1 ? "1px solid #f1f5f9" : "none" }}>
-                      <div style={{ width: 38, height: 38, borderRadius: 10, background: "#f5f3ff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <FileText style={{ width: 15, height: 15, color: "#7c3aed" }} />
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 13.5, fontWeight: 600, color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{a.title}</div>
-                        <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 2 }}>{a.type} · {fmtDate(a.date)} · {a.hoursSpent}h</div>
-                      </div>
-                      <span className="pp-tag" style={{ background: ss(a.status).bg, color: ss(a.status).color, fontSize: 10.5, whiteSpace: "nowrap" }}>
-                        {a.status === "in-progress" ? "In Progress" : a.status.charAt(0).toUpperCase() + a.status.slice(1)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </Section>
-
             </div>
           </div>
         </div>

@@ -47,7 +47,7 @@ export function ViewLeadModal({ isOpen, onClose, lead }: ViewLeadModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl">
+      <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl [&::-webkit-scrollbar]:hidden">
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-slate-200 px-8 py-6 rounded-t-2xl min-w-0 z-10">
           <div className="flex items-center justify-between min-w-0">
